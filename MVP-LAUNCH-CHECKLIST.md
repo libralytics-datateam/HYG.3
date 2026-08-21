@@ -8,10 +8,11 @@ Snapshot date: 2026-08-22. Based on reading the current codebase (not the roadma
 
 ## 0. Repo hygiene (do this first — there is no git repo yet)
 
-- [ ] `git init` — this project has never been committed.
-- [ ] Fix root `.gitignore`: it currently does **not** exclude `.env`, `.env.production`, `*.db`, or any Python venv. Add those before the first commit.
-- [ ] Add `data/.venv/` (a full Python virtualenv sitting in the repo) and `data/*.ipynb` checkpoints to `.gitignore`, or move `data/` out of this repo entirely — it's training/exploration material, not app source.
-- [ ] Make sure `server/prisma/dev.db` (a live SQLite file with real rows) never gets committed — `server/.gitignore` already excludes `.env` but not `*.db`.
+- [x] `git init` — done, initial commit `a6971ce` (311 files, working tree clean).
+- [x] Fix root `.gitignore`: now excludes `.env`, `.env.*` (with `!.env.example` allowed through), `*.db`/`*.sqlite*`, and Python venv/cache dirs.
+- [x] Add `data/.venv/` and Python cache/checkpoint dirs to `.gitignore` — verified via `git check-ignore` that `data/.venv` is excluded; the 4 real source files in `data/` (2 notebooks, 2 scripts) are tracked normally.
+- [x] Confirmed `server/prisma/dev.db` is excluded (added `*.db` to `server/.gitignore`, which already had `.env`).
+- [x] Added `.env.example` (root) and `server/.env.example` documenting required vars (`VITE_API_URL`; `DATABASE_URL`, `GEMINI_API_KEY`) now that real `.env` files are gitignored.
 - [ ] Push to GitHub, then connect the existing linked Vercel project (`hyg3`, per `.vercel/project.json`) to that repo so pushes trigger deploys/previews instead of relying on manual `vercel` CLI pushes.
 
 ---
