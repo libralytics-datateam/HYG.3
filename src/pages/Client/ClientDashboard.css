@@ -1,0 +1,216 @@
+/* ── Client Dashboard ── */
+.client-dashboard {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px;
+  text-align: center;
+  min-height: 320px;
+  gap: 12px;
+}
+
+.empty-icon { font-size: 56px; }
+
+/* Meta row */
+.report-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.source-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(0, 206, 201, 0.12);
+  color: var(--teal);
+  border: 1px solid rgba(0, 206, 201, 0.25);
+}
+
+.report-date {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Report cards */
+.report-content { display: flex; flex-direction: column; gap: 16px; }
+
+.report-card {
+  padding: 24px;
+}
+
+.report-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+/* Deficiency */
+.deficiency-list { display: flex; flex-direction: column; gap: 14px; }
+
+.deficiency-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.deficiency-info { flex: 1; }
+.deficiency-name { font-weight: 700; font-size: 14px; color: var(--text); display: block; }
+.deficiency-reason { font-size: 12px; color: var(--muted); margin-top: 2px; display: block; }
+
+.deficiency-bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+
+.deficiency-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.deficiency-fill-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+
+.deficiency-pct {
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* 2-col */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 560px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+
+/* Food pills */
+.food-scroll { display: flex; flex-direction: column; gap: 10px; }
+
+.food-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.food-pill-emoji { font-size: 24px; flex-shrink: 0; }
+.food-pill-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.food-pill-benefit { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Vitamins */
+.vitamin-list { display: flex; flex-direction: column; gap: 0; }
+
+.vitamin-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+
+.vitamin-row:last-child { border: none; padding-bottom: 0; }
+
+.vitamin-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--teal);
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.vitamin-info { flex: 1; }
+.vitamin-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+.vitamin-name { font-weight: 700; font-size: 14px; color: var(--text); }
+.vitamin-dose { font-size: 11px; font-family: monospace; color: var(--teal); font-weight: 600; }
+.vitamin-reason { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+/* Meal grid */
+.meal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 500px) {
+  .meal-grid { grid-template-columns: 1fr; }
+}
+
+.meal-slot {
+  padding: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.meal-slot-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--teal);
+  margin-bottom: 6px;
+}
+
+.meal-slot-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* Disclaimer */
+.disclaimer {
+  background: rgba(100,100,100,0.08);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.scan-again { display: flex; justify-content: center; }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

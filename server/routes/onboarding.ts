@@ -1,0 +1,112 @@
+import { Router } from 'express';
+import { prisma } from '../db';
+
+const router = Router();
+
+// POST /v1/onboard — create patient + health profile in one call
+router.post('/', async (req, res) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      email,
+      age,
+      gender,
+      heightCm,
+      weightKg,
+      healthGoals = [],
+      dietaryRestrictions = [],
+      medicalNotes = ''
+    } = req.body;
+
+    if (!firstName || !lastName || !email || !age || !gender) {
+      res.status(400).json({ error: 'firstName, lastName, email, age, and gender are required' });
+      return;
+    }
+
+    // Get or create default org for standalone consumer users
+    let org = await prisma.organization.findFirst({ where: { type: 'consumer' } });
+    if (!org) {
+      org = await prisma.organization.create({
+        data: { name: 'HYG.3 Consumer Platform', type: 'consumer' }
+      });
+    }
+
+    // Check for existing patient
+    const existing = await prisma.patient.findUnique({ where: { email } });
+    if (existing) {
+      res.status(409).json({
+        error: 'Email already registered',
+        patientId: existing.id
+      });
+      return;
+    }
+
+    // Create patient
+    const patient = await prisma.patient.create({
+      data: {
+        orgId: org.id,
+        firstName,
+        lastName,
+        email,
+        pdpaConsentStatus: true,
+        consentTimestamp: new Date(),
+      }
+    });
+
+    // Create health profile
+    const profile = await prisma.healthProfile.create({
+      data: {
+        patientId: patient.id,
+        age: Number(age),
+        gender,
+        heightCm: Number(heightCm) || 0,
+        weightKg: Number(weightKg) || 0,
+        healthGoals: JSON.stringify(healthGoals),
+        dietaryRestrictions: JSON.stringify(dietaryRestrictions),
+        medicalNotes: medicalNotes || null,
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        patientId: patient.id,
+        profileId: profile.id,
+        name: `${patient.firstName} ${patient.lastName}`,
+        email: patient.email
+      }
+    });
+  } catch (error) {
+    console.error('Onboarding error:', error);
+    res.status(500).json({ error: 'Failed to create user profile' });
+  }
+});
+
+// GET /v1/onboard/:patientId — fetch patient profile
+router.get('/:patientId', async (req, res) => {
+  try {
+    const patient = await prisma.patient.findUnique({
+      where: { id: req.params['patientId'] },
+      include: {
+        healthProfile: true,
+        nutritionRecommendations: {
+          orderBy: { createdAt: 'desc' },
+          take: 1
+        }
+      }
+    });
+
+    if (!patient) {
+      res.status(404).json({ error: 'Patient not found' });
+      return;
+    }
+
+    res.json({ success: true, data: patient });
+  } catch (error) {
+    console.error('Error fetching patient:', error);
+    res.status(500).json({ error: 'Failed to fetch patient' });
+  }
+});
+
+export default router;

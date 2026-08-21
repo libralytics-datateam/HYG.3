@@ -1,0 +1,91 @@
+.page {
+  padding: 48px 24px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.brand-title {
+  font-size: 14px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+
+.brand-sub {
+  color: #6b7a76;
+  font-size: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: 16px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.card.dark {
+  background: var(--teal-deep);
+  border-color: var(--teal-deep);
+}
+
+.card.wide {
+  grid-column: 1 / -1;
+}
+
+.label {
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #8a9490;
+}
+
+.card.dark .label { 
+  color: #9fc9c1; 
+}
+
+.wordmark {
+  font-weight: 800;
+  letter-spacing: .01em;
+  color: var(--ink);
+  font-size: 44px;
+}
+
+.card.dark .wordmark { 
+  color: #F6F3EC; 
+}
+
+.lockup { 
+  display: flex; 
+  align-items: center; 
+  gap: 14px; 
+}
+
+.tagline {
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #8a9490;
+  font-weight: 600;
+}
+
+.card.dark .tagline { 
+  color: #9fc9c1; 
+}

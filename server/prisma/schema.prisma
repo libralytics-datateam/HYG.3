@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // pharmacy, wellness_retailer, hospital
+  createdAt DateTime @default(now())
+
+  users    User[]
+  datasets Dataset[]
+  products Product[]
+  patients Patient[]
+  aiOutputs AiOutput[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  orgId     String
+  email     String   @unique
+  role      String   // org_admin, analyst, pharmacist, it_admin
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  aiOutputsReviewed AiOutput[] @relation("ReviewedBy")
+}
+
+model Dataset {
+  id           String   @id @default(uuid())
+  orgId        String
+  name         String
+  type         String   // sales_export, api_stream, catalog
+  rowCount     Int      @default(0)
+  qualityScore Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id])
+}
+
+model AiOutput {
+  id              String   @id @default(uuid())
+  orgId           String
+  type            String   // sales_trend, anomaly, data_quality, vitamin_concept
+  content         String   // Storing JSON as string for SQLite compatibility
+  confidenceScore Float
+  modelVersion    String
+  reviewStatus    String   // pending, accepted, modified, rejected
+  reviewedById    String?
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  reviewedBy   User?        @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  customVitaminConcepts CustomVitaminConcept[]
+}
+
+model Product {
+  id           String   @id @default(uuid())
+  orgId        String
+  sku          String
+  name         String
+  category     String   // vitamin, mineral, supplement
+  ingredients  String   // Storing JSON as string for SQLite compatibility
+  dosageForm   String
+
+  organization Organization @relation(fields: [orgId], references: [id])
+}
+
+model Patient {
+  id                String   @id @default(uuid())
+  orgId             String
+  firstName         String
+  lastName          String
+  email             String   @unique
+  dob               String?
+  phone             String?
+  pdpaConsentStatus Boolean
+  consentTimestamp  DateTime?
+  createdAt         DateTime @default(now())
+
+  organization          Organization           @relation(fields: [orgId], references: [id])
+  wearableConnections   WearableConnection[]
+  biometricReadings     BiometricReading[]
+  customVitaminConcepts CustomVitaminConcept[]
+  healthProfile         HealthProfile?
+  handScans             HandScan[]
+  nutritionRecommendations NutritionRecommendation[]
+}
+
+model HealthProfile {
+  id                   String   @id @default(uuid())
+  patientId            String   @unique
+  age                  Int
+  gender               String
+  heightCm             Float
+  weightKg             Float
+  healthGoals          String   // JSON array: ["energy","sleep","immunity","skin","weight"]
+  dietaryRestrictions  String   // JSON array: ["vegan","gluten_free","dairy_free"]
+  medicalNotes         String?
+  createdAt            DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model HandScan {
+  id             String   @id @default(uuid())
+  patientId      String
+  imageRef       String   // base64 hash or storage ref (not stored verbatim for size)
+  analysisStatus String   // processing, complete, failed
+  rawAnalysis    String?  // JSON: Gemini raw response
+  scannedAt      DateTime @default(now())
+
+  patient        Patient                  @relation(fields: [patientId], references: [id])
+  recommendation NutritionRecommendation?
+}
+
+model NutritionRecommendation {
+  id               String   @id @default(uuid())
+  patientId        String
+  handScanId       String?  @unique
+  source           String   // hand_scan, device, combined, manual
+  detectedSignals  String   // JSON array of signal observations
+  deficiencies     String   // JSON array of {nutrient, confidence, reason}
+  foods            String   // JSON array of {name, benefit, emoji}
+  fruits           String   // JSON array of {name, benefit, emoji}
+  vitamins         String   // JSON array of {name, dosage, reason}
+  mealPlan         String   // JSON: {breakfast, lunch, dinner, snack}
+  disclaimer       String
+  createdAt        DateTime @default(now())
+
+  patient  Patient   @relation(fields: [patientId], references: [id])
+  handScan HandScan? @relation(fields: [handScanId], references: [id])
+}
+
+model WearableConnection {
+  id           String   @id @default(uuid())
+  patientId    String
+  provider     String   // whoop
+  accessToken  String   // encrypted in real scenario
+  refreshToken String   // encrypted in real scenario
+  expiresAt    DateTime
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model BiometricReading {
+  id         String   @id @default(uuid())
+  patientId  String
+  source     String   // whoop, hand_scanner, manual
+  metricType String   // hrv, sleep_score, recovery_score, strain, antioxidant_score
+  value      Float
+  recordedAt DateTime
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model CustomVitaminConcept {
+  id               String   @id @default(uuid())
+  patientId        String
+  generatedAt      DateTime @default(now())
+  status           String   // pending_pharmacist_review, approved, rejected
+  recommendedSkus  String   // Storing JSON Array as string for SQLite
+  rationaleSummary String
+  aiOutputId       String
+
+  patient  Patient  @relation(fields: [patientId], references: [id])
+  aiOutput AiOutput @relation(fields: [aiOutputId], references: [id])
+}
