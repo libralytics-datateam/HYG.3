@@ -6,32 +6,36 @@ const router = Router();
 
 router.post('/predict', async (req, res) => {
   try {
-    const biometrics: PatientBiometrics = req.body;
-    
+    const { patientId, ...biometrics } = req.body as PatientBiometrics & { patientId?: string };
+
+    if (!patientId) {
+      res.status(400).json({ error: 'patientId is required' });
+      return;
+    }
+
     // Basic validation
     if (!biometrics || biometrics.age === undefined || biometrics.heartRate === undefined) {
        res.status(400).json({ error: 'Missing required biometric fields' });
        return;
     }
 
-    // A real app would extract orgId and patientId from the auth token
-    const org = await prisma.organization.findFirst();
-    const patient = await prisma.patient.findFirst();
+    const orgId = req.user!.orgId;
+    const patient = await prisma.patient.findUnique({ where: { id: patientId } });
 
-    if (!org || !patient) {
-      res.status(500).json({ error: 'Database not seeded with org or patient' });
+    if (!patient || patient.orgId !== orgId) {
+      res.status(404).json({ error: 'Patient not found' });
       return;
     }
 
     const result = await runPrediction(biometrics);
-    
+
     // Simulate finding a vitamin concept based on prediction
     const vitaminRecommendation = getVitaminConcept(result.prediction);
 
     // Save AI Output to Database
     const aiOutput = await prisma.aiOutput.create({
       data: {
-        orgId: org.id,
+        orgId,
         type: 'vitamin_concept',
         content: JSON.stringify(result),
         confidenceScore: result.confidence,

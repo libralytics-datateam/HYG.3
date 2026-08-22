@@ -3,10 +3,11 @@ import { prisma } from '../db';
 
 const router = Router();
 
-// GET /v1/datasets — list all datasets for the org
-router.get('/', async (_req, res) => {
+// GET /v1/datasets — list all datasets for the caller's org
+router.get('/', async (req, res) => {
   try {
     const datasets = await prisma.dataset.findMany({
+      where: { orgId: req.user!.orgId },
       include: { organization: { select: { name: true } } },
       orderBy: { updatedAt: 'desc' }
     });
@@ -41,15 +42,9 @@ router.post('/', async (req, res) => {
       return;
     }
 
-    const org = await prisma.organization.findFirst();
-    if (!org) {
-      res.status(500).json({ error: 'No organization found' });
-      return;
-    }
-
     const dataset = await prisma.dataset.create({
       data: {
-        orgId: org.id,
+        orgId: req.user!.orgId,
         name,
         type,
         rowCount: Number(rowCount),
@@ -72,7 +67,7 @@ router.get('/:id', async (req, res) => {
       include: { organization: { select: { name: true } } }
     });
 
-    if (!dataset) {
+    if (!dataset || dataset.orgId !== req.user!.orgId) {
       res.status(404).json({ error: 'Dataset not found' });
       return;
     }

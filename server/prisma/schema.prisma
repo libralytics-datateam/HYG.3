@@ -21,11 +21,12 @@ model Organization {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  orgId     String
-  email     String   @unique
-  role      String   // org_admin, analyst, pharmacist, it_admin
-  createdAt DateTime @default(now())
+  id           String   @id @default(uuid())
+  orgId        String
+  email        String   @unique
+  passwordHash String
+  role         String   // org_admin, analyst, pharmacist, it_admin
+  createdAt    DateTime @default(now())
 
   organization Organization @relation(fields: [orgId], references: [id])
   aiOutputsReviewed AiOutput[] @relation("ReviewedBy")

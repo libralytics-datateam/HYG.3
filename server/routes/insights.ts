@@ -7,6 +7,7 @@ const router = Router();
 router.get('/', async (req, res) => {
   try {
     const insights = await prisma.aiOutput.findMany({
+      where: { orgId: req.user!.orgId },
       include: {
         customVitaminConcepts: {
           include: {
@@ -48,18 +49,26 @@ router.get('/', async (req, res) => {
 router.post('/:id/review', async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, reviewerId } = req.body; // status: 'accepted', 'rejected'
+    const { status } = req.body; // status: 'accepted', 'rejected', 'modified'
 
     if (!['accepted', 'rejected', 'modified'].includes(status)) {
       res.status(400).json({ error: 'Invalid status' });
       return;
     }
 
+    const existing = await prisma.aiOutput.findUnique({ where: { id } });
+    if (!existing || existing.orgId !== req.user!.orgId) {
+      res.status(404).json({ error: 'Insight not found' });
+      return;
+    }
+
+    // reviewedById always comes from the authenticated session, never the client —
+    // this is the audit trail's attribution and must not be spoofable.
     const updatedOutput = await prisma.aiOutput.update({
       where: { id },
       data: {
         reviewStatus: status,
-        reviewedById: reviewerId
+        reviewedById: req.user!.id
       },
       include: {
         customVitaminConcepts: true

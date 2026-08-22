@@ -1,7 +1,6 @@
 import { Database, Upload, RefreshCw, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { apiFetch } from '../../lib/api';
 
 interface Dataset {
   id: string;
@@ -34,7 +33,7 @@ export default function Datasets() {
   const fetchDatasets = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/v1/datasets`);
+      const res = await apiFetch('/v1/datasets');
       const json = await res.json();
       if (json.success) setDatasets(json.data);
     } catch (err) {
@@ -48,9 +47,8 @@ export default function Datasets() {
     if (!form.name.trim()) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/v1/datasets`, {
+      const res = await apiFetch('/v1/datasets', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: form.name, type: form.type }),
       });
       if (res.ok) {

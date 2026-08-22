@@ -6,6 +6,9 @@ import './App.css';
 import MarketingLayout from './layouts/MarketingLayout';
 import AppLayout from './layouts/AppLayout';
 import ClientLayout from './layouts/ClientLayout';
+import RequireAuth from './components/RequireAuth';
+
+const Login = lazy(() => import('./pages/Auth/Login'));
 
 // Lazy loaded pages to optimize bundle size
 const Home = lazy(() => import('./pages/Marketing/Home'));
@@ -62,8 +65,18 @@ function App() {
             </Route>
           </Route>
 
+          {/* Auth */}
+          <Route path="/login" element={<Login />} />
+
           {/* App (Dashboard) Routes */}
-          <Route path="/app" element={<AppLayout />}>
+          <Route
+            path="/app"
+            element={
+              <RequireAuth>
+                <AppLayout />
+              </RequireAuth>
+            }
+          >
             <Route index element={<DashboardOverview />} />
             <Route path="datasets" element={<Datasets />} />
             <Route path="ai-insights">

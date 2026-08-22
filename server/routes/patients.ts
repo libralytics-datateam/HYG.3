@@ -3,10 +3,11 @@ import { prisma } from '../db';
 
 const router = Router();
 
-// GET /v1/patients — list all patients for the org
-router.get('/', async (_req, res) => {
+// GET /v1/patients — list all patients for the caller's org
+router.get('/', async (req, res) => {
   try {
     const patients = await prisma.patient.findMany({
+      where: { orgId: req.user!.orgId },
       orderBy: { createdAt: 'desc' }
     });
 
@@ -40,7 +41,7 @@ router.get('/:id', async (req, res) => {
       }
     });
 
-    if (!patient) {
+    if (!patient || patient.orgId !== req.user!.orgId) {
       res.status(404).json({ error: 'Patient not found' });
       return;
     }

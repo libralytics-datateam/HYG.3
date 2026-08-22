@@ -1,8 +1,7 @@
 import { Activity, Database, AlertCircle, CheckCircle2, TrendingUp, Package } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { apiFetch } from '../../lib/api';
 
 interface Stats {
   totalDatasets: number;
@@ -33,8 +32,8 @@ export default function DashboardOverview() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API_URL}/v1/stats/overview`).then(r => r.json()),
-      fetch(`${API_URL}/v1/ai/outputs`).then(r => r.json()),
+      apiFetch('/v1/stats/overview').then(r => r.json()),
+      apiFetch('/v1/ai/outputs').then(r => r.json()),
     ])
       .then(([statsJson, insightsJson]) => {
         if (statsJson.success) setStats(statsJson.data);

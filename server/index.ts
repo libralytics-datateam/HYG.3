@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import authRoutes from './routes/auth';
 import aiRoutes from './routes/ai';
 import insightsRoutes from './routes/insights';
 import patientsRoutes from './routes/patients';
@@ -9,6 +10,7 @@ import productsRoutes from './routes/products';
 import onboardingRoutes from './routes/onboarding';
 import handscanRoutes from './routes/handscan';
 import recommendationsRoutes from './routes/recommendations';
+import { requireAuth } from './middleware/auth';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -27,13 +29,16 @@ app.get('/v1/health', (_req, res) => {
   });
 });
 
-// Admin / B2B routes
-app.use('/v1/ai', aiRoutes);
-app.use('/v1/ai/outputs', insightsRoutes);
-app.use('/v1/patients', patientsRoutes);
-app.use('/v1/datasets', datasetsRoutes);
-app.use('/v1/stats', statsRoutes);
-app.use('/v1/products', productsRoutes);
+// Auth (public)
+app.use('/v1/auth', authRoutes);
+
+// Admin / B2B routes — all require a valid session, scoped to the caller's org
+app.use('/v1/ai', requireAuth, aiRoutes);
+app.use('/v1/ai/outputs', requireAuth, insightsRoutes);
+app.use('/v1/patients', requireAuth, patientsRoutes);
+app.use('/v1/datasets', requireAuth, datasetsRoutes);
+app.use('/v1/stats', requireAuth, statsRoutes);
+app.use('/v1/products', requireAuth, productsRoutes);
 
 // Consumer / Phase 1 routes
 app.use('/v1/onboard', onboardingRoutes);

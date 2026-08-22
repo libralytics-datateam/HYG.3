@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Brain, Filter, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { apiFetch } from '../../lib/api';
 
 export default function AiInsightsList() {
   const [insights, setInsights] = useState<any[]>([]);
@@ -15,7 +14,7 @@ export default function AiInsightsList() {
   const fetchInsights = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/v1/ai/outputs`);
+      const res = await apiFetch('/v1/ai/outputs');
       const json = await res.json();
       if (json.success) {
         setInsights(json.data);

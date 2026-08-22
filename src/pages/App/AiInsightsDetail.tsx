@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Brain, CheckCircle2, XCircle, ArrowLeft, TrendingUp, AlertTriangle, Database } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { apiFetch } from '../../lib/api';
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   sales_trend: <TrendingUp size={18} className="text-teal" />,
@@ -32,7 +31,7 @@ export default function AiInsightsDetail() {
   const fetchInsights = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/v1/ai/outputs`);
+      const res = await apiFetch('/v1/ai/outputs');
       const json = await res.json();
       if (json.success) {
         const found = json.data.find((i: any) => i.id === id);
@@ -48,10 +47,9 @@ export default function AiInsightsDetail() {
   const handleReview = async (status: 'accepted' | 'rejected') => {
     try {
       setSubmitting(true);
-      const res = await fetch(`${API_URL}/v1/ai/outputs/${id}/review`, {
+      const res = await apiFetch(`/v1/ai/outputs/${id}/review`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, reviewerId: 'mock-reviewer-id' })
+        body: JSON.stringify({ status })
       });
       if (res.ok) {
         navigate('/app/ai-insights');

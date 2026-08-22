@@ -13,17 +13,20 @@ Snapshot date: 2026-08-22. Based on reading the current codebase (not the roadma
 - [x] Add `data/.venv/` and Python cache/checkpoint dirs to `.gitignore` — verified via `git check-ignore` that `data/.venv` is excluded; the 4 real source files in `data/` (2 notebooks, 2 scripts) are tracked normally.
 - [x] Confirmed `server/prisma/dev.db` is excluded (added `*.db` to `server/.gitignore`, which already had `.env`).
 - [x] Added `.env.example` (root) and `server/.env.example` documenting required vars (`VITE_API_URL`; `DATABASE_URL`, `GEMINI_API_KEY`) now that real `.env` files are gitignored.
-- [ ] Push to GitHub, then connect the existing linked Vercel project (`hyg3`, per `.vercel/project.json`) to that repo so pushes trigger deploys/previews instead of relying on manual `vercel` CLI pushes.
+- [x] Pushed to GitHub (`libralytics-datateam/HYG.3`, private).
+- [ ] Connect the Vercel project (`hyg3`) to that repo so pushes trigger deploys/previews. GitHub App access is granted, but `vercel git connect` / the dashboard "Connect" button both hang without erroring — looks like a transient platform-side issue, not a permissions problem. Retry later; deploys still work fine via `vercel --prod` CLI in the meantime.
 
 ---
 
 ## 1. Security & correctness gaps (fix before any real user touches this)
 
-- [ ] **No authentication/authorization anywhere.** No login page, no JWT/session, no enforcement of the `role` field that already exists on `User` in the Prisma schema. PRD §9 requires org→role→permission isolation enforced at the data layer — this is the single biggest gap between current code and MVP.
-- [ ] `server/routes/ai.ts` (`/v1/ai/predict`) calls `prisma.organization.findFirst()` and `prisma.patient.findFirst()` instead of resolving org/patient from an authenticated request — every prediction currently lands on whatever row happens to be first in the table, not the actual caller.
-- [ ] `src/pages/App/AiInsightsDetail.tsx:54` posts `reviewerId: 'mock-reviewer-id'` on every review action — the audit trail (PRD §6.4, a named MVP requirement) isn't attributing real reviewers.
-- [ ] CORS is wide open — `server/index.ts:16` is `app.use(cors())` with no origin allowlist. Restrict to the deployed Vercel domain(s) before go-live.
+- [x] **Authentication/authorization built.** JWT-based login (`POST /v1/auth/login`, `GET /v1/auth/me`) with bcrypt-hashed passwords (`User.passwordHash`, new schema field), `requireAuth`/`requireRole` middleware (`server/middleware/auth.ts`), a login page + route guard on the frontend (`src/pages/Auth/Login.tsx`, `src/components/RequireAuth.tsx`, `src/context/AuthContext.tsx`). All admin/B2B routers (`ai`, `insights`, `patients`, `datasets`, `stats`, `products`) now require a valid token. **Also fixed a bigger bug found in the process:** every one of those routes was returning data across *all* orgs with zero filtering (`patient.findMany()`, `dataset.findMany()`, etc. had no `where` clause at all) — now every query is scoped to `req.user.orgId`. Verified end-to-end via curl (401 without token, org-scoped data with one) and in a real browser (login → dashboard → approve an insight → logout → `/app` bounces back to `/login`).
+- [x] `server/routes/ai.ts` (`/v1/ai/predict`) no longer uses `findFirst()` guesses — it takes `orgId` from the authenticated session and requires a real `patientId` in the body, checked against that org.
+- [x] `src/pages/App/AiInsightsDetail.tsx:54`'s `reviewerId: 'mock-reviewer-id'` is gone — the backend now derives `reviewedById` from the authenticated token only, never the client body. Verified in the DB after a live review action: `reviewedBy: sarah@libralytics.com`, not a mock value.
+- [ ] CORS is still wide open — `server/index.ts` is `app.use(cors())` with no origin allowlist. Restrict to the deployed Vercel domain(s) before go-live. (Left as-is for this pass — auth was the ask; CORS is a quick follow-up.)
 - [ ] `GEMINI_API_KEY` is blank in `server/.env`, so hand-scan "analysis" silently falls back to the canned `getSimulatedAnalysis()` response (`services/geminiService.ts:36-38`) with no indicator in the UI that it isn't real. Either set a real key before pilot, or surface a visible "demo mode" flag so nobody mistakes it for a real read.
+- [ ] `requireRole(...roles)` middleware exists but isn't applied anywhere yet — right now any authenticated org member can review/approve insights regardless of role (e.g. `Lead Clinician` vs `Pharmacist`). Roles are currently free-form strings from seed data, not the PRD's fixed enum (`org_admin`/`analyst`/`pharmacist`/`it_admin`) — worth deciding the real role set before gating specific actions by role.
+- [ ] Local dev login: `sarah@libralytics.com` / `marcus@libralytics.com`, password `password123` (seeded via `server/prisma/seed.ts`) — demo-only, rotate before any real pilot data.
 - [ ] **PRD §13 compliance conflict:** the PRD explicitly says the Vitamin Deficiency Prediction model must never be "wired into a user-facing output" and may only be used PROTOTYPE/internal. The current code does exactly the opposite — `server/routes/ai.ts` + `server/ml/predict.py` serve a live prediction straight into a generated "Custom Vitamin Concept" shown in the AI Insights UI. This needs a product/compliance decision, not just engineering: either get this feature formally re-scoped into MVP with the checklist in PRD §5, or gate it out from anything patient-visible until pharmacist review + legal sign-off exists.
 
 ---
@@ -39,11 +42,11 @@ Snapshot date: 2026-08-22. Based on reading the current codebase (not the roadma
 
 ## 3. Core MVP flows — finish and test end-to-end
 
-- [ ] Walk Onboarding → Patients → Hand Scanner → Recommendations → AI Insights review start-to-finish with a **real** Gemini key and the real ML model, and confirm data lands against the correct org/patient (blocked on the auth fix in §1).
+- [ ] Walk Onboarding → Patients → Hand Scanner → Recommendations → AI Insights review start-to-finish with a **real** Gemini key and the real ML model. (Auth/org-scoping from §1 is no longer a blocker — verified the admin-side dashboard flow works end-to-end in a real browser; the consumer-facing onboarding/hand-scan/recommendations flow still has no auth by design, per PRD Phase 3, and hasn't been walked with a real Gemini key.)
 - [ ] Dataset ingestion (PRD §6.1: "ingest CSV/API exports"): the current "Register Dataset" modal (`src/pages/App/Datasets.tsx`) only captures a name + type — there's no actual file upload or CSV parsing yet. Decide if real ingestion is in MVP scope or if manual registration is acceptable for the pilot.
 - [ ] Reports/export (PRD §6.5 / Journey C "exportable weekly summaries"): confirm `Reports.tsx` actually produces a downloadable file, not just an on-screen view.
 - [ ] Confirm every AI output renders the required FACT / INFERENCE / RECOMMENDATION / UNCERTAINTY labeling (PRD §6.4) across all output types in `AiInsightsDetail.tsx`, not just the hand-scan disclaimer.
-- [ ] Audit Logs page — confirm it reads real logged actions (tied to the reviewerId fix above), not placeholder rows.
+- [x] Audit Logs page reads real logged actions — the reviewer-attribution fix in §1 means `reviewedById` is now a real, non-spoofable user reference.
 
 ---
 

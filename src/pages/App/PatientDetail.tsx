@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Brain, CheckCircle2, Clock, XCircle } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { apiFetch } from '../../lib/api';
 
 export default function PatientDetail() {
   const { id } = useParams();
@@ -11,7 +10,7 @@ export default function PatientDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/v1/patients/${id}`)
+    apiFetch(`/v1/patients/${id}`)
       .then(r => r.json())
       .then(json => {
         if (json.success) setPatient(json.data);

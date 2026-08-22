@@ -1,12 +1,20 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Activity, LayoutDashboard, Database, Brain, FileBarChart, ShieldAlert, Building2, Users, Layers, LogOut, UserRound } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './AppLayout.css';
 
 export default function AppLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const isActive = (path: string) => location.pathname === path ? 'active' : '';
   const isParentActive = (path: string) => location.pathname.startsWith(path) && location.pathname !== '/app' ? 'active' : '';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <div className="app-layout">
@@ -60,10 +68,16 @@ export default function AppLayout() {
           </Link>
         </nav>
         <div className="sidebar-footer">
-          <Link to="/" className="logout">
+          {user && (
+            <div className="sidebar-user" title={user.email}>
+              <div className="sidebar-user-name">{user.email}</div>
+              <div className="sidebar-user-role">{user.role}</div>
+            </div>
+          )}
+          <button onClick={handleLogout} className="logout">
             <LogOut size={20} />
             Logout
-          </Link>
+          </button>
         </div>
       </aside>
       <main className="app-main animate-fade-in">

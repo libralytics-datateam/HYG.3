@@ -1,7 +1,6 @@
 import { FileText, Download, TrendingUp, Database, Brain, CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { apiFetch } from '../../lib/api';
 
 interface WeeklySummary {
   weeklyInsights: number;
@@ -18,7 +17,7 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/v1/stats/overview`)
+    apiFetch('/v1/stats/overview')
       .then(r => r.json())
       .then(json => {
         if (json.success) setSummary(json.data);

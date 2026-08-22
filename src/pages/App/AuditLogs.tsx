@@ -1,7 +1,6 @@
 import { ShieldCheck, RefreshCw, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { apiFetch } from '../../lib/api';
 
 interface AuditEntry {
   id: string;
@@ -46,7 +45,7 @@ export default function AuditLogs() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/v1/ai/outputs`)
+    apiFetch('/v1/ai/outputs')
       .then(r => r.json())
       .then(json => {
         if (json.success) {

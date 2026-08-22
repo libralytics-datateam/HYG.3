@@ -4,8 +4,9 @@ import { prisma } from '../db';
 const router = Router();
 
 // GET /v1/stats/overview — live KPI counts for the Dashboard
-router.get('/overview', async (_req, res) => {
+router.get('/overview', async (req, res) => {
   try {
+    const orgId = req.user!.orgId;
     const [
       totalDatasets,
       totalProducts,
@@ -13,11 +14,11 @@ router.get('/overview', async (_req, res) => {
       allInsights,
       datasets
     ] = await Promise.all([
-      prisma.dataset.count(),
-      prisma.product.count(),
-      prisma.patient.count(),
-      prisma.aiOutput.findMany({ select: { reviewStatus: true } }),
-      prisma.dataset.findMany({ select: { qualityScore: true } })
+      prisma.dataset.count({ where: { orgId } }),
+      prisma.product.count({ where: { orgId } }),
+      prisma.patient.count({ where: { orgId } }),
+      prisma.aiOutput.findMany({ where: { orgId }, select: { reviewStatus: true } }),
+      prisma.dataset.findMany({ where: { orgId }, select: { qualityScore: true } })
     ]);
 
     const pendingInsights = allInsights.filter(i => i.reviewStatus === 'pending').length;
@@ -32,7 +33,7 @@ router.get('/overview', async (_req, res) => {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     const weeklyInsights = await prisma.aiOutput.count({
-      where: { createdAt: { gte: oneWeekAgo } }
+      where: { orgId, createdAt: { gte: oneWeekAgo } }
     });
 
     res.json({

@@ -1,9 +1,15 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// Demo-only password for seeded accounts — rotate before any real pilot data touches this DB.
+const DEMO_PASSWORD = 'password123';
+
 async function main() {
   console.log('Seeding database...');
+
+  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
 
   // 1. Create Organization
   const org = await prisma.organization.create({
@@ -18,6 +24,7 @@ async function main() {
     data: {
       orgId: org.id,
       email: 'sarah@libralytics.com',
+      passwordHash,
       role: 'Lead Clinician'
     }
   });
@@ -26,6 +33,7 @@ async function main() {
     data: {
       orgId: org.id,
       email: 'marcus@libralytics.com',
+      passwordHash,
       role: 'Pharmacist'
     }
   });
@@ -126,6 +134,7 @@ async function main() {
   console.log('Seeding complete!');
   console.log('Test Organization ID:', org.id);
   console.log('Test Patient ID:', patient1.id);
+  console.log('Demo login: sarah@libralytics.com / marcus@libralytics.com — password:', DEMO_PASSWORD);
 }
 
 main()

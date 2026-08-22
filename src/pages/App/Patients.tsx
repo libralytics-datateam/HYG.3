@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Search, UserPlus, Activity } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { apiFetch } from '../../lib/api';
 
 export default function Patients() {
   const [patients, setPatients] = useState<any[]>([]);
@@ -10,7 +9,7 @@ export default function Patients() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetch(`${API_URL}/v1/patients`)
+    apiFetch('/v1/patients')
       .then(r => r.json())
       .then(json => {
         if (json.success) setPatients(json.data);

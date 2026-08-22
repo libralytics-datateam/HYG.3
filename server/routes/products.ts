@@ -3,10 +3,11 @@ import { prisma } from '../db';
 
 const router = Router();
 
-// GET /v1/products — list supplement/vitamin product catalog
-router.get('/', async (_req, res) => {
+// GET /v1/products — list supplement/vitamin product catalog for the caller's org
+router.get('/', async (req, res) => {
   try {
     const products = await prisma.product.findMany({
+      where: { orgId: req.user!.orgId },
       orderBy: { category: 'asc' }
     });
 
