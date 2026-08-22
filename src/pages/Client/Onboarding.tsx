@@ -1,30 +1,33 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Activity, User, Heart, Leaf, ChevronRight, ChevronLeft, Check, Camera, Watch } from 'lucide-react';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 import './Onboarding.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
 
 const HEALTH_GOALS = [
-  { id: 'energy', label: 'Boost Energy', emoji: '⚡' },
-  { id: 'immunity', label: 'Strengthen Immunity', emoji: '🛡️' },
-  { id: 'sleep', label: 'Improve Sleep', emoji: '😴' },
-  { id: 'skin', label: 'Skin Health', emoji: '✨' },
-  { id: 'weight', label: 'Weight Management', emoji: '⚖️' },
-  { id: 'stress', label: 'Reduce Stress', emoji: '🧘' },
-  { id: 'digestion', label: 'Better Digestion', emoji: '🌿' },
-  { id: 'focus', label: 'Mental Focus', emoji: '🧠' },
+  { id: 'energy', emoji: '⚡' },
+  { id: 'immunity', emoji: '🛡️' },
+  { id: 'sleep', emoji: '😴' },
+  { id: 'skin', emoji: '✨' },
+  { id: 'weight', emoji: '⚖️' },
+  { id: 'stress', emoji: '🧘' },
+  { id: 'digestion', emoji: '🌿' },
+  { id: 'focus', emoji: '🧠' },
 ];
 
 const DIETARY = [
-  { id: 'vegan', label: 'Vegan' },
-  { id: 'vegetarian', label: 'Vegetarian' },
-  { id: 'gluten_free', label: 'Gluten-Free' },
-  { id: 'dairy_free', label: 'Dairy-Free' },
-  { id: 'none', label: 'No restrictions' },
+  { id: 'vegan' },
+  { id: 'vegetarian' },
+  { id: 'gluten_free' },
+  { id: 'dairy_free' },
+  { id: 'none' },
 ];
 
 export default function Onboarding() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -84,10 +87,10 @@ export default function Onboarding() {
         localStorage.setItem('hyg3_patient_id', json.patientId);
         setStep(3);
       } else {
-        setError(json.error || 'Registration failed. Please try again.');
+        setError(json.error || t('onboarding.registrationFailed'));
       }
     } catch (err) {
-      setError('Network error. Please check your connection.');
+      setError(t('onboarding.networkError'));
     } finally {
       setSubmitting(false);
     }
@@ -104,8 +107,11 @@ export default function Onboarding() {
       <div className="onboarding-container animate-fade-in">
         {/* Logo */}
         <div className="onboarding-logo">
-          <Activity size={32} className="text-teal" />
-          <span className="text-2xl font-bold text-text tracking-widest">HYG.3</span>
+          <div className="flex items-center gap-2">
+            <Activity size={32} className="text-teal" />
+            <span className="text-2xl font-bold text-text tracking-widest">HYG.3</span>
+          </div>
+          <LanguageSwitcher />
         </div>
 
         {/* Progress */}
@@ -126,14 +132,14 @@ export default function Onboarding() {
             <div className="onboarding-card-header">
               <User size={28} className="text-teal" />
               <div>
-                <h1 className="text-2xl font-bold text-text">Create Your Profile</h1>
-                <p className="text-muted text-sm mt-1">Tell us about yourself so we can personalize your health analysis.</p>
+                <h1 className="text-2xl font-bold text-text">{t('onboarding.step1Title')}</h1>
+                <p className="text-muted text-sm mt-1">{t('onboarding.step1Subtitle')}</p>
               </div>
             </div>
 
             <div className="form-grid">
               <div className="form-group">
-                <label>First Name</label>
+                <label>{t('onboarding.firstName')}</label>
                 <input
                   type="text"
                   placeholder="e.g. Nara"
@@ -142,7 +148,7 @@ export default function Onboarding() {
                 />
               </div>
               <div className="form-group">
-                <label>Last Name</label>
+                <label>{t('onboarding.lastName')}</label>
                 <input
                   type="text"
                   placeholder="e.g. Thanakit"
@@ -151,7 +157,7 @@ export default function Onboarding() {
                 />
               </div>
               <div className="form-group form-group--full">
-                <label>Email Address</label>
+                <label>{t('onboarding.email')}</label>
                 <input
                   type="email"
                   placeholder="your@email.com"
@@ -160,7 +166,7 @@ export default function Onboarding() {
                 />
               </div>
               <div className="form-group">
-                <label>Age</label>
+                <label>{t('onboarding.age')}</label>
                 <input
                   type="number"
                   placeholder="e.g. 32"
@@ -171,16 +177,16 @@ export default function Onboarding() {
                 />
               </div>
               <div className="form-group">
-                <label>Gender</label>
+                <label>{t('onboarding.gender')}</label>
                 <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}>
-                  <option value="">Select...</option>
-                  <option value="female">Female</option>
-                  <option value="male">Male</option>
-                  <option value="other">Other / Prefer not to say</option>
+                  <option value="">{t('onboarding.genderSelect')}</option>
+                  <option value="female">{t('onboarding.genderFemale')}</option>
+                  <option value="male">{t('onboarding.genderMale')}</option>
+                  <option value="other">{t('onboarding.genderOther')}</option>
                 </select>
               </div>
               <div className="form-group">
-                <label>Height (cm)</label>
+                <label>{t('onboarding.height')}</label>
                 <input
                   type="number"
                   placeholder="e.g. 165"
@@ -189,7 +195,7 @@ export default function Onboarding() {
                 />
               </div>
               <div className="form-group">
-                <label>Weight (kg)</label>
+                <label>{t('onboarding.weight')}</label>
                 <input
                   type="number"
                   placeholder="e.g. 58"
@@ -204,7 +210,7 @@ export default function Onboarding() {
               disabled={!step1Valid}
               onClick={() => setStep(2)}
             >
-              Continue <ChevronRight size={18} />
+              {t('onboarding.continue')} <ChevronRight size={18} />
             </button>
           </div>
         )}
@@ -215,8 +221,8 @@ export default function Onboarding() {
             <div className="onboarding-card-header">
               <Heart size={28} className="text-teal" />
               <div>
-                <h1 className="text-2xl font-bold text-text">Your Health Goals</h1>
-                <p className="text-muted text-sm mt-1">Select all that apply — this helps us tailor recommendations.</p>
+                <h1 className="text-2xl font-bold text-text">{t('onboarding.step2Title')}</h1>
+                <p className="text-muted text-sm mt-1">{t('onboarding.step2Subtitle')}</p>
               </div>
             </div>
 
@@ -228,14 +234,14 @@ export default function Onboarding() {
                   onClick={() => toggleGoal(g.id)}
                 >
                   <span className="text-xl">{g.emoji}</span>
-                  <span>{g.label}</span>
+                  <span>{t(`onboarding.goals.${g.id}`)}</span>
                   {form.healthGoals.includes(g.id) && <Check size={14} className="goal-check" />}
                 </button>
               ))}
             </div>
 
             <div className="form-group" style={{ marginTop: '24px' }}>
-              <label className="flex items-center gap-2"><Leaf size={16} className="text-teal" /> Dietary Preferences</label>
+              <label className="flex items-center gap-2"><Leaf size={16} className="text-teal" /> {t('onboarding.dietaryPreferences')}</label>
               <div className="dietary-chips">
                 {DIETARY.map(d => (
                   <button
@@ -243,7 +249,7 @@ export default function Onboarding() {
                     className={`dietary-chip ${form.dietaryRestrictions.includes(d.id) ? 'selected' : ''}`}
                     onClick={() => toggleDietary(d.id)}
                   >
-                    {d.label}
+                    {t(`onboarding.dietary.${d.id}`)}
                   </button>
                 ))}
               </div>
@@ -253,14 +259,14 @@ export default function Onboarding() {
 
             <div className="flex gap-3 mt-6">
               <button className="btn btn-secondary" onClick={() => setStep(1)}>
-                <ChevronLeft size={18} /> Back
+                <ChevronLeft size={18} /> {t('onboarding.back')}
               </button>
               <button
                 className="btn btn-primary flex-1"
                 disabled={!step2Valid || submitting}
                 onClick={handleSubmit}
               >
-                {submitting ? 'Creating Profile...' : <>Complete Setup <ChevronRight size={18} /></>}
+                {submitting ? t('onboarding.creatingProfile') : <>{t('onboarding.completeSetup')} <ChevronRight size={18} /></>}
               </button>
             </div>
           </div>
@@ -270,9 +276,9 @@ export default function Onboarding() {
         {step === 3 && (
           <div className="onboarding-card glass-panel animate-fade-in text-center">
             <div className="success-icon">✅</div>
-            <h1 className="text-2xl font-bold text-text mt-4">You're all set!</h1>
+            <h1 className="text-2xl font-bold text-text mt-4">{t('onboarding.step3Title')}</h1>
             <p className="text-muted text-sm mt-2 mb-8">
-              Choose how you'd like to start your first health analysis.
+              {t('onboarding.step3Subtitle')}
             </p>
 
             <div className="start-options">
@@ -281,9 +287,9 @@ export default function Onboarding() {
                 onClick={() => navigate('/client/scan')}
               >
                 <Camera size={32} className="text-teal mb-3" />
-                <strong className="text-text">Scan My Hand</strong>
+                <strong className="text-text">{t('onboarding.scanHand')}</strong>
                 <p className="text-muted text-xs mt-1">
-                  Take a photo of your hand under natural light. Our AI analyzes nail, palm and skin condition.
+                  {t('onboarding.scanHandDesc')}
                 </p>
               </button>
 
@@ -292,9 +298,9 @@ export default function Onboarding() {
                 onClick={() => navigate('/client/dashboard')}
               >
                 <Watch size={32} className="text-gold mb-3" />
-                <strong className="text-text">View Dashboard</strong>
+                <strong className="text-text">{t('onboarding.viewDashboard')}</strong>
                 <p className="text-muted text-xs mt-1">
-                  See your wellness report, connect a wearable device, or review past analyses.
+                  {t('onboarding.viewDashboardDesc')}
                 </p>
               </button>
             </div>
@@ -302,7 +308,7 @@ export default function Onboarding() {
         )}
 
         <p className="onboarding-footer-text">
-          Free during Beta · No credit card required · Your data stays yours
+          {t('onboarding.footerText')}
         </p>
       </div>
     </div>

@@ -23,6 +23,21 @@
 
 .scanner-back:hover { color: var(--teal); }
 
+.scanner-top-bar {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 0;
+}
+
+@media (max-width: 480px) {
+  .scanner-top-bar {
+    padding: 12px 16px 0;
+  }
+}
+
 /* Guide */
 .scanner-guide {
   margin: 40px auto;

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock } from 'lucide-react';
 import './ClientDashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
 
 export default function ClientDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const patientId = localStorage.getItem('hyg3_patient_id');
   const patientName = localStorage.getItem('hyg3_patient_name');
@@ -35,9 +37,9 @@ export default function ClientDashboard() {
   };
 
   const sourceLabel = (s: string) => {
-    if (s === 'hand_scan') return '📸 Hand Scan';
-    if (s === 'device') return '⌚ Wearable Device';
-    return '🔬 Combined Analysis';
+    if (s === 'hand_scan') return t('clientDashboard.sourceHandScan');
+    if (s === 'device') return t('clientDashboard.sourceDevice');
+    return t('clientDashboard.sourceCombined');
   };
 
   const deficiencyColor = (conf: number) =>
@@ -49,31 +51,33 @@ export default function ClientDashboard() {
       <div className="dashboard-header">
         <div>
           <h1 className="text-2xl font-bold text-text">
-            {patientName ? `Hi, ${patientName.split(' ')[0]} 👋` : 'My Wellness Report'}
+            {patientName ? t('clientDashboard.greeting', { name: patientName.split(' ')[0] }) : t('clientDashboard.titleFallback')}
           </h1>
-          <p className="text-muted text-sm mt-1">Your personalized nutrition & health intelligence</p>
+          <p className="text-muted text-sm mt-1">{t('clientDashboard.subtitle')}</p>
         </div>
-        <Link to="/client/scan" className="btn btn-primary flex items-center gap-2">
-          <Camera size={18} />
-          Scan Hand
-        </Link>
+        <div className="dashboard-header-actions">
+          <Link to="/client/scan" className="btn btn-primary flex items-center gap-2">
+            <Camera size={18} />
+            {t('clientDashboard.scanHand')}
+          </Link>
+        </div>
       </div>
 
       {loading ? (
         <div className="empty-state glass-panel">
           <RefreshCw className="animate-spin text-teal" size={36} />
-          <p className="text-muted">Loading your report...</p>
+          <p className="text-muted">{t('clientDashboard.loadingReport')}</p>
         </div>
       ) : !rec ? (
         /* No scan yet */
         <div className="empty-state glass-panel animate-fade-in">
           <div className="empty-icon">✋</div>
-          <h2 className="text-xl font-bold text-text mt-4">No Analysis Yet</h2>
+          <h2 className="text-xl font-bold text-text mt-4">{t('clientDashboard.noAnalysisTitle')}</h2>
           <p className="text-muted text-sm mt-2" style={{ maxWidth: 340, textAlign: 'center' }}>
-            Take your first hand scan in natural light. Our AI will analyze your nail, palm, and skin condition to generate personalized nutrition recommendations.
+            {t('clientDashboard.noAnalysisBody')}
           </p>
           <Link to="/client/scan" className="btn btn-primary mt-6 flex items-center gap-2">
-            <Camera size={18} /> Start Hand Scan
+            <Camera size={18} /> {t('clientDashboard.startHandScan')}
           </Link>
         </div>
       ) : (
@@ -92,7 +96,7 @@ export default function ClientDashboard() {
             <section className="report-card glass-panel">
               <h2 className="report-card-title">
                 <Activity size={18} className="text-gold" />
-                Detected Nutritional Gaps
+                {t('clientDashboard.detectedGaps')}
               </h2>
               <div className="deficiency-list">
                 {rec.deficiencies.map((d: any, i: number) => (
@@ -127,7 +131,7 @@ export default function ClientDashboard() {
               <section className="report-card glass-panel">
                 <h2 className="report-card-title">
                   <Salad size={18} className="text-teal" />
-                  Foods to Eat
+                  {t('clientDashboard.foodsToEat')}
                 </h2>
                 <div className="food-scroll">
                   {rec.foods.map((f: any, i: number) => (
@@ -147,7 +151,7 @@ export default function ClientDashboard() {
               <section className="report-card glass-panel">
                 <h2 className="report-card-title">
                   <Apple size={18} className="text-teal" />
-                  Fruits to Include
+                  {t('clientDashboard.fruitsToInclude')}
                 </h2>
                 <div className="food-scroll">
                   {rec.fruits.map((f: any, i: number) => (
@@ -169,7 +173,7 @@ export default function ClientDashboard() {
             <section className="report-card glass-panel">
               <h2 className="report-card-title">
                 <Pill size={18} className="text-teal" />
-                Supplement Protocol
+                {t('clientDashboard.supplementProtocol')}
               </h2>
               <div className="vitamin-list">
                 {rec.vitamins.map((v: any, i: number) => (
@@ -193,14 +197,14 @@ export default function ClientDashboard() {
             <section className="report-card glass-panel">
               <h2 className="report-card-title">
                 <TrendingUp size={18} className="text-teal" />
-                Sample 1-Day Meal Plan
+                {t('clientDashboard.mealPlan')}
               </h2>
               <div className="meal-grid">
                 {[
-                  { key: 'breakfast', label: '☀️ Breakfast' },
-                  { key: 'lunch', label: '🌤️ Lunch' },
-                  { key: 'dinner', label: '🌙 Dinner' },
-                  { key: 'snack', label: '🍎 Snack' },
+                  { key: 'breakfast', label: t('clientDashboard.breakfast') },
+                  { key: 'lunch', label: t('clientDashboard.lunch') },
+                  { key: 'dinner', label: t('clientDashboard.dinner') },
+                  { key: 'snack', label: t('clientDashboard.snack') },
                 ].map(({ key, label }) => rec.mealPlan[key] && (
                   <div key={key} className="meal-slot">
                     <span className="meal-slot-label">{label}</span>
@@ -219,7 +223,7 @@ export default function ClientDashboard() {
           {/* Scan again CTA */}
           <div className="scan-again">
             <Link to="/client/scan" className="btn btn-secondary flex items-center gap-2">
-              <Camera size={16} /> Scan Again for Updated Analysis
+              <Camera size={16} /> {t('clientDashboard.scanAgainCta')}
             </Link>
           </div>
         </div>

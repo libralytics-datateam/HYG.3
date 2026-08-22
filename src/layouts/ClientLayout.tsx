@@ -1,8 +1,11 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Activity, Camera, LayoutDashboard, LogOut } from 'lucide-react';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import './ClientLayout.css';
 
 export default function ClientLayout() {
+  const { t } = useTranslation();
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path ? 'active' : '';
   const patientName = localStorage.getItem('hyg3_patient_name');
@@ -23,14 +26,15 @@ export default function ClientLayout() {
           <nav className="client-nav">
             <Link to="/client/dashboard" className={isActive('/client/dashboard')}>
               <LayoutDashboard size={18} />
-              My Report
+              {t('clientLayout.myReport')}
             </Link>
             <Link to="/client/scan" className={isActive('/client/scan')}>
               <Camera size={18} />
-              Scan Hand
+              {t('clientLayout.scanHand')}
             </Link>
           </nav>
           <div className="client-profile">
+            <LanguageSwitcher />
             {patientName && (
               <span className="text-muted text-sm" style={{ marginRight: '12px' }}>
                 {patientName.split(' ')[0]}
@@ -45,7 +49,7 @@ export default function ClientLayout() {
               }}
             >
               <LogOut size={18} />
-              Sign Out
+              {t('clientLayout.signOut')}
             </button>
           </div>
         </header>

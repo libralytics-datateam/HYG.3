@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Activity as ActivityIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 import './Login.css';
 
 export default function Login() {
+  const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,25 +27,28 @@ export default function Login() {
     if (result.ok) {
       navigate(redirectTo, { replace: true });
     } else {
-      setError(result.error || 'Login failed');
+      setError(result.error || t('login.failed'));
     }
   };
 
   return (
     <div className="login-page">
+      <div className="login-lang-switcher">
+        <LanguageSwitcher />
+      </div>
       <form onSubmit={handleSubmit} className="glass-panel login-card">
         <div>
           <div className="login-logo">
             <ActivityIcon size={22} />
             HYG.3
           </div>
-          <p className="login-subtitle">Sign in to the admin dashboard</p>
+          <p className="login-subtitle">{t('login.subtitle')}</p>
         </div>
 
         {error && <div className="login-error">{error}</div>}
 
         <div className="login-form-group">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t('login.email')}</label>
           <input
             id="email"
             type="email"
@@ -54,7 +60,7 @@ export default function Login() {
         </div>
 
         <div className="login-form-group">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">{t('login.password')}</label>
           <input
             id="password"
             type="password"
@@ -65,7 +71,7 @@ export default function Login() {
         </div>
 
         <button type="submit" className="btn btn-primary login-submit" disabled={submitting}>
-          {submitting ? 'Signing in…' : 'Sign In'}
+          {submitting ? t('login.signingIn') : t('login.signIn')}
         </button>
       </form>
     </div>

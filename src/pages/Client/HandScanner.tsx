@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Camera, FlipHorizontal, Loader2, ChevronLeft, Sun, Hand } from 'lucide-react';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 import './HandScanner.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
@@ -8,6 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
 type ScanState = 'guide' | 'camera' | 'analyzing' | 'done';
 
 export default function HandScanner() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -47,10 +50,10 @@ export default function HandScanner() {
       }
       setState('camera');
     } catch (err) {
-      setError('Camera access denied. Please allow camera access in your browser settings.');
+      setError(t('handScanner.cameraDenied'));
       console.error(err);
     }
-  }, [facing]);
+  }, [facing, t]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -108,12 +111,12 @@ export default function HandScanner() {
         setResult(json.data);
         setState('done');
       } else {
-        setError(json.error || 'Analysis failed.');
+        setError(json.error || t('handScanner.analysisFailed'));
         setState('camera');
         startCamera();
       }
     } catch (err) {
-      setError('Analysis failed. Please try again.');
+      setError(t('handScanner.analysisFailedRetry'));
       setState('guide');
     }
   };
@@ -122,37 +125,40 @@ export default function HandScanner() {
   if (state === 'guide') {
     return (
       <div className="scanner-page animate-fade-in">
-        <button className="scanner-back" onClick={() => navigate('/client/dashboard')}>
-          <ChevronLeft size={18} /> Back
-        </button>
+        <div className="scanner-top-bar">
+          <button className="scanner-back" onClick={() => navigate('/client/dashboard')}>
+            <ChevronLeft size={18} /> {t('handScanner.back')}
+          </button>
+          <LanguageSwitcher />
+        </div>
 
         <div className="scanner-guide glass-panel">
           <Hand size={48} className="text-teal mb-4" />
-          <h1 className="text-2xl font-bold text-text mb-2">Hand Health Scan</h1>
+          <h1 className="text-2xl font-bold text-text mb-2">{t('handScanner.guideTitle')}</h1>
           <p className="text-muted text-sm mb-8 text-center" style={{ maxWidth: 380 }}>
-            Our AI analyzes the color and condition of your nails, palm, and skin to identify nutritional patterns.
+            {t('handScanner.guideSubtitle')}
           </p>
 
           <div className="guide-tips">
             <div className="guide-tip">
               <Sun size={20} className="text-gold" />
               <div>
-                <strong>Natural Light</strong>
-                <p>Stand near a window or go outside. Avoid harsh artificial lights or flash.</p>
+                <strong>{t('handScanner.tipLightTitle')}</strong>
+                <p>{t('handScanner.tipLightBody')}</p>
               </div>
             </div>
             <div className="guide-tip">
               <Hand size={20} className="text-teal" />
               <div>
-                <strong>Open Palm Facing Camera</strong>
-                <p>Hold your dominant hand flat with fingers slightly spread, palm up.</p>
+                <strong>{t('handScanner.tipPalmTitle')}</strong>
+                <p>{t('handScanner.tipPalmBody')}</p>
               </div>
             </div>
             <div className="guide-tip">
               <Camera size={20} className="text-teal" />
               <div>
-                <strong>Fill the Frame</strong>
-                <p>Keep your hand 20–30 cm from the camera so nails and palm are clearly visible.</p>
+                <strong>{t('handScanner.tipFrameTitle')}</strong>
+                <p>{t('handScanner.tipFrameBody')}</p>
               </div>
             </div>
           </div>
@@ -160,7 +166,7 @@ export default function HandScanner() {
           {error && <p className="scanner-error">{error}</p>}
 
           <button className="btn btn-primary btn-lg mt-6" onClick={startCamera}>
-            <Camera size={20} /> Open Camera
+            <Camera size={20} /> {t('handScanner.openCamera')}
           </button>
         </div>
       </div>
@@ -175,10 +181,15 @@ export default function HandScanner() {
         <div className="analyzing-content glass-panel">
           <div className="analyzing-pulse" />
           <Loader2 size={40} className="text-teal animate-spin mb-4" />
-          <h2 className="text-xl font-bold text-text">Analyzing Your Hand</h2>
-          <p className="text-muted text-sm mt-2">Examining nail color, palm tone, and skin condition...</p>
+          <h2 className="text-xl font-bold text-text">{t('handScanner.analyzingTitle')}</h2>
+          <p className="text-muted text-sm mt-2">{t('handScanner.analyzingSubtitle')}</p>
           <div className="analyzing-steps">
-            {['Detecting nail signals', 'Reading palm color', 'Checking skin patterns', 'Matching nutrition data'].map((s, i) => (
+            {[
+              t('handScanner.analyzingStep1'),
+              t('handScanner.analyzingStep2'),
+              t('handScanner.analyzingStep3'),
+              t('handScanner.analyzingStep4'),
+            ].map((s, i) => (
               <div key={i} className="analyzing-step">
                 <div className="analyzing-step-dot" style={{ animationDelay: `${i * 0.4}s` }} />
                 <span>{s}</span>
@@ -197,16 +208,16 @@ export default function HandScanner() {
         <canvas ref={canvasRef} style={{ display: 'none' }} />
         <div className="results-header">
           <button className="scanner-back" onClick={() => navigate('/client/dashboard')}>
-            <ChevronLeft size={18} /> View Full Report
+            <ChevronLeft size={18} /> {t('handScanner.viewFullReport')}
           </button>
           <button className="btn btn-secondary" onClick={() => { setState('guide'); setResult(null); }}>
-            Scan Again
+            {t('handScanner.scanAgain')}
           </button>
         </div>
 
         {result.analysisMode === 'simulated' && (
           <div className="scanner-demo-banner">
-            ⚠️ Running in demo mode — add a Gemini API key for real image analysis
+            {t('handScanner.demoModeBanner')}
           </div>
         )}
 
@@ -229,8 +240,8 @@ export default function HandScanner() {
               <span className="score-number">{result.overallScore}</span>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-text">Wellness Score</h3>
-              <p className="text-muted text-sm">Based on visible hand indicators</p>
+              <h3 className="text-lg font-bold text-text">{t('handScanner.wellnessScore')}</h3>
+              <p className="text-muted text-sm">{t('handScanner.wellnessScoreSub')}</p>
             </div>
           </div>
         )}
@@ -238,7 +249,7 @@ export default function HandScanner() {
         {/* Detected Signals */}
         {result.signals?.length > 0 && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">🔍 What We Detected</h2>
+            <h2 className="results-section-title">{t('handScanner.whatWeDetected')}</h2>
             <div className="signals-list">
               {result.signals.map((s: any, i: number) => (
                 <div key={i} className="signal-item">
@@ -253,12 +264,12 @@ export default function HandScanner() {
         {/* Deficiencies */}
         {result.deficiencies?.length > 0 && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">⚡ Likely Nutritional Gaps</h2>
+            <h2 className="results-section-title">{t('handScanner.nutritionalGaps')}</h2>
             {result.deficiencies.map((d: any, i: number) => (
               <div key={i} className="deficiency-item">
                 <div className="deficiency-header">
                   <span className="deficiency-name">{d.nutrient}</span>
-                  <span className="deficiency-conf">{Math.round(d.confidence * 100)}% confidence</span>
+                  <span className="deficiency-conf">{Math.round(d.confidence * 100)}% {t('handScanner.confidence')}</span>
                 </div>
                 <div className="deficiency-bar">
                   <div className="deficiency-fill" style={{ width: `${d.confidence * 100}%` }} />
@@ -272,7 +283,7 @@ export default function HandScanner() {
         {/* Foods */}
         {result.foods?.length > 0 && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">🥦 Recommended Foods</h2>
+            <h2 className="results-section-title">{t('handScanner.recommendedFoods')}</h2>
             <div className="food-grid">
               {result.foods.map((f: any, i: number) => (
                 <div key={i} className="food-card">
@@ -288,7 +299,7 @@ export default function HandScanner() {
         {/* Fruits */}
         {result.fruits?.length > 0 && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">🍓 Recommended Fruits</h2>
+            <h2 className="results-section-title">{t('handScanner.recommendedFruits')}</h2>
             <div className="food-grid">
               {result.fruits.map((f: any, i: number) => (
                 <div key={i} className="food-card">
@@ -304,7 +315,7 @@ export default function HandScanner() {
         {/* Vitamins */}
         {result.vitamins?.length > 0 && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">💊 Supplement Recommendations</h2>
+            <h2 className="results-section-title">{t('handScanner.supplementRecommendations')}</h2>
             {result.vitamins.map((v: any, i: number) => (
               <div key={i} className="vitamin-item">
                 <div className="vitamin-header">
@@ -320,12 +331,12 @@ export default function HandScanner() {
         {/* Meal Plan */}
         {result.mealPlan && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">🍽️ Sample 1-Day Meal Plan</h2>
+            <h2 className="results-section-title">{t('handScanner.mealPlan')}</h2>
             {[
-              { key: 'breakfast', label: '☀️ Breakfast' },
-              { key: 'lunch', label: '🌤️ Lunch' },
-              { key: 'dinner', label: '🌙 Dinner' },
-              { key: 'snack', label: '🍎 Snack' },
+              { key: 'breakfast', label: t('handScanner.breakfast') },
+              { key: 'lunch', label: t('handScanner.lunch') },
+              { key: 'dinner', label: t('handScanner.dinner') },
+              { key: 'snack', label: t('handScanner.snack') },
             ].map(({ key, label }) => result.mealPlan[key] && (
               <div key={key} className="meal-item">
                 <span className="meal-label">{label}</span>
@@ -354,7 +365,7 @@ export default function HandScanner() {
         {/* Hand guide overlay */}
         <div className="camera-overlay">
           <div className="hand-guide-outline" />
-          <p className="camera-hint">Place your open hand in the frame · Natural light recommended</p>
+          <p className="camera-hint">{t('handScanner.cameraHint')}</p>
         </div>
 
         {countdown !== null && (

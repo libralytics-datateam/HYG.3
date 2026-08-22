@@ -33,11 +33,32 @@
   gap: 24px;
 }
 
+.onboarding-logo .lang-switcher {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+@media (max-width: 480px) {
+  .onboarding-page {
+    padding: 12px;
+  }
+  .onboarding-logo .lang-switcher {
+    position: static;
+    transform: none;
+    margin-left: 8px;
+  }
+}
+
 .onboarding-logo {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   margin-bottom: 8px;
+  width: 100%;
+  position: relative;
 }
 
 /* Progress indicator */
@@ -268,4 +289,23 @@
   font-size: 12px;
   color: var(--muted);
   text-align: center;
+}
+
+@media (max-width: 640px) {
+  .onboarding-card {
+    padding: 24px 20px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .goals-grid {
+    grid-template-columns: 1fr;
+  }
+  .start-options {
+    grid-template-columns: 1fr;
+  }
+  .progress-line {
+    width: 48px;
+  }
 }

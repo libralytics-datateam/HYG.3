@@ -1,63 +1,65 @@
 import './Home.css';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Activity, Zap, ShieldCheck, TrendingUp, Sparkles } from 'lucide-react';
 
 export default function Home() {
+  const { t } = useTranslation();
+
   return (
     <div className="home-container">
       <section className="hero-section animate-fade-in">
         <div className="hero-badge">
-          <Sparkles size={16} /> V2.0 Wearable Intelligence
+          <Sparkles size={16} /> {t('home.badge')}
         </div>
         <h1 className="hero-title">
-          Wellness <span className="text-teal">Before</span> Illness
+          {t('home.titlePrefix')} <span className="text-teal">{t('home.titleHighlight')}</span> {t('home.titleSuffix')}
         </h1>
         <p className="hero-subtitle">
-          Vitamin & Supplement Intelligence powered by AI and wearable biometric data. 
-          Stop guessing with generic formulas, start knowing what your body needs.
+          {t('home.subtitle')}
         </p>
         <div className="hero-actions">
-          <Link to="/product" className="btn btn-primary">Explore Platform</Link>
-          <Link to="/how-it-works" className="btn btn-secondary">How It Works</Link>
+          <Link to="/product" className="btn btn-primary">{t('home.explorePlatform')}</Link>
+          <Link to="/how-it-works" className="btn btn-secondary">{t('home.howItWorks')}</Link>
         </div>
       </section>
 
       <section className="workflow-section animate-fade-in delay-200">
-        <h2 className="section-title">The Intelligence Loop</h2>
+        <h2 className="section-title">{t('home.loopTitle')}</h2>
         <div className="bento-grid">
-          
+
           <div className="bento-card glass-panel col-span-8">
             <div className="bento-icon">
               <Activity size={24} />
             </div>
-            <h3>1. Deep Biometric Integration</h3>
-            <p>Connect your WHOOP and advanced biometric hand scanners to pull continuous heart rate variability, sleep patterns, and recovery metrics in real time. We analyze your baseline automatically.</p>
+            <h3>{t('home.loop1Title')}</h3>
+            <p>{t('home.loop1Body')}</p>
           </div>
 
           <div className="bento-card glass-panel col-span-4">
             <div className="bento-icon">
               <Zap size={24} />
             </div>
-            <h3>2. AI Insights</h3>
-            <p>Our machine learning engine predicts micro-nutrient deficiencies before they become illnesses, analyzing millions of data points to find your exact vitamin needs.</p>
+            <h3>{t('home.loop2Title')}</h3>
+            <p>{t('home.loop2Body')}</p>
           </div>
 
           <div className="bento-card glass-panel col-span-4">
             <div className="bento-icon">
               <ShieldCheck size={24} />
             </div>
-            <h3>3. Clinical Review</h3>
-            <p>Automated is great, but verified is better. Certified clinical professionals verify every AI recommendation before it reaches your dashboard.</p>
+            <h3>{t('home.loop3Title')}</h3>
+            <p>{t('home.loop3Body')}</p>
           </div>
 
           <div className="bento-card glass-panel col-span-8">
             <div className="bento-icon">
               <TrendingUp size={24} />
             </div>
-            <h3>4. Tailored Action</h3>
-            <p>Receive dynamically adjusting supplement formulations designed exclusively for your biometric profile. As your body changes, so does your formulation, optimizing your long-term health trajectory.</p>
+            <h3>{t('home.loop4Title')}</h3>
+            <p>{t('home.loop4Body')}</p>
           </div>
-          
+
         </div>
       </section>
     </div>
