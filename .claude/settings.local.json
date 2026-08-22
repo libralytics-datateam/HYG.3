@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -f \"/c/Users/ADMIN/Desktop/HYG.3/dev.db\" \"/c/Users/ADMIN/Desktop/HYG.3/server/dev.db\")",
+      "Bash(rm -f \"/c/Users/ADMIN/Desktop/HYG.3/server/server.js\")",
+      "Bash(npx tsc *)",
+      "Bash(echo \"tsc exit: $?\")"
+    ]
+  }
+}

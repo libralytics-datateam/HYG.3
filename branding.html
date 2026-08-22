@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HYGE — Logo Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #0E3B36;
+    --teal: #0F5C54;
+    --teal-deep: #0A403A;
+    --gold: #C99A5B;
+    --paper: #F6F3EC;
+    --paper-line: #E4DDCB;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    font-family:'Manrope', sans-serif;
+    color:var(--ink);
+    padding:48px 24px 96px;
+  }
+  h1.page-title{
+    font-size:14px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    font-weight:700;
+    color:var(--teal);
+    text-align:center;
+    margin:0 0 4px;
+  }
+  p.page-sub{
+    text-align:center;
+    color:#6b7a76;
+    font-size:14px;
+    margin:0 0 56px;
+  }
+  .grid{
+    max-width:1040px;
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(280px,1fr));
+    gap:24px;
+  }
+  .card{
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:16px;
+    padding:32px 24px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+  }
+  .card.dark{
+    background:var(--teal-deep);
+    border-color:var(--teal-deep);
+  }
+  .card.wide{
+    grid-column: span 2;
+  }
+  .label{
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-weight:700;
+    color:#8a9490;
+  }
+  .card.dark .label{ color:#9fc9c1; }
+
+  .wordmark{
+    font-weight:800;
+    letter-spacing:.01em;
+    color:var(--ink);
+  }
+  .card.dark .wordmark{ color:#F6F3EC; }
+
+  .lockup{ display:flex; align-items:center; gap:14px; }
+  .lockup.stacked{ flex-direction:column; gap:10px; }
+
+  .tagline{
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:#8a9490;
+    font-weight:600;
+  }
+  .card.dark .tagline{ color:#9fc9c1; }
+
+  .icon-square{
+    width:96px;height:96px;
+    border-radius:22px;
+    background:var(--teal);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon-square.ondark{ background:#F6F3EC; }
+  .icon-square.small{ width:56px;height:56px;border-radius:14px;}
+
+  .swatch-row{ display:flex; gap:10px; }
+  .swatch{
+    width:52px;height:52px;border-radius:10px;
+    display:flex;align-items:flex-end;justify-content:flex-start;
+    padding:6px;
+  }
+  .swatch span{
+    font-size:8px;color:#fff;font-weight:700;
+    text-shadow:0 1px 2px rgba(0,0,0,.25);
+  }
+
+  .note{
+    max-width:1040px;
+    margin:56px auto 0;
+    font-size:13px;
+    line-height:1.7;
+    color:#5c6863;
+    border-top:1px solid var(--paper-line);
+    padding-top:24px;
+  }
+  .note b{ color:var(--ink); }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">HYGE</h1>
+<p class="page-sub">Logo concept — bowl &amp; signal mark, derived from Hygeia (Ὑγίεια), goddess of prevention</p>
+
+<div class="grid">
+
+  <!-- Primary lockup on light -->
+  <div class="card wide">
+    <div class="label">Primary Lockup</div>
+    <div class="lockup">
+      <svg width="64" height="64" viewBox="0 0 100 100">
+        <path d="M25 45 C25 66, 75 66, 75 45" fill="none" stroke="#0F5C54" stroke-width="6" stroke-linecap="round"/>
+        <path d="M25 45 L21 36" fill="none" stroke="#0F5C54" stroke-width="6" stroke-linecap="round"/>
+        <path d="M75 45 L79 36" fill="none" stroke="#0F5C54" stroke-width="6" stroke-linecap="round"/>
+        <path d="M50 58 C39 50, 61 39, 50 30 C42 24, 58 17, 50 11" fill="none" stroke="#C99A5B" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="50" cy="9" r="4.5" fill="#C99A5B"/>
+      </svg>
+      <div class="wordmark" style="font-size:44px;">hyge</div>
+    </div>
+    <div class="tagline">Wellness Before Illness</div>
+  </div>
+
+  <!-- Reversed on dark -->
+  <div class="card dark wide">
+    <div class="label">Reversed / Dark</div>
+    <div class="lockup">
+      <svg width="64" height="64" viewBox="0 0 100 100">
+        <path d="M25 45 C25 66, 75 66, 75 45" fill="none" stroke="#F6F3EC" stroke-width="6" stroke-linecap="round"/>
+        <path d="M25 45 L21 36" fill="none" stroke="#F6F3EC" stroke-width="6" stroke-linecap="round"/>
+        <path d="M75 45 L79 36" fill="none" stroke="#F6F3EC" stroke-width="6" stroke-linecap="round"/>
+        <path d="M50 58 C39 50, 61 39, 50 30 C42 24, 58 17, 50 11" fill="none" stroke="#C99A5B" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="50" cy="9" r="4.5" fill="#C99A5B"/>
+      </svg>
+      <div class="wordmark" style="font-size:44px;">hyge</div>
+    </div>
+    <div class="tagline">Wellness Before Illness</div>
+  </div>
+
+  <!-- App icon -->
+  <div class="card">
+    <div class="label">App Icon</div>
+    <div class="icon-square">
+      <svg width="52" height="52" viewBox="0 0 100 100">
+        <path d="M25 45 C25 66, 75 66, 75 45" fill="none" stroke="#F6F3EC" stroke-width="7" stroke-linecap="round"/>
+        <path d="M25 45 L21 36" fill="none" stroke="#F6F3EC" stroke-width="7" stroke-linecap="round"/>
+        <path d="M75 45 L79 36" fill="none" stroke="#F6F3EC" stroke-width="7" stroke-linecap="round"/>
+        <path d="M50 58 C39 50, 61 39, 50 30 C42 24, 58 17, 50 11" fill="none" stroke="#C99A5B" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="50" cy="9" r="5" fill="#C99A5B"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Favicon scale test -->
+  <div class="card">
+    <div class="label">Favicon / 16–32px Test</div>
+    <div style="display:flex; gap:14px; align-items:center;">
+      <div class="icon-square small">
+        <svg width="30" height="30" viewBox="0 0 100 100">
+          <path d="M25 45 C25 66, 75 66, 75 45" fill="none" stroke="#F6F3EC" stroke-width="9" stroke-linecap="round"/>
+          <path d="M50 58 C39 50, 61 39, 50 30" fill="none" stroke="#C99A5B" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="50" cy="9" r="6" fill="#C99A5B"/>
+        </svg>
+      </div>
+      <div style="width:24px;height:24px;border-radius:6px;background:#0F5C54;display:flex;align-items:center;justify-content:center;">
+        <svg width="15" height="15" viewBox="0 0 100 100">
+          <path d="M25 45 C25 66, 75 66, 75 45" fill="none" stroke="#F6F3EC" stroke-width="12" stroke-linecap="round"/>
+          <circle cx="50" cy="20" r="9" fill="#C99A5B"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monochrome -->
+  <div class="card">
+    <div class="label">Monochrome</div>
+    <div class="lockup stacked">
+      <svg width="56" height="56" viewBox="0 0 100 100">
+        <path d="M25 45 C25 66, 75 66, 75 45" fill="none" stroke="#0E3B36" stroke-width="6" stroke-linecap="round"/>
+        <path d="M25 45 L21 36" fill="none" stroke="#0E3B36" stroke-width="6" stroke-linecap="round"/>
+        <path d="M75 45 L79 36" fill="none" stroke="#0E3B36" stroke-width="6" stroke-linecap="round"/>
+        <path d="M50 58 C39 50, 61 39, 50 30 C42 24, 58 17, 50 11" fill="none" stroke="#0E3B36" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="50" cy="9" r="4.5" fill="#0E3B36"/>
+      </svg>
+      <div class="wordmark" style="font-size:28px;">hyge</div>
+    </div>
+  </div>
+
+  <!-- Color palette -->
+  <div class="card">
+    <div class="label">Color Palette</div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#0F5C54;"><span>Teal</span></div>
+      <div class="swatch" style="background:#0A403A;"><span>Deep</span></div>
+      <div class="swatch" style="background:#C99A5B;"><span>Gold</span></div>
+      <div class="swatch" style="background:#F6F3EC;"><span style="color:#0E3B36;text-shadow:none;">Paper</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <b>Mark rationale:</b> the teal curve is the <b>bowl</b> — Hygeia's cup, historically the pharmacy/wellness symbol, distinct from the Rod of Asclepius (a staff, tied to clinical/medical authority). The gold line rising out of it is a reduced, single-stroke stand-in for the serpent — reads equally as a <b>pulse or data signal</b>, tying prevention/wellness to the data-intelligence positioning without a literal snake or a medical cross. <br><br>
+  <b>Why this fits the product:</b> the mark deliberately avoids clinical iconography (no cross, no caduceus/staff, no stethoscope) — consistent with the platform's own constraint of not presenting itself as a clinical authority. <br><br>
+  <b>Scale test:</b> the coil simplifies gracefully down to favicon size (top-right card) by dropping the second curve and rim details — full mark for anything ≥32px, reduced mark below that.
+</div>
+
+</body>
+</html>
