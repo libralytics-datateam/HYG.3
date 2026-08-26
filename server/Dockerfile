@@ -21,6 +21,10 @@ RUN npm install
 # Copy all server source code
 COPY . .
 
+# Generate Prisma Client now that the schema is present (npm install ran
+# before COPY, so its postinstall prisma generate had no schema to use)
+RUN npx prisma generate
+
 # Set up Python virtual environment and install Scikit-learn + Pandas
 # We run the python script using the venv python
 RUN python3 -m venv /opt/venv
