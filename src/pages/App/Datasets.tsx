@@ -110,6 +110,7 @@ export default function Datasets() {
       {error && <ErrorBanner message={error} />}
 
       <div className="glass-panel overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-bg text-muted text-sm uppercase tracking-wider border-b border-border">
@@ -180,6 +181,7 @@ export default function Datasets() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Register Dataset Modal */}

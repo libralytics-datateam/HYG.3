@@ -1,21 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Activity, User, Heart, Leaf, ChevronRight, ChevronLeft, Check, Camera, Watch } from 'lucide-react';
+import { Activity, User, Heart, Leaf, ChevronRight, ChevronLeft, Check, Camera, Watch, Zap, ShieldCheck, Moon, Sparkles, Scale, Wind, Brain, CheckCircle2 } from 'lucide-react';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import './Onboarding.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
 
 const HEALTH_GOALS = [
-  { id: 'energy', emoji: '⚡' },
-  { id: 'immunity', emoji: '🛡️' },
-  { id: 'sleep', emoji: '😴' },
-  { id: 'skin', emoji: '✨' },
-  { id: 'weight', emoji: '⚖️' },
-  { id: 'stress', emoji: '🧘' },
-  { id: 'digestion', emoji: '🌿' },
-  { id: 'focus', emoji: '🧠' },
+  { id: 'energy', icon: Zap },
+  { id: 'immunity', icon: ShieldCheck },
+  { id: 'sleep', icon: Moon },
+  { id: 'skin', icon: Sparkles },
+  { id: 'weight', icon: Scale },
+  { id: 'stress', icon: Wind },
+  { id: 'digestion', icon: Leaf },
+  { id: 'focus', icon: Brain },
 ];
 
 const DIETARY = [
@@ -233,7 +233,7 @@ export default function Onboarding() {
                   className={`goal-chip ${form.healthGoals.includes(g.id) ? 'selected' : ''}`}
                   onClick={() => toggleGoal(g.id)}
                 >
-                  <span className="text-xl">{g.emoji}</span>
+                  <g.icon size={20} className="text-teal" />
                   <span>{t(`onboarding.goals.${g.id}`)}</span>
                   {form.healthGoals.includes(g.id) && <Check size={14} className="goal-check" />}
                 </button>
@@ -275,7 +275,7 @@ export default function Onboarding() {
         {/* STEP 3 — Start */}
         {step === 3 && (
           <div className="onboarding-card glass-panel animate-fade-in text-center">
-            <div className="success-icon">✅</div>
+            <div className="success-icon"><CheckCircle2 size={56} className="text-teal" /></div>
             <h1 className="text-2xl font-bold text-text mt-4">{t('onboarding.step3Title')}</h1>
             <p className="text-muted text-sm mt-2 mb-8">
               {t('onboarding.step3Subtitle')}

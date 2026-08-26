@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock } from 'lucide-react';
+import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon } from 'lucide-react';
 import './ClientDashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
@@ -37,9 +37,9 @@ export default function ClientDashboard() {
   };
 
   const sourceLabel = (s: string) => {
-    if (s === 'hand_scan') return t('clientDashboard.sourceHandScan');
-    if (s === 'device') return t('clientDashboard.sourceDevice');
-    return t('clientDashboard.sourceCombined');
+    if (s === 'hand_scan') return { icon: ScanLine, text: t('clientDashboard.sourceHandScan') };
+    if (s === 'device') return { icon: Watch, text: t('clientDashboard.sourceDevice') };
+    return { icon: Layers, text: t('clientDashboard.sourceCombined') };
   };
 
   const deficiencyColor = (conf: number) =>
@@ -71,7 +71,7 @@ export default function ClientDashboard() {
       ) : !rec ? (
         /* No scan yet */
         <div className="empty-state glass-panel animate-fade-in">
-          <div className="empty-icon">✋</div>
+          <div className="empty-icon flex justify-center"><Hand size={40} className="text-teal" /></div>
           <h2 className="text-xl font-bold text-text mt-4">{t('clientDashboard.noAnalysisTitle')}</h2>
           <p className="text-muted text-sm mt-2" style={{ maxWidth: 340, textAlign: 'center' }}>
             {t('clientDashboard.noAnalysisBody')}
@@ -84,7 +84,9 @@ export default function ClientDashboard() {
         <div className="report-content">
           {/* Meta */}
           <div className="report-meta">
-            <span className="source-badge">{sourceLabel(rec.source)}</span>
+            <span className="source-badge flex items-center gap-1">
+              {(() => { const { icon: SrcIcon, text } = sourceLabel(rec.source); return <><SrcIcon size={12} /> {text}</>; })()}
+            </span>
             <span className="report-date">
               <Clock size={12} />
               {new Date(rec.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -136,7 +138,7 @@ export default function ClientDashboard() {
                 <div className="food-scroll">
                   {rec.foods.map((f: any, i: number) => (
                     <div key={i} className="food-pill">
-                      <span className="food-pill-emoji">{f.emoji}</span>
+                      <Salad size={22} className="food-pill-emoji text-teal" />
                       <div>
                         <div className="food-pill-name">{f.name}</div>
                         <div className="food-pill-benefit">{f.benefit}</div>
@@ -156,7 +158,7 @@ export default function ClientDashboard() {
                 <div className="food-scroll">
                   {rec.fruits.map((f: any, i: number) => (
                     <div key={i} className="food-pill">
-                      <span className="food-pill-emoji">{f.emoji}</span>
+                      <Apple size={22} className="food-pill-emoji text-teal" />
                       <div>
                         <div className="food-pill-name">{f.name}</div>
                         <div className="food-pill-benefit">{f.benefit}</div>
@@ -201,13 +203,13 @@ export default function ClientDashboard() {
               </h2>
               <div className="meal-grid">
                 {[
-                  { key: 'breakfast', label: t('clientDashboard.breakfast') },
-                  { key: 'lunch', label: t('clientDashboard.lunch') },
-                  { key: 'dinner', label: t('clientDashboard.dinner') },
-                  { key: 'snack', label: t('clientDashboard.snack') },
-                ].map(({ key, label }) => rec.mealPlan[key] && (
+                  { key: 'breakfast', label: t('clientDashboard.breakfast'), icon: Sunrise },
+                  { key: 'lunch', label: t('clientDashboard.lunch'), icon: CloudSun },
+                  { key: 'dinner', label: t('clientDashboard.dinner'), icon: Moon },
+                  { key: 'snack', label: t('clientDashboard.snack'), icon: Apple },
+                ].map(({ key, label, icon: Icon }) => rec.mealPlan[key] && (
                   <div key={key} className="meal-slot">
-                    <span className="meal-slot-label">{label}</span>
+                    <span className="meal-slot-label flex items-center gap-2"><Icon size={14} className="text-muted" /> {label}</span>
                     <p className="meal-slot-text">{rec.mealPlan[key]}</p>
                   </div>
                 ))}
@@ -216,8 +218,8 @@ export default function ClientDashboard() {
           )}
 
           {/* Disclaimer */}
-          <div className="disclaimer">
-            ⚕️ {rec.disclaimer}
+          <div className="disclaimer flex items-center gap-2">
+            <Stethoscope size={16} style={{ flexShrink: 0 }} /> {rec.disclaimer}
           </div>
 
           {/* Scan again CTA */}

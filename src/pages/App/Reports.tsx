@@ -141,6 +141,7 @@ export default function Reports() {
       {/* Static report archive */}
       <h2 className="text-sm font-bold text-muted uppercase tracking-wider mb-3">Report Archive</h2>
       <div className="glass-panel overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-bg text-muted text-sm uppercase tracking-wider border-b border-border">
@@ -195,6 +196,7 @@ export default function Reports() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

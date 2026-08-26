@@ -36,6 +36,7 @@
   /* Legacy mapping (gradual migration) */
   --ink: var(--color-foreground);
   --teal: var(--color-primary);
+  --teal-glow: rgba(12, 100, 120, 0.12);
   --gold: var(--color-accent);
   --paper: var(--color-card);
   --bg: var(--color-background);
@@ -46,6 +47,8 @@
   --border: var(--color-border);
   --panel: var(--color-card);
   --muted: var(--color-muted-foreground);
+  --paper-line: var(--color-border);
+  --teal-deep: #084C5A;
 
   --sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
   --font-heading: 'Figtree', system-ui, -apple-system, sans-serif;

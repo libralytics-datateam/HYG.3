@@ -89,6 +89,7 @@ export default function AuditLogs() {
             Review Actions
           </h2>
           <div className="glass-panel overflow-hidden mb-8">
+            <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-bg text-muted text-sm uppercase tracking-wider border-b border-border">
@@ -130,6 +131,7 @@ export default function AuditLogs() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </>
       )}
@@ -139,6 +141,7 @@ export default function AuditLogs() {
         All Generated Insights
       </h2>
       <div className="glass-panel overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-bg text-muted text-sm uppercase tracking-wider border-b border-border">
@@ -186,6 +189,7 @@ export default function AuditLogs() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

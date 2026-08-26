@@ -127,3 +127,68 @@
   padding: 48px;
   background-color: var(--bg);
 }
+
+.app-mobile-bar {
+  display: none;
+}
+
+.app-sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .app-layout {
+    position: relative;
+  }
+
+  .app-mobile-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app-mobile-bar-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+  }
+
+  .app-mobile-bar-toggle {
+    background: none;
+    border: none;
+    color: var(--text);
+    padding: 8px;
+  }
+
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    height: 100vh;
+    z-index: 40;
+    transition: left var(--transition-normal);
+  }
+
+  .app-sidebar.is-open {
+    left: 0;
+  }
+
+  .app-sidebar-backdrop.is-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 30;
+  }
+
+  .app-main {
+    padding: 20px;
+  }
+}

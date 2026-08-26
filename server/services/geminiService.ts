@@ -22,8 +22,8 @@ Return ONLY valid JSON with no markdown, no code blocks, no explanation text:
 {
   "signals": [{"area": "nail/palm/skin", "observation": "description of what you see"}],
   "likelyDeficiencies": [{"nutrient": "name", "confidence": 0.0-1.0, "reason": "why based on visible signs"}],
-  "recommendedFoods": [{"name": "food name", "benefit": "short reason", "emoji": "relevant emoji"}],
-  "recommendedFruits": [{"name": "fruit name", "benefit": "short reason", "emoji": "relevant emoji"}],
+  "recommendedFoods": [{"name": "food name", "benefit": "short reason"}],
+  "recommendedFruits": [{"name": "fruit name", "benefit": "short reason"}],
   "recommendedVitamins": [{"name": "supplement name", "dosage": "suggested dosage", "reason": "short reason"}],
   "mealPlan": {"breakfast": "suggestion", "lunch": "suggestion", "dinner": "suggestion", "snack": "suggestion"},
   "overallScore": 0-100,
@@ -71,19 +71,19 @@ export function getSimulatedAnalysis() {
       { nutrient: 'Zinc', confidence: 0.48, reason: 'Mild nail ridging observed' }
     ],
     recommendedFoods: [
-      { name: 'Spinach', benefit: 'High in iron and folate', emoji: '🥬' },
-      { name: 'Lentils', benefit: 'Plant-based iron source', emoji: '🫘' },
-      { name: 'Lean Red Meat', benefit: 'Heme iron — most bioavailable form', emoji: '🥩' },
-      { name: 'Eggs', benefit: 'B12 and choline source', emoji: '🥚' },
-      { name: 'Pumpkin Seeds', benefit: 'Rich in zinc and magnesium', emoji: '🌰' },
-      { name: 'Tofu', benefit: 'Plant protein and iron', emoji: '🍱' }
+      { name: 'Spinach', benefit: 'High in iron and folate' },
+      { name: 'Lentils', benefit: 'Plant-based iron source' },
+      { name: 'Lean Red Meat', benefit: 'Heme iron — most bioavailable form' },
+      { name: 'Eggs', benefit: 'B12 and choline source' },
+      { name: 'Pumpkin Seeds', benefit: 'Rich in zinc and magnesium' },
+      { name: 'Tofu', benefit: 'Plant protein and iron' }
     ],
     recommendedFruits: [
-      { name: 'Strawberries', benefit: 'Vitamin C boosts iron absorption', emoji: '🍓' },
-      { name: 'Kiwi', benefit: 'High Vitamin C and antioxidants', emoji: '🥝' },
-      { name: 'Pomegranate', benefit: 'Iron and antioxidants', emoji: '🍎' },
-      { name: 'Banana', benefit: 'B6 and energy', emoji: '🍌' },
-      { name: 'Papaya', benefit: 'Vitamin C and digestive enzymes', emoji: '🍈' }
+      { name: 'Strawberries', benefit: 'Vitamin C boosts iron absorption' },
+      { name: 'Kiwi', benefit: 'High Vitamin C and antioxidants' },
+      { name: 'Pomegranate', benefit: 'Iron and antioxidants' },
+      { name: 'Banana', benefit: 'B6 and energy' },
+      { name: 'Papaya', benefit: 'Vitamin C and digestive enzymes' }
     ],
     recommendedVitamins: [
       { name: 'Iron Bisglycinate', dosage: '18–25mg daily with food', reason: 'Gentle form of iron, well tolerated' },

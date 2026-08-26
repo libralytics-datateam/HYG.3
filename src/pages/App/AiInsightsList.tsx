@@ -51,6 +51,7 @@ export default function AiInsightsList() {
       {error && <ErrorBanner message={error} />}
 
       <div className="glass-panel overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-bg text-muted text-sm uppercase tracking-wider border-b border-border">
@@ -106,6 +107,7 @@ export default function AiInsightsList() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

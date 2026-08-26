@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Camera, FlipHorizontal, Loader2, ChevronLeft, Sun, Hand } from 'lucide-react';
+import { Camera, FlipHorizontal, Loader2, ChevronLeft, Sun, Hand, Stethoscope, AlertTriangle, Search, AlertCircle, Salad, Apple, Pill, UtensilsCrossed, Sunrise, CloudSun, Moon } from 'lucide-react';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import './HandScanner.css';
 
@@ -216,8 +216,8 @@ export default function HandScanner() {
         </div>
 
         {result.analysisMode === 'simulated' && (
-          <div className="scanner-demo-banner">
-            {t('handScanner.demoModeBanner')}
+          <div className="scanner-demo-banner flex items-center gap-2">
+            <AlertTriangle size={16} style={{ flexShrink: 0 }} /> {t('handScanner.demoModeBanner')}
           </div>
         )}
 
@@ -249,7 +249,7 @@ export default function HandScanner() {
         {/* Detected Signals */}
         {result.signals?.length > 0 && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">{t('handScanner.whatWeDetected')}</h2>
+            <h2 className="results-section-title flex items-center gap-2"><Search size={18} className="text-teal" /> {t('handScanner.whatWeDetected')}</h2>
             <div className="signals-list">
               {result.signals.map((s: any, i: number) => (
                 <div key={i} className="signal-item">
@@ -264,7 +264,7 @@ export default function HandScanner() {
         {/* Deficiencies */}
         {result.deficiencies?.length > 0 && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">{t('handScanner.nutritionalGaps')}</h2>
+            <h2 className="results-section-title flex items-center gap-2"><AlertCircle size={18} className="text-gold" /> {t('handScanner.nutritionalGaps')}</h2>
             {result.deficiencies.map((d: any, i: number) => (
               <div key={i} className="deficiency-item">
                 <div className="deficiency-header">
@@ -283,11 +283,11 @@ export default function HandScanner() {
         {/* Foods */}
         {result.foods?.length > 0 && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">{t('handScanner.recommendedFoods')}</h2>
+            <h2 className="results-section-title flex items-center gap-2"><Salad size={18} className="text-teal" /> {t('handScanner.recommendedFoods')}</h2>
             <div className="food-grid">
               {result.foods.map((f: any, i: number) => (
                 <div key={i} className="food-card">
-                  <span className="food-emoji">{f.emoji}</span>
+                  <Salad size={22} className="food-emoji text-teal" />
                   <span className="food-name">{f.name}</span>
                   <span className="food-benefit">{f.benefit}</span>
                 </div>
@@ -299,11 +299,11 @@ export default function HandScanner() {
         {/* Fruits */}
         {result.fruits?.length > 0 && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">{t('handScanner.recommendedFruits')}</h2>
+            <h2 className="results-section-title flex items-center gap-2"><Apple size={18} className="text-teal" /> {t('handScanner.recommendedFruits')}</h2>
             <div className="food-grid">
               {result.fruits.map((f: any, i: number) => (
                 <div key={i} className="food-card">
-                  <span className="food-emoji">{f.emoji}</span>
+                  <Apple size={22} className="food-emoji text-teal" />
                   <span className="food-name">{f.name}</span>
                   <span className="food-benefit">{f.benefit}</span>
                 </div>
@@ -315,7 +315,7 @@ export default function HandScanner() {
         {/* Vitamins */}
         {result.vitamins?.length > 0 && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">{t('handScanner.supplementRecommendations')}</h2>
+            <h2 className="results-section-title flex items-center gap-2"><Pill size={18} className="text-teal" /> {t('handScanner.supplementRecommendations')}</h2>
             {result.vitamins.map((v: any, i: number) => (
               <div key={i} className="vitamin-item">
                 <div className="vitamin-header">
@@ -331,15 +331,15 @@ export default function HandScanner() {
         {/* Meal Plan */}
         {result.mealPlan && (
           <section className="results-section glass-panel">
-            <h2 className="results-section-title">{t('handScanner.mealPlan')}</h2>
+            <h2 className="results-section-title flex items-center gap-2"><UtensilsCrossed size={18} className="text-teal" /> {t('handScanner.mealPlan')}</h2>
             {[
-              { key: 'breakfast', label: t('handScanner.breakfast') },
-              { key: 'lunch', label: t('handScanner.lunch') },
-              { key: 'dinner', label: t('handScanner.dinner') },
-              { key: 'snack', label: t('handScanner.snack') },
-            ].map(({ key, label }) => result.mealPlan[key] && (
+              { key: 'breakfast', label: t('handScanner.breakfast'), icon: Sunrise },
+              { key: 'lunch', label: t('handScanner.lunch'), icon: CloudSun },
+              { key: 'dinner', label: t('handScanner.dinner'), icon: Moon },
+              { key: 'snack', label: t('handScanner.snack'), icon: Apple },
+            ].map(({ key, label, icon: Icon }) => result.mealPlan[key] && (
               <div key={key} className="meal-item">
-                <span className="meal-label">{label}</span>
+                <span className="meal-label flex items-center gap-2"><Icon size={14} className="text-muted" /> {label}</span>
                 <span className="meal-desc">{result.mealPlan[key]}</span>
               </div>
             ))}
@@ -347,8 +347,8 @@ export default function HandScanner() {
         )}
 
         {/* Disclaimer */}
-        <div className="disclaimer-banner">
-          ⚕️ {result.disclaimer}
+        <div className="disclaimer-banner flex items-center gap-2">
+          <Stethoscope size={16} style={{ flexShrink: 0 }} /> {result.disclaimer}
         </div>
       </div>
     );

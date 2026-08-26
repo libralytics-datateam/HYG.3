@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Activity, LayoutDashboard, Database, Brain, FileBarChart, ShieldAlert, Layers, LogOut, UserRound } from 'lucide-react';
+import { Activity, LayoutDashboard, Database, Brain, FileBarChart, ShieldAlert, Layers, LogOut, UserRound, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './AppLayout.css';
 
@@ -7,6 +8,7 @@ export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path ? 'active' : '';
   const isParentActive = (path: string) => location.pathname.startsWith(path) && location.pathname !== '/app' ? 'active' : '';
@@ -16,9 +18,21 @@ export default function AppLayout() {
     navigate('/login', { replace: true });
   };
 
+  const closeNav = () => setMobileNavOpen(false);
+
   return (
     <div className="app-layout">
-      <aside className="app-sidebar">
+      <div className="app-mobile-bar">
+        <div className="app-mobile-bar-logo">
+          <Activity size={22} />
+          HYG.3
+        </div>
+        <button className="app-mobile-bar-toggle" onClick={() => setMobileNavOpen(o => !o)} aria-label="Toggle menu">
+          {mobileNavOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+      <div className={`app-sidebar-backdrop ${mobileNavOpen ? 'is-open' : ''}`} onClick={closeNav} />
+      <aside className={`app-sidebar ${mobileNavOpen ? 'is-open' : ''}`} onClick={closeNav}>
         <div className="sidebar-header">
           <Link to="/app" className="logo">
             <Activity size={24} />

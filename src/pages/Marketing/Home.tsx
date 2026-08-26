@@ -1,4 +1,3 @@
-import './Home.css';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Activity, Zap, ShieldCheck, TrendingUp, Sparkles } from 'lucide-react';

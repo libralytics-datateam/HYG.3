@@ -254,7 +254,8 @@
 
 /* Step 3 */
 .success-icon {
-  font-size: 56px;
+  display: flex;
+  justify-content: center;
   margin: 0 auto;
 }
 

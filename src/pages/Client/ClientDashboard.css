@@ -152,7 +152,7 @@
   border-radius: 10px;
 }
 
-.food-pill-emoji { font-size: 24px; flex-shrink: 0; }
+.food-pill-emoji { flex-shrink: 0; }
 .food-pill-name { font-size: 13px; font-weight: 700; color: var(--text); }
 .food-pill-benefit { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
