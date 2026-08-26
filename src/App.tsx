@@ -15,6 +15,7 @@ const Home = lazy(() => import('./pages/Marketing/Home'));
 const Features = lazy(() => import('./pages/Marketing/Features'));
 const Integrations = lazy(() => import('./pages/Marketing/Integrations'));
 const Pricing = lazy(() => import('./pages/Marketing/Pricing'));
+const Roadmap = lazy(() => import('./pages/Marketing/Roadmap'));
 const About = lazy(() => import('./pages/Marketing/About'));
 const Contact = lazy(() => import('./pages/Marketing/Contact'));
 const TrustCenter = lazy(() => import('./pages/Marketing/TrustCenter'));
@@ -54,6 +55,7 @@ function App() {
             <Route path="product" element={<Features />} />
             <Route path="how-it-works" element={<Integrations />} />
             <Route path="pricing" element={<Pricing />} />
+            <Route path="roadmap" element={<Roadmap />} />
             <Route path="about" element={<About />} />
             <Route path="contact" element={<Contact />} />
             <Route path="trust" element={<TrustCenter />} />

@@ -147,7 +147,24 @@ Compliance/IT lead queries: "What did the AI say about X, when, based on what da
 
 ---
 
-## 14. Open Questions Requiring Stakeholder Input
+## 14. Long-Term Vision — Medical-Grade Preventive Health Platform (Beyond MVP, Beyond Phase 6)
+
+**Status: north-star vision, not a scoped feature.** Nothing in this section is committed engineering work, and none of it changes §6 (MVP Definition) or §13 (Out of Scope) — it exists so that near-term architecture and partner conversations don't foreclose this direction. See `mvp-roadmap.md` Phase 7+ for the same vision in roadmap form.
+
+**The progression:**
+
+Wellness tracking (MVP) → **Medical-grade tracker** → **Lifespan** (longevity-oriented monitoring, not just point-in-time wellness) → **Preventive care** (shift from reactive treatment to continuous risk monitoring) → **Cancer detection** (early-warning screening signals) → **Personalized healthcare** (recommendations tailored beyond supplements — full health guidance) → **Microbiome** (gut/microbiome analysis as a data input alongside biometrics and hand-scan signals).
+
+**Two hard requirements gate every step of this progression, not just the end state:**
+
+1. **Human-in-the-loop specialist/doctor, structured like telemedicine but preventive rather than reactive.** Today's telemedicine model is "patient is sick → sees a doctor remotely." This vision requires the inverse: a licensed physician or specialist reviewing AI-surfaced preventive signals (including anything cancer-detection-adjacent) *before* they reach a patient, the same clinical-authority principle already in §5 and §6.4 (FACT/INFERENCE/RECOMMENDATION/UNCERTAINTY labeling, reviewer attribution) — just extended to licensed medical review, not pharmacist review of supplement concepts. No AI output in this category should ever reach a patient unreviewed.
+2. **FDA (and Thai FDA / medical device) certification.** Any feature that detects, screens for, or implies risk of a specific disease (cancer above all) is medical-device and diagnostic territory, not wellness-app territory. This is categorically different from the MVP's current regulatory posture (§10, §13 — deliberately non-diagnostic, de-identified operational data). Realistically this means: medical device classification review (likely Class II/III depending on modality), clinical validation studies, a completely separate regulatory workstream from the current PDPA/advertising-claims review, and probably a different corporate/liability structure than the current SaaS commercial model (§11).
+
+**Why this belongs in the PRD now, even unscoped:** so that data model, consent architecture, and partner conversations can leave room for it (e.g. not architecting patient data in a way that would need to be rebuilt) without treating it as anything the current team is building. Do not let this section justify scope creep into the MVP — every item here requires its own dedicated regulatory, clinical, and legal workstream before a single line of product engineering starts.
+
+---
+
+## 15. Open Questions Requiring Stakeholder Input
 
 1. Which pilot partner (pharmacy group, supplement retailer, or wellness business) is realistically committable in the next 60–90 days?
 2. Can the three test datasets (Supplement Sales, Pharmaceutical & Vitamins, Vitamin Deficiency Prediction) be confirmed as either real partner data or clearly-labeled public/synthetic data — this changes what governance applies?

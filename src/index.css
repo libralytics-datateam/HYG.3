@@ -16,20 +16,22 @@
 }
 
 :root {
-  /* UI UX Pro Max Generated Colors: Calm Cyan & Health Green */
-  --color-primary: #0891B2;
-  --color-on-primary: #000000;
+  /* Deep Clinical Teal & Trust Green — refreshed for a more medical-grade,
+     premium feel (deeper primary, quieter border/background, tighter
+     shadows below) while staying in the established brand hue family. */
+  --color-primary: #0C6478;
+  --color-on-primary: #FFFFFF;
   --color-secondary: #22D3EE;
   --color-on-secondary: #0F172A;
-  --color-accent: #059669;
-  --color-on-accent: #000000;
-  --color-background: #ECFEFF;
-  --color-foreground: #164E63;
+  --color-accent: #047857;
+  --color-on-accent: #FFFFFF;
+  --color-background: #F5FAFB;
+  --color-foreground: #123A44;
   --color-card: #FFFFFF;
-  --color-card-foreground: #164E63;
+  --color-card-foreground: #123A44;
   --color-muted: #E8F1F6;
   --color-muted-foreground: #475569;
-  --color-border: #A5F3FC;
+  --color-border: #C7DEE2;
   
   /* Legacy mapping (gradual migration) */
   --ink: var(--color-foreground);
@@ -58,22 +60,25 @@
   --sp-8: 48px;
   --sp-12: 64px;
 
-  /* Border Radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  /* Border Radius — tightened from the original neumorphic scale for a
+     crisper, more clinical/premium read (less "bubbly consumer app"). */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
   --radius-full: 9999px;
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* Shadows - Neumorphism */
-  --shadow-sm: 2px 2px 5px rgba(8, 145, 178, 0.05), -2px -2px 5px rgba(255, 255, 255, 0.8);
-  --shadow-md: 5px 5px 15px rgba(8, 145, 178, 0.08), -5px -5px 15px rgba(255, 255, 255, 1);
-  --shadow-lg: 8px 8px 24px rgba(8, 145, 178, 0.1), -8px -8px 24px rgba(255, 255, 255, 1);
-  --shadow-pressed: inset 5px 5px 10px rgba(8, 145, 178, 0.1), inset -5px -5px 10px rgba(255, 255, 255, 0.8);
+
+  /* Shadows — single-direction elevation (Stripe/Linear-style premium
+     SaaS) replacing the original dual-direction neumorphism, which read
+     more "wellness app" than "medical-grade platform". */
+  --shadow-sm: 0 1px 2px rgba(18, 58, 68, 0.06), 0 1px 1px rgba(18, 58, 68, 0.04);
+  --shadow-md: 0 4px 10px rgba(18, 58, 68, 0.08), 0 2px 4px rgba(18, 58, 68, 0.04);
+  --shadow-lg: 0 12px 24px rgba(18, 58, 68, 0.1), 0 4px 8px rgba(18, 58, 68, 0.05);
+  --shadow-pressed: inset 0 2px 4px rgba(18, 58, 68, 0.08);
 }
 
 /* CSS Reset & Base */
@@ -220,13 +225,13 @@ button {
 
 .btn-primary {
   background: var(--gold);
-  color: var(--text);
+  color: #fff;
   box-shadow: var(--shadow-sm);
   border: none;
 }
 
 .btn-primary:hover {
-  background: #047857; /* darker accent */
+  background: #035f43; /* darker accent */
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
   color: #fff;

@@ -60,3 +60,16 @@ This roadmap reflects the expanded scope of HYG.3, transitioning from a pure B2B
 * Automated supplement pack fulfillment.
 * Integration with EMRs (Electronic Medical Records).
 * Pharmacogenomics (DNA-based recommendations).
+
+---
+
+## Phase 7+: Medical-Grade Preventive Health Platform (Long-Term Vision)
+**Status:** north-star direction, not scoped or committed. See `prd.md` §14 for the full framing, including the two hard gates (human specialist review + FDA/Thai FDA certification) that apply to every step below.
+
+* Lifespan & preventive tracking — continuous longevity-oriented monitoring, not point-in-time snapshots.
+* Cancer detection signals — early-warning screening, gated entirely behind medical device certification and clinical validation.
+* Personalized healthcare — guidance beyond supplements, still under licensed clinical review.
+* Microbiome intelligence — gut microbiome data as an additional input alongside biometrics and hand-scan signals.
+* Human-in-the-loop specialist/doctor review at every clinically-adjacent step, structured like telemedicine but preventive rather than reactive.
+
+Public-facing narrative for this phase lives at `/roadmap` on the marketing site — kept clearly labeled as vision, not shipped capability.

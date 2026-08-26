@@ -19,6 +19,7 @@ export default function MarketingLayout() {
         <nav className="marketing-nav">
           <Link to="/product">{t('nav.product')}</Link>
           <Link to="/how-it-works">{t('nav.howItWorks')}</Link>
+          <Link to="/roadmap">{t('nav.roadmap')}</Link>
           <Link to="/about">{t('nav.about')}</Link>
         </nav>
         <div className="auth-links">
@@ -50,6 +51,7 @@ export default function MarketingLayout() {
               <strong>{t('footer.product')}</strong>
               <Link to="/product">{t('footer.features')}</Link>
               <Link to="/how-it-works">{t('nav.howItWorks')}</Link>
+              <Link to="/roadmap">{t('nav.roadmap')}</Link>
               <Link to="/client/onboard">{t('nav.getStarted')}</Link>
             </div>
             <div className="footer-column">
