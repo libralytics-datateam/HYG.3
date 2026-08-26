@@ -2,19 +2,25 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Search, UserPlus, Activity } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
+import ErrorBanner from '../../components/ErrorBanner';
 
 export default function Patients() {
   const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     apiFetch('/v1/patients')
       .then(r => r.json())
       .then(json => {
         if (json.success) setPatients(json.data);
+        else setError(json.error || 'Failed to load patients.');
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        setError('Failed to load patients. Please try again.');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -38,6 +44,8 @@ export default function Patients() {
           Enroll Patient
         </button>
       </div>
+
+      {error && <ErrorBanner message={error} />}
 
       {/* Search */}
       <div className="glass-panel p-4 mb-6 flex items-center gap-3">

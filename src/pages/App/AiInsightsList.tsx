@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import { Brain, Filter, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
+import ErrorBanner from '../../components/ErrorBanner';
 
 export default function AiInsightsList() {
   const [insights, setInsights] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchInsights();
@@ -14,13 +16,17 @@ export default function AiInsightsList() {
   const fetchInsights = async () => {
     try {
       setLoading(true);
+      setError('');
       const res = await apiFetch('/v1/ai/outputs');
       const json = await res.json();
       if (json.success) {
         setInsights(json.data);
+      } else {
+        setError(json.error || 'Failed to load insights.');
       }
     } catch (err) {
       console.error(err);
+      setError('Failed to load insights. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -41,6 +47,8 @@ export default function AiInsightsList() {
           Filter
         </button>
       </div>
+
+      {error && <ErrorBanner message={error} />}
 
       <div className="glass-panel overflow-hidden">
         <table className="w-full text-left border-collapse">

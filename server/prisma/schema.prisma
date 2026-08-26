@@ -173,3 +173,11 @@ model CustomVitaminConcept {
   patient  Patient  @relation(fields: [patientId], references: [id])
   aiOutput AiOutput @relation(fields: [aiOutputId], references: [id])
 }
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+}

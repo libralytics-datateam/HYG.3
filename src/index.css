@@ -1,4 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=Noto+Sans:wght@300;400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Map Tailwind color utilities (bg-teal, text-gold, border-border, ...)
+     onto this app's existing design tokens instead of Tailwind defaults.
+     --color-muted/--color-border mirror the literal values below (can't
+     var()-reference them here without a self-referential cycle, since
+     Tailwind needs those exact property names). */
+  --color-bg: var(--color-background);
+  --color-teal: var(--color-primary);
+  --color-gold: var(--color-accent);
+  --color-text: var(--color-foreground);
+  --color-muted: #E8F1F6;
+  --color-border: #A5F3FC;
+}
 
 :root {
   /* UI UX Pro Max Generated Colors: Calm Cyan & Health Green */
@@ -27,6 +42,8 @@
   --text: var(--color-foreground);
   --text-muted: var(--color-muted-foreground);
   --border: var(--color-border);
+  --panel: var(--color-card);
+  --muted: var(--color-muted-foreground);
 
   --sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
   --font-heading: 'Figtree', system-ui, -apple-system, sans-serif;

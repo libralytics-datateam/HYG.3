@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Activity, LayoutDashboard, Database, Brain, FileBarChart, ShieldAlert, Building2, Users, Layers, LogOut, UserRound } from 'lucide-react';
+import { Activity, LayoutDashboard, Database, Brain, FileBarChart, ShieldAlert, Layers, LogOut, UserRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './AppLayout.css';
 
@@ -53,14 +53,6 @@ export default function AppLayout() {
           <Link to="/app/audit" className={isParentActive('/app/audit')}>
             <ShieldAlert size={20} />
             Audit Logs
-          </Link>
-          <Link to="/app/organization" className={isParentActive('/app/organization')}>
-            <Building2 size={20} />
-            Organization
-          </Link>
-          <Link to="/app/team" className={isParentActive('/app/team')}>
-            <Users size={20} />
-            Team
           </Link>
           <Link to="/app/models" className={isParentActive('/app/models')}>
             <Layers size={20} />

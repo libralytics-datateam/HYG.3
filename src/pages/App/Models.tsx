@@ -11,10 +11,16 @@ export default function Models() {
           </h1>
           <p className="text-muted mt-1">Monitor Scikit-Learn Random Forest accuracy and data drifts.</p>
         </div>
-        <button className="btn btn-secondary flex items-center gap-2">
+        <button className="btn btn-secondary flex items-center gap-2" disabled title="Retraining pipeline not yet built">
           <RefreshCcw size={18} />
           Retrain Model
         </button>
+      </div>
+
+      <div className="glass-panel p-4 mb-8 border border-gold/40 bg-gold/5 text-sm text-text">
+        These metrics are illustrative placeholders, not a live evaluation. The underlying validation set has a known
+        defect (see <code>data/faulty-valdation-set-f1-score-97.ipynb</code>) — treat any confidence scores from this
+        model as unverified until that's resolved.
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -24,7 +30,7 @@ export default function Models() {
             <Activity size={20} className="text-teal" />
           </div>
           <div className="text-4xl font-bold text-text">0.94</div>
-          <div className="text-xs text-teal">Excellent</div>
+          <div className="text-xs text-muted">Illustrative — unverified</div>
         </div>
 
         <div className="glass-panel p-6 flex flex-col gap-4">
@@ -33,7 +39,7 @@ export default function Models() {
             <Activity size={20} className="text-teal" />
           </div>
           <div className="text-4xl font-bold text-text">0.92</div>
-          <div className="text-xs text-teal">Excellent</div>
+          <div className="text-xs text-muted">Illustrative — unverified</div>
         </div>
 
         <div className="glass-panel p-6 flex flex-col gap-4">
@@ -42,7 +48,7 @@ export default function Models() {
             <Activity size={20} className="text-gold" />
           </div>
           <div className="text-4xl font-bold text-text">0.89</div>
-          <div className="text-xs text-muted">Good - Monitor False Negatives</div>
+          <div className="text-xs text-muted">Illustrative — unverified</div>
         </div>
       </div>
 
@@ -54,12 +60,8 @@ export default function Models() {
             <span className="font-bold text-text">Random Forest Classifier (Scikit-Learn)</span>
           </div>
           <div className="flex justify-between border-b border-border pb-4">
-            <span>Last Retrained</span>
-            <span className="font-bold text-text">August 10, 2026</span>
-          </div>
-          <div className="flex justify-between border-b border-border pb-4">
             <span>Training Dataset</span>
-            <span className="font-bold text-text">DS-922 (15,400 rows)</span>
+            <span className="font-bold text-text">Not tracked yet — no metrics endpoint wired up</span>
           </div>
           <div className="flex justify-between">
             <span>Status</span>

@@ -1,6 +1,7 @@
 import { Database, Upload, RefreshCw, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
+import ErrorBanner from '../../components/ErrorBanner';
 
 interface Dataset {
   id: string;
@@ -25,6 +26,8 @@ export default function Datasets() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: '', type: 'sales_export' });
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
 
   useEffect(() => {
     fetchDatasets();
@@ -32,12 +35,15 @@ export default function Datasets() {
 
   const fetchDatasets = async () => {
     setLoading(true);
+    setError('');
     try {
       const res = await apiFetch('/v1/datasets');
       const json = await res.json();
       if (json.success) setDatasets(json.data);
+      else setError(json.error || 'Failed to load datasets.');
     } catch (err) {
       console.error(err);
+      setError('Failed to load datasets. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -46,6 +52,7 @@ export default function Datasets() {
   const handleCreate = async () => {
     if (!form.name.trim()) return;
     setSubmitting(true);
+    setFormError('');
     try {
       const res = await apiFetch('/v1/datasets', {
         method: 'POST',
@@ -55,9 +62,13 @@ export default function Datasets() {
         setShowModal(false);
         setForm({ name: '', type: 'sales_export' });
         await fetchDatasets();
+      } else {
+        const json = await res.json().catch(() => ({}));
+        setFormError(json.error || 'Failed to register dataset.');
       }
     } catch (err) {
       console.error(err);
+      setFormError('Failed to register dataset. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -95,6 +106,8 @@ export default function Datasets() {
           Register Dataset
         </button>
       </div>
+
+      {error && <ErrorBanner message={error} />}
 
       <div className="glass-panel overflow-hidden">
         <table className="w-full text-left border-collapse">
@@ -217,10 +230,12 @@ export default function Datasets() {
                 </select>
               </div>
 
+              {formError && <p className="text-xs text-red-400">{formError}</p>}
+
               <div className="flex justify-end gap-3 mt-2">
                 <button
                   className="btn btn-secondary"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => { setShowModal(false); setFormError(''); }}
                 >
                   Cancel
                 </button>

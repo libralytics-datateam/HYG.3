@@ -10,6 +10,7 @@ import productsRoutes from './routes/products';
 import onboardingRoutes from './routes/onboarding';
 import handscanRoutes from './routes/handscan';
 import recommendationsRoutes from './routes/recommendations';
+import contactRoutes from './routes/contact';
 import { requireAuth } from './middleware/auth';
 
 const app = express();
@@ -50,6 +51,7 @@ app.use('/v1/products', requireAuth, productsRoutes);
 app.use('/v1/onboard', onboardingRoutes);
 app.use('/v1/analysis', handscanRoutes);
 app.use('/v1/recommendations', recommendationsRoutes);
+app.use('/v1/contact', contactRoutes);
 
 app.listen(port, () => {
   const geminiStatus = process.env.GEMINI_API_KEY ? '✅ Gemini Vision active' : '⚠️  No GEMINI_API_KEY — using simulated analysis';

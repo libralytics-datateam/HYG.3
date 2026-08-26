@@ -2,6 +2,7 @@ import { Activity, Database, AlertCircle, CheckCircle2, TrendingUp, Package } fr
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
+import ErrorBanner from '../../components/ErrorBanner';
 
 interface Stats {
   totalDatasets: number;
@@ -29,6 +30,7 @@ export default function DashboardOverview() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentInsights, setRecentInsights] = useState<RecentInsight[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -39,7 +41,10 @@ export default function DashboardOverview() {
         if (statsJson.success) setStats(statsJson.data);
         if (insightsJson.success) setRecentInsights(insightsJson.data.slice(0, 5));
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        setError('Failed to load dashboard data. Please refresh to try again.');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -65,6 +70,8 @@ export default function DashboardOverview() {
           Review Pending Insights
         </Link>
       </div>
+
+      {error && <ErrorBanner message={error} />}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

@@ -27,9 +27,7 @@ const AiInsightsList = lazy(() => import('./pages/App/AiInsightsList'));
 const Datasets = lazy(() => import('./pages/App/Datasets'));
 const Reports = lazy(() => import('./pages/App/Reports'));
 const AuditLogs = lazy(() => import('./pages/App/AuditLogs'));
-const Team = lazy(() => import('./pages/App/Team'));
 const Models = lazy(() => import('./pages/App/Models'));
-const Organization = lazy(() => import('./pages/App/Organization'));
 
 const AiInsightsDetail = lazy(() => import('./pages/App/AiInsightsDetail'));
 const Patients = lazy(() => import('./pages/App/Patients'));
@@ -85,8 +83,6 @@ function App() {
             </Route>
             <Route path="reports" element={<Reports />} />
             <Route path="audit" element={<AuditLogs />} />
-            <Route path="organization" element={<Organization />} />
-            <Route path="team" element={<Team />} />
             <Route path="models" element={<Models />} />
             <Route path="patients">
               <Route index element={<Patients />} />
