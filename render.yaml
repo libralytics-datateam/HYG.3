@@ -1,3 +1,8 @@
+databases:
+  - name: hyg3-db
+    plan: free
+    region: oregon
+
 services:
   - type: web
     name: hyg3-backend
@@ -6,14 +11,12 @@ services:
     dockerContext: ./server
     region: oregon
     plan: free
-    disk:
-      name: sqlite-data
-      mountPath: /app/data
-      sizeGB: 1
     envVars:
       - key: PORT
         value: 3000
       - key: DATABASE_URL
-        value: "file:/app/data/prod.db"
+        fromDatabase:
+          name: hyg3-db
+          property: connectionString
       - key: VITE_API_URL
         value: "https://hyg3-backend.onrender.com"
