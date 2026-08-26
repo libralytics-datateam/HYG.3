@@ -138,7 +138,7 @@ Compliance/IT lead queries: "What did the AI say about X, when, based on what da
 ## 13. Out of Scope / Explicit Non-Goals for MVP
 
 - No diagnosis, prescribing, or clinical decision support.
-- **No vitamin/nutrient deficiency prediction served as a product feature.** The Vitamin Deficiency Disease Prediction Dataset may be used only for internal, PROTOTYPE-labeled research/exploration (e.g. understanding feature relationships, data structure), never wired into a user-facing output, dashboard, or recommendation. Turning this into a real feature is a deliberate scope-expansion decision requiring the full checklist in §5 plus clinical/regulatory review — not something that happens because the dataset was available.
+- **No vitamin/nutrient deficiency prediction served as a product feature.** The Vitamin Deficiency Disease Prediction Dataset may be used only for internal, PROTOTYPE-labeled research/exploration (e.g. understanding feature relationships, data structure), never wired into a user-facing output, dashboard, or recommendation. Turning this into a real feature is a deliberate scope-expansion decision requiring the full checklist in §5 plus clinical/regulatory review — not something that happens because the dataset was available. **Enforced, not just stated:** `POST /v1/ai/predict` was found live in violation of this rule (2026-08-27) and has been gated at the code level (returns 503) — see `data/DATA_PROVENANCE.md` for the full data-legitimacy assessment. The underlying dataset is synthetic (procedurally-generated, not real patient data) with a publicly-documented faulty-validation issue, and the runtime WHOOP-to-symptom feature mapping is also an unvalidated invented heuristic. This resolves Open Question #4 below: the answer is research-only, enforced, until real clinically-sourced data exists.
 - No health claims attached to supplement sales insight (e.g. AI must not imply a product treats or prevents a condition).
 - No patient-facing chat or app.
 - No centralization of identifiable clinical records without a validated legal basis and partner sign-off.
@@ -167,9 +167,9 @@ Wellness tracking (MVP) → **Medical-grade tracker** → **Lifespan** (longevit
 ## 15. Open Questions Requiring Stakeholder Input
 
 1. Which pilot partner (pharmacy group, supplement retailer, or wellness business) is realistically committable in the next 60–90 days?
-2. Can the three test datasets (Supplement Sales, Pharmaceutical & Vitamins, Vitamin Deficiency Prediction) be confirmed as either real partner data or clearly-labeled public/synthetic data — this changes what governance applies?
+2. Can the three test datasets (Supplement Sales, Pharmaceutical & Vitamins, Vitamin Deficiency Prediction) be confirmed as either real partner data or clearly-labeled public/synthetic data — this changes what governance applies? **Partially answered:** Vitamin Deficiency Prediction is confirmed synthetic/procedurally-generated, not real patient data — see `data/DATA_PROVENANCE.md`. Supplement Sales and Pharmaceutical & Vitamins datasets were not assessed as part of that review and still need this confirmation.
 3. Who at Libralytics owns the legal/privacy and Thai FDA advertising-claims review before any pilot data or AI-generated sales copy goes live?
-4. Explicit decision needed: does the Vitamin Deficiency Disease Prediction dataset stay research-only indefinitely, or is there a roadmap intent to build a governed clinical feature from it later (Phase 5+)? Record the answer in decisions.md either way.
+4. ~~Explicit decision needed: does the Vitamin Deficiency Disease Prediction dataset stay research-only indefinitely, or is there a roadmap intent to build a governed clinical feature from it later (Phase 5+)?~~ **Answered 2026-08-27:** research-only, enforced at the code level (`POST /v1/ai/predict` gated, returns 503) — see §13 and `data/DATA_PROVENANCE.md`. Revisit only if real, clinically-sourced, properly-licensed training data is obtained.
 
 ---
 
