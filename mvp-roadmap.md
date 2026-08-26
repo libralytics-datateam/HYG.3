@@ -72,4 +72,4 @@ This roadmap reflects the expanded scope of HYG.3, transitioning from a pure B2B
 * Microbiome intelligence — gut microbiome data as an additional input alongside biometrics and hand-scan signals.
 * Human-in-the-loop specialist/doctor review at every clinically-adjacent step, structured like telemedicine but preventive rather than reactive.
 
-Public-facing narrative for this phase lives at `/roadmap` on the marketing site — kept clearly labeled as vision, not shipped capability.
+Public-facing `/roadmap` marketing page was removed (2026-08-27) — decided to prioritize actually building real data infrastructure (see `data/DATA_PROVENANCE.md` "Path forward") over publishing an aspirational vision page, especially given the underlying vitamin-prediction data was found to be illegitimate around the same time. Revisit publishing a public narrative once there's real progress to show.

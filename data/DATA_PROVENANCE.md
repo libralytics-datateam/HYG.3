@@ -68,3 +68,26 @@ None of the following exists today. All of it would be needed before this class 
 ## Recommendation
 
 Treat this as closed only when real, licensed, clinically-sourced data exists and the checklist above is satisfied — not before. Until then, this stays gated regardless of how compelling a demo re-enabling it might make.
+
+---
+
+## Path forward: building a legitimate first-party dataset instead
+
+Rather than reach for another public dataset with the same class of problem, the plan is to accumulate real signal from the product's own human-in-the-loop review process — the mechanism already required by `prd.md` §6.4 for a different reason (auditability) turns out to double as the correct foundation for future model work.
+
+**The mechanism.** Every AI-generated insight is stored as an `AiOutput` with `reviewStatus: pending`. A licensed reviewer (pharmacist/clinician per the org's role setup) then accepts, modifies, or rejects it (`server/routes/insights.ts`, `POST /v1/ai/outputs/:id/review`), and that decision — plus `reviewedById`, a real accountable person, not a spoofable client value — is recorded. That accept/modify/reject decision *is* a labeled ground-truth example: a licensed human's real judgment on a real case, not a synthetic label generated to fit a training script. This is categorically different from the Kaggle dataset assessed above, in the one way that actually matters: provenance.
+
+**What accumulates as real patients use the product**, all already captured by the existing schema (no new tables needed, so nothing here is blocked by the `hyg3_app` `CREATE`-privilege limitation noted elsewhere):
+- `HealthProfile` — real self-reported health data at onboarding
+- `HandScan` + its AI analysis — real image, real (or Gemini-simulated, see `services/geminiService.ts`) analysis
+- `BiometricReading` — real wearable/manual biometric data over time
+- `AiOutput.reviewStatus` + `reviewedById` — the real labeled outcome
+
+**Where to track this.** `GET /v1/stats/data-readiness` (`server/routes/stats.ts`) exposes real counts of all of the above, broken down by what the AI predicted, so category coverage is visible — not just a raw total. The admin dashboard's **Models** page (`src/pages/App/Models.tsx`) surfaces this live instead of any placeholder metric.
+
+**What volume does *not* solve on its own.** Reaching a reviewed-case count (`READINESS_FLOOR` in `Models.tsx`, currently 200/category, arbitrary and conservative — treat as a floor, not a target) does not by itself make retraining appropriate. Still required, regardless of volume:
+1. **Explicit, separate patient consent** for their data to be used in model training/research — distinct from consent to use the service itself. PDPA purpose-limitation (`prd.md` §10) means consent for "get a hand-scan analysis" does not imply consent for "train a model on my data." This consent flow does not exist yet and needs legal review before it's built, not after.
+2. **Clinical validation** of any resulting model against real diagnoses, not just internal review-acceptance rate (a high acceptance rate could mean the model is good, or could mean reviewers are rubber-stamping — these need to be distinguished).
+3. **The same two gates as everything else clinically-adjacent** in `prd.md` §14: a licensed specialist in the loop, and FDA/Thai FDA certification before anything diagnostic reaches a patient.
+
+In short: this plan describes how to earn the *right kind* of data over time. It does not shortcut the regulatory and clinical requirements — it's the prerequisite that makes pursuing them worthwhile.
