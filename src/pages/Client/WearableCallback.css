@@ -1,0 +1,47 @@
+.wearable-callback {
+  max-width: 440px;
+  margin: 64px auto;
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.wearable-callback-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.wearable-callback-icon-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wearable-callback-icon-ring.is-success { background: var(--teal-glow); }
+.wearable-callback-icon-ring.is-error { background: rgba(248, 113, 113, 0.12); }
+.wearable-callback-icon-ring.is-pending { background: rgba(4, 120, 87, 0.12); }
+
+.wearable-callback-text {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.wearable-callback-text.has-countdown {
+  margin-bottom: 8px;
+}
+
+.wearable-callback-countdown {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+.wearable-callback-action {
+  width: fit-content;
+  margin: 0 auto;
+}

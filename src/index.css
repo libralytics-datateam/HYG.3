@@ -270,6 +270,44 @@ button {
   background: rgba(8, 145, 178, 0.05);
 }
 
+.btn-sm {
+  padding: 7px 14px;
+  font-size: 0.8125rem;
+  gap: 6px;
+}
+
+/* Shared consent checkbox — used by Onboarding's PDPA consent and
+   WhoopConnectCard's wearable-data consent. Same visual treatment,
+   different purposes, so it lives here rather than being duplicated. */
+.consent-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.consent-checkbox input {
+  margin-top: 2px;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--teal);
+}
+
+.consent-checkbox a {
+  color: var(--teal);
+  text-decoration: underline;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
 /* Layout Specifics */
 .min-h-screen {
   min-height: 100vh;

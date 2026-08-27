@@ -271,7 +271,7 @@ export default function Onboarding() {
                 Placeholder wording pending real Thai PDPA legal review
                 (MVP-LAUNCH-CHECKLIST.md §6 / decisions.md) — do not treat
                 this copy as legally sufficient on its own. */}
-            <label className="consent-checkbox">
+            <label className="consent-checkbox mt-5">
               <input
                 type="checkbox"
                 checked={form.pdpaConsent}

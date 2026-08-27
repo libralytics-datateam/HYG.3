@@ -175,7 +175,8 @@
     "callbackSuccess": "您的 WHOOP 账户已连接。",
     "callbackDenied": "WHOOP 授权已取消。",
     "callbackError": "连接 WHOOP 账户时出现问题，请重试。",
-    "backToDashboard": "返回仪表板"
+    "backToDashboard": "返回仪表板",
+    "redirectingIn": "{{seconds}} 秒后跳转到仪表板..."
   },
   "clientLayout": {
     "myReport": "我的报告",

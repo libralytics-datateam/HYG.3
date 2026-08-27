@@ -175,7 +175,8 @@
     "callbackSuccess": "Your WHOOP account is now connected.",
     "callbackDenied": "WHOOP authorization was cancelled.",
     "callbackError": "Something went wrong connecting your WHOOP account. Please try again.",
-    "backToDashboard": "Back to Dashboard"
+    "backToDashboard": "Back to Dashboard",
+    "redirectingIn": "Redirecting to your dashboard in {{seconds}}s..."
   },
   "clientLayout": {
     "myReport": "My Report",

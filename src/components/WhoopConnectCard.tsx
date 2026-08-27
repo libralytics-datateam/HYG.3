@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Watch, RefreshCw, CheckCircle2, Unlink, Clock } from 'lucide-react';
+import { Watch, RefreshCw, CheckCircle2, Unlink, Clock, Hourglass } from 'lucide-react';
 import ErrorBanner from './ErrorBanner';
+import './WhoopConnectCard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
 
@@ -9,6 +10,18 @@ interface Status {
   whoopConfigured: boolean;
   connected: boolean;
   lastSyncedAt: string | null;
+}
+
+function timeAgo(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 }
 
 export default function WhoopConnectCard({ patientId }: { patientId: string }) {
@@ -77,7 +90,7 @@ export default function WhoopConnectCard({ patientId }: { patientId: string }) {
 
   if (loading) {
     return (
-      <div className="glass-panel p-4 mb-6 flex items-center gap-3">
+      <div className="glass-panel wearable-card-loading">
         <RefreshCw className="animate-spin text-teal" size={18} />
         <span className="text-muted text-sm">{t('wearables.checkingStatus')}</span>
       </div>
@@ -86,39 +99,48 @@ export default function WhoopConnectCard({ patientId }: { patientId: string }) {
 
   if (!status) return null;
 
+  const isPending = !status.whoopConfigured;
+
   return (
-    <div className="glass-panel p-4 mb-6">
+    <div className="glass-panel wearable-card">
       {error && <ErrorBanner message={error} />}
 
-      <div className="flex items-center gap-3 mb-2">
-        <Watch size={20} className="text-teal" style={{ flexShrink: 0 }} />
-        <div className="flex-1">
-          <div className="font-bold text-text text-sm">{t('wearables.title')}</div>
-          {!status.whoopConfigured ? (
-            <p className="text-muted text-xs mt-0.5">{t('wearables.comingSoon')}</p>
-          ) : status.connected ? (
-            <p className="text-teal text-xs mt-0.5 flex items-center gap-1">
-              <CheckCircle2 size={12} /> {t('wearables.connected')}
-              {status.lastSyncedAt && (
-                <span className="text-muted flex items-center gap-1" style={{ marginLeft: 6 }}>
-                  <Clock size={12} />
-                  {t('wearables.lastSynced', { date: new Date(status.lastSyncedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) })}
+      <div className="wearable-card-header">
+        <div className={`wearable-icon-badge${isPending ? ' is-pending' : ''}`}>
+          {isPending ? <Hourglass size={18} /> : <Watch size={18} />}
+        </div>
+
+        <div className="wearable-card-body">
+          <div className="wearable-card-title">{t('wearables.title')}</div>
+          <div className="wearable-status-row">
+            {isPending ? (
+              <span className="wearable-status-badge is-pending">{t('wearables.comingSoon')}</span>
+            ) : status.connected ? (
+              <>
+                <span className="wearable-status-badge is-connected">
+                  <CheckCircle2 size={13} /> {t('wearables.connected')}
                 </span>
-              )}
-            </p>
-          ) : (
-            <p className="text-muted text-xs mt-0.5">{t('wearables.notConnected')}</p>
-          )}
+                {status.lastSyncedAt && (
+                  <span className="wearable-last-synced">
+                    <Clock size={12} />
+                    {t('wearables.lastSynced', { date: timeAgo(status.lastSyncedAt) })}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="wearable-status-badge is-idle">{t('wearables.notConnected')}</span>
+            )}
+          </div>
         </div>
 
         {status.whoopConfigured && status.connected && (
-          <div className="flex gap-2">
-            <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: 13 }} onClick={handleSync} disabled={syncing}>
-              <RefreshCw size={14} className={syncing ? 'animate-spin' : ''} style={{ marginRight: 4 }} />
+          <div className="wearable-actions">
+            <button className="btn btn-secondary btn-sm" onClick={handleSync} disabled={syncing}>
+              <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
               {syncing ? t('wearables.syncing') : t('wearables.syncNow')}
             </button>
-            <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: 13 }} onClick={handleDisconnect}>
-              <Unlink size={14} style={{ marginRight: 4 }} />
+            <button className="btn btn-secondary btn-sm" onClick={handleDisconnect}>
+              <Unlink size={13} />
               {t('wearables.disconnect')}
             </button>
           </div>
@@ -126,16 +148,15 @@ export default function WhoopConnectCard({ patientId }: { patientId: string }) {
       </div>
 
       {status.whoopConfigured && !status.connected && (
-        <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
-          <label className="flex items-start gap-2" style={{ fontSize: 13 }}>
-            <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 2 }} />
-            <span className="text-muted">{t('wearables.consentText')}</span>
+        <div className="wearable-consent">
+          <label className="consent-checkbox">
+            <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+            <span>{t('wearables.consentText')}</span>
           </label>
           <a
             href={consent ? `${API_URL}/wearables/whoop/connect?patientId=${patientId}` : undefined}
             aria-disabled={!consent}
-            className="btn btn-primary mt-3 flex items-center gap-2"
-            style={{ width: 'fit-content', opacity: consent ? 1 : 0.5, pointerEvents: consent ? 'auto' : 'none' }}
+            className="btn btn-primary flex items-center gap-2 wearable-connect-btn"
           >
             <Watch size={16} /> {t('wearables.connectButton')}
           </a>

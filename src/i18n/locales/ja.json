@@ -175,7 +175,8 @@
     "callbackSuccess": "WHOOPアカウントが接続されました。",
     "callbackDenied": "WHOOPの認証がキャンセルされました。",
     "callbackError": "WHOOPアカウントの接続中に問題が発生しました。もう一度お試しください。",
-    "backToDashboard": "ダッシュボードに戻る"
+    "backToDashboard": "ダッシュボードに戻る",
+    "redirectingIn": "{{seconds}}秒後にダッシュボードへ移動します..."
   },
   "clientLayout": {
     "myReport": "マイレポート",

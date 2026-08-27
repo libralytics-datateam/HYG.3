@@ -175,7 +175,8 @@
     "callbackSuccess": "เชื่อมต่อบัญชี WHOOP ของคุณเรียบร้อยแล้ว",
     "callbackDenied": "การอนุญาต WHOOP ถูกยกเลิก",
     "callbackError": "เกิดข้อผิดพลาดในการเชื่อมต่อบัญชี WHOOP กรุณาลองใหม่อีกครั้ง",
-    "backToDashboard": "กลับสู่แดชบอร์ด"
+    "backToDashboard": "กลับสู่แดชบอร์ด",
+    "redirectingIn": "กำลังพาไปยังแดชบอร์ดใน {{seconds}} วินาที..."
   },
   "clientLayout": {
     "myReport": "รายงานของฉัน",
