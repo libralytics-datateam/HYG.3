@@ -65,8 +65,8 @@ For every proposed feature, this PRD answers, in order: what problem → what da
 5. **Dashboards:** sales/operational KPIs for pharmacy/wellness administrators.
 
 **MVP test datasets under evaluation (see §13 for scope ruling per dataset):**
-- *Supplement Sales Data* — **in scope**, operational/commercial, drives §6.1 and §6.3 directly.
-- *Pharmaceutical Drugs and Vitamins Dataset* — **in scope as reference/catalog data** (product info, not patient-linked).
+- *Supplement Sales Data* — **in scope**, operational/commercial, drives §6.1 and §6.3 directly. Confirmed public/synthetic-style demo data, not a real partner's actual sales — see `decisions.md`.
+- *Pharmaceutical Drugs and Vitamins Dataset* — **scoping error, not usable as described.** This was assumed to be tabular catalog/product-info data; it's actually a 51k-image pill/box-photo classification dataset of Philippine OTC drug brands. It cannot drive §6.1/§6.3 catalog data-quality scoring — there's no tabular product data in it. A real catalog data source (from an actual pilot partner, or a different public dataset) is still needed if this feature ships. See `decisions.md`.
 - *Vitamin Deficiency Disease Prediction Dataset* — **out of scope for any served feature**; may be used internally for exploratory/PROTOTYPE-labeled research only, never exposed as a product prediction in MVP (see §13).
 
 **Explicitly excluded from MVP:** patient-facing app, wearable ingestion, genomics, federated learning, personalized pharmacist recommendations, RAG over clinical literature, any deficiency/disease prediction feature. These are Phase 3+.
@@ -169,7 +169,7 @@ Wellness tracking (MVP) → **Medical-grade tracker** → **Lifespan** (longevit
 Answers to these, once settled, are logged in `decisions.md` rather than edited in place here — check there for the current status of each.
 
 1. Which pilot partner (pharmacy group, supplement retailer, or wellness business) is realistically committable in the next 60–90 days? — **OPEN**, see `decisions.md`.
-2. Can the three test datasets (Supplement Sales, Pharmaceutical & Vitamins, Vitamin Deficiency Prediction) be confirmed as either real partner data or clearly-labeled public/synthetic data — this changes what governance applies? — **Partially answered**, see `decisions.md`.
+2. Can the three test datasets (Supplement Sales, Pharmaceutical & Vitamins, Vitamin Deficiency Prediction) be confirmed as either real partner data or clearly-labeled public/synthetic data — this changes what governance applies? — **Answered**, see `decisions.md`. Note: this surfaced a scoping error in §6 below, not just a provenance answer.
 3. Who at Libralytics owns the legal/privacy and Thai FDA advertising-claims review before any pilot data or AI-generated sales copy goes live? — **OPEN**, see `decisions.md`.
 4. ~~Explicit decision needed: does the Vitamin Deficiency Disease Prediction dataset stay research-only indefinitely, or is there a roadmap intent to build a governed clinical feature from it later (Phase 5+)?~~ — **Answered**, see `decisions.md`.
 

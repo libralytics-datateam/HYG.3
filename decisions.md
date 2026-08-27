@@ -39,7 +39,12 @@ Tracks product/scope decisions referenced from `prd.md`, in the order they were 
 
 **Question** (`prd.md` §15.2): Can the Supplement Sales Data and Pharmaceutical Drugs and Vitamins datasets be confirmed as real partner data or clearly-labeled public/synthetic data?
 
-**Status: OPEN — partially assessed.** Only the Vitamin Deficiency dataset was investigated (see above). These two were explicitly out of scope for that review. Given the same "Kaggle dataset assumed legitimate without checking" pattern applied to the vitamin data, the same check is worth running here before either dataset is presented to a real pilot partner as a demo data source.
+**Status: ANSWERED 2026-08-27.** Neither is real partner data, and one isn't usable for its described purpose at all:
+- **Supplement Sales Data**: confirmed public/synthetic-style demo data (generic Canada/UK/USA e-commerce activity, no Thailand presence, no tie to any real business). Structurally clean, fine for prototyping dashboard UI, not representative of an actual pilot partner.
+- **Pharmaceutical Drugs and Vitamins Dataset V2**: turns out to be a 51,104-image pill/box-photo classification dataset of Philippine OTC drug brands, not the tabular catalog/product-info data `prd.md` §6 assumed it was. It cannot serve the SKU catalog use case in §6.1/§6.3 regardless of legitimacy — this was a dataset-selection mismatch, not just a provenance question.
+- Also found, while checking: a fourth resource (`utkarshsaxenadn/drugs-and-vitamins-classification`) turns out to be a third party's pretrained CNN model file, not a dataset. Unused by any code path; recommend leaving it unused rather than trying to vet an opaque black-box model with no visible training methodology.
+
+**Evidence:** `data/DATA_PROVENANCE.md` "Assessment of the other three resources."
 
 ---
 

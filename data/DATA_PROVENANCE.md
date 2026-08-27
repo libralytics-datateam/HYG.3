@@ -1,7 +1,7 @@
 # Data Provenance & Medical-Grade Compliance Assessment
 
-**Status: FAIL — do not use for any patient-facing prediction or health claim.**
-**Assessed: 2026-08-27. Scope: the datasets pulled by `data/download_datasets.py` and the model they produced (`server/ml/vitamin_model.pkl`), which backs the (now gated) `POST /v1/ai/predict` endpoint.**
+**Status: FAIL for the prediction model — do not use for any patient-facing prediction or health claim.** The other three resources `data/download_datasets.py` pulls are lower-stakes (not clinical claims) but have their own problems — see the follow-up assessment below.
+**Assessed: 2026-08-27, extended 2026-08-27. Scope: all four Kaggle resources pulled by `data/download_datasets.py`, and the model one of them produced (`server/ml/vitamin_model.pkl`), which backs the (now gated) `POST /v1/ai/predict` endpoint.**
 
 This document exists so the next person who looks at this model isn't tempted to re-enable it without understanding why it was turned off. See `server/routes/ai.ts` for the gate itself, and `prd.md` §13 for the product-level scope rule this enforces.
 
@@ -18,9 +18,9 @@ The data behind the vitamin-deficiency prediction model has **no clinical proven
 | Resource | Kaggle ID | Role |
 |---|---|---|
 | Vitamin Deficiency Disease Prediction Dataset | `nudratabbas/vitamin-deficiency-disease-prediction-dataset` | Trains `vitamin_model.pkl` — the model actually served |
-| Pharmaceutical Drugs and Vitamins Dataset V2 | `vencerlanz09/pharmaceutical-drugs-and-vitamins-dataset-v2` | Image dataset (pill photos), unused by any served feature |
-| Drugs and Vitamins Classification | `utkarshsaxenadn/drugs-and-vitamins-classification` | Image dataset, unused by any served feature |
-| Supplement Sales Data | `zahidmughal2343/supplement-sales-data` | Referenced in `prd.md` §6 as in-scope operational data; not assessed here (not a clinical/prediction dataset) |
+| Pharmaceutical Drugs and Vitamins Dataset V2 | `vencerlanz09/pharmaceutical-drugs-and-vitamins-dataset-v2` | Image dataset (pill/box photos), unused by any served feature — see assessment below |
+| Drugs and Vitamins Classification | `utkarshsaxenadn/drugs-and-vitamins-classification` | **Not a dataset** — a pretrained model file, unused by any served feature — see assessment below |
+| Supplement Sales Data | `zahidmughal2343/supplement-sales-data` | Referenced in `prd.md` §6 as in-scope operational data — see assessment below |
 | Kaggle kernel: `faulty-valdation-set-f1-score-97` | (kernel, not a dataset) | A public notebook whose own title states the widely-cited 97% F1 score on this dataset is a validation-methodology artifact |
 
 All findings below concern the first row — the one dataset that actually produces a served prediction.
@@ -68,6 +68,34 @@ None of the following exists today. All of it would be needed before this class 
 ## Recommendation
 
 Treat this as closed only when real, licensed, clinically-sourced data exists and the checklist above is satisfied — not before. Until then, this stays gated regardless of how compelling a demo re-enabling it might make.
+
+---
+
+## Assessment of the other three resources (2026-08-27 follow-up)
+
+The verdict above only covered the Vitamin Deficiency dataset, because that's the one actually wired into a live route. Checked the remaining three directly against the cached files — none of them are reachable from any live route either (verified via repo-wide search), so there's no active compliance violation here, but two of them turn out not to be what `prd.md` §6 assumed they were.
+
+### Supplement Sales Data (`zahidmughal2343/supplement-sales-data`)
+
+**Verdict: fine as a low-stakes demo dataset; confirmed NOT real partner data.**
+
+A single CSV, `Supplement_Sales_Weekly_Expanded.csv`, 4,384 rows. Structurally clean: 16 plausible supplement products (Whey Protein, Vitamin C, Magnesium, etc.), weekly cadence from 2020-01-06 to 2025-03-31 (matches "Weekly Expanded" — 4,384 rows ÷ 16 products ≈ 274 weeks), zero exact-duplicate rows, and `Revenue = Units Sold × Price` holds exactly on every spot-checked row. Nothing here screams "fabricated" the way the vitamin-deficiency data did.
+
+But it's generic global e-commerce data — `Location` is only Canada/UK/USA, `Platform` is only Amazon/Walmart/iHerb. There's no Thailand presence and no tie to any specific business. This resolves half of `decisions.md`'s open item: it is **not** real partner data, it's a public practice dataset. It's appropriate for prototyping dashboard UI, not for representing to a pilot partner as reflective of their business, and it isn't currently ingested by any code path anyway (`Datasets.tsx`'s "Register Dataset" modal only captures name+type — no CSV upload/parse exists yet, per `MVP-LAUNCH-CHECKLIST.md` §3).
+
+### Pharmaceutical Drugs and Vitamins Dataset V2 (`vencerlanz09/pharmaceutical-drugs-and-vitamins-dataset-v2`)
+
+**Verdict: doesn't match what the PRD assumed it was. Not usable for the described use case regardless of legitimacy.**
+
+`prd.md` §6 describes this as "in scope as reference/catalog data (product info, not patient-linked)." It is not that. It's 51,104 photographs ("Capsure Dataset") of pharmaceutical packaging organized into brand folders for image classification — `Ascozin`, `Bioflu`, `Biogesic`, `Buscopan`, `Decolgen`, `Imodium`, `Lagundi`, and similar. These are real, recognizable **Philippine** OTC pharmacy brands (Biogesic is a ubiquitous Philippine paracetamol brand; Bioflu, Decolgen, and Lagundi are likewise Philippine cold/flu remedies), and most aren't vitamins at all — Buscopan is an antispasmodic, Imodium an antidiarrheal. There is no tabular product-info/catalog data in this resource at all.
+
+This isn't a legitimacy problem in the way the deficiency dataset was — it's a scoping error. Whoever selected this dataset for "catalog data" needed a table of product names/dosages/categories and picked up a computer-vision brand-recognition dataset instead. It cannot serve the SKU catalog / data-quality-scoring use case in `prd.md` §6.1/§6.3 no matter how it's used. If there's a real future need for pill-image recognition, this dataset's brand assortment (Philippine OTC drugs) still wouldn't match a Thai pharmacy's actual catalog.
+
+### Drugs and Vitamins Classification (`utkarshsaxenadn/drugs-and-vitamins-classification`)
+
+**Verdict: not a dataset — a third party's opaque pretrained model, downloaded but never used. Recommend removing it rather than assessing it further.**
+
+Despite the name suggesting a dataset, what actually downloads here is a single file: `DrugsAndVitaminsCustomCNNModel.h5` — a pretrained Keras/TensorFlow CNN weights file with no accompanying source data, training methodology, validation numbers, or license terms visible in this repo. This is a meaningfully different category of risk from the other three: it's not source data anyone here trained on, it's someone else's black-box model, sitting in the local Kaggle cache, that nothing in this codebase loads or calls. There's no way to assess its legitimacy without the original training data and methodology, and no product reason to try — nothing in `prd.md` calls for a drug-image classifier. Simplest resolution is to just not use it; it isn't referenced by `download_datasets.py`'s own dataset table above by accident, but there's no code path anywhere that imports or serves it.
 
 ---
 
