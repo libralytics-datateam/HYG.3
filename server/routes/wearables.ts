@@ -191,7 +191,7 @@ router.post('/whoop/sync', async (req, res) => {
   }
 });
 
-// DELETE /v1/wearables/whoop?patientId=xxx — disconnect
+// DELETE /v1/wearables/whoop?patientId=xxx — disconnect (revokes at WHOOP too, not just locally)
 router.delete('/whoop', async (req, res) => {
   try {
     const patientId = req.query.patientId as string;
@@ -199,6 +199,19 @@ router.delete('/whoop', async (req, res) => {
       res.status(400).json({ error: 'patientId is required' });
       return;
     }
+
+    const conn = await prisma.wearableConnection.findFirst({ where: { patientId, provider: 'whoop' } });
+    if (conn) {
+      try {
+        await whoop.revokeAccess(whoop.decryptToken(conn.accessToken));
+      } catch (revokeErr) {
+        // Proceed with local disconnect regardless — a failed revoke call
+        // (e.g. already-expired token) shouldn't block the user from
+        // disconnecting in our app.
+        console.error('WHOOP revoke-on-disconnect failed:', revokeErr);
+      }
+    }
+
     await prisma.wearableConnection.deleteMany({ where: { patientId, provider: 'whoop' } });
     res.json({ success: true });
   } catch (error) {

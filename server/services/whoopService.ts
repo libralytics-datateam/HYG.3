@@ -119,6 +119,21 @@ export const fetchLatestRecovery = (accessToken: string) => whoopGet(accessToken
 export const fetchLatestSleep = (accessToken: string) => whoopGet(accessToken, '/activity/sleep?limit=1');
 export const fetchLatestCycle = (accessToken: string) => whoopGet(accessToken, '/cycle?limit=1');
 
+// Revokes the token on WHOOP's side (DELETE /v2/user/access), not just
+// locally. Without this, "disconnecting" in-app would leave the token
+// live and valid at WHOOP indefinitely — a real gap, not a nice-to-have.
+export async function revokeAccess(accessToken: string): Promise<void> {
+  const res = await fetch(`${WHOOP_API_BASE}/user/access`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  // 204 on success. Don't throw on failure — the local disconnect should
+  // still proceed even if WHOOP's side errors (e.g. token already expired).
+  if (!res.ok && res.status !== 404) {
+    console.error(`WHOOP revoke access returned ${res.status}`);
+  }
+}
+
 // --- Token encryption at rest ---
 // schema.prisma's WearableConnection comment says "encrypted in real
 // scenario" — that scenario is now real, since these are live per-patient
