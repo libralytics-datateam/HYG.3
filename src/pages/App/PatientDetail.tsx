@@ -8,19 +8,24 @@ export default function PatientDetail() {
   const navigate = useNavigate();
   const [patient, setPatient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     apiFetch(`/v1/patients/${id}`)
       .then(r => r.json())
       .then(json => {
         if (json.success) setPatient(json.data);
+        else setError(json.error || 'Patient not found.');
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        setError('Failed to load patient. Please try again.');
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return <div className="p-8 text-center text-muted">Loading patient...</div>;
-  if (!patient) return <div className="p-8 text-center text-red-400">Patient not found.</div>;
+  if (error || !patient) return <div className="p-8 text-center text-red-400">{error || 'Patient not found.'}</div>;
 
   const statusIcon = (status: string) => {
     if (status === 'approved') return <CheckCircle2 size={16} className="text-teal" />;

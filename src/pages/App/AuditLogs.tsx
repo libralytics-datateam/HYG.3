@@ -1,6 +1,7 @@
 import { ShieldCheck, RefreshCw, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
+import ErrorBanner from '../../components/ErrorBanner';
 
 interface AuditEntry {
   id: string;
@@ -43,6 +44,7 @@ function actionBadge(status: string) {
 export default function AuditLogs() {
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     apiFetch('/v1/ai/outputs')
@@ -51,9 +53,14 @@ export default function AuditLogs() {
         if (json.success) {
           // Show all insights as audit trail — ordered by date desc
           setLogs(json.data);
+        } else {
+          setError(json.error || 'Failed to load audit trail.');
         }
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        setError('Failed to load audit trail. Please try again.');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -81,6 +88,8 @@ export default function AuditLogs() {
           </span>
         </div>
       </div>
+
+      {error && <ErrorBanner message={error} />}
 
       {/* Reviewed entries */}
       {reviewed.length > 0 && (

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Brain, CheckCircle2, XCircle, ArrowLeft, TrendingUp, AlertTriangle, Database } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
+import ErrorBanner from '../../components/ErrorBanner';
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   sales_trend: <TrendingUp size={18} className="text-teal" />,
@@ -23,6 +24,8 @@ export default function AiInsightsDetail() {
   const [insight, setInsight] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [reviewError, setReviewError] = useState('');
 
   useEffect(() => {
     fetchInsights();
@@ -35,10 +38,14 @@ export default function AiInsightsDetail() {
       const json = await res.json();
       if (json.success) {
         const found = json.data.find((i: any) => i.id === id);
-        setInsight(found);
+        if (found) setInsight(found);
+        else setError('Insight not found.');
+      } else {
+        setError(json.error || 'Failed to load insight.');
       }
     } catch (err) {
       console.error(err);
+      setError('Failed to load insight. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -47,15 +54,20 @@ export default function AiInsightsDetail() {
   const handleReview = async (status: 'accepted' | 'rejected') => {
     try {
       setSubmitting(true);
+      setReviewError('');
       const res = await apiFetch(`/v1/ai/outputs/${id}/review`, {
         method: 'POST',
         body: JSON.stringify({ status })
       });
       if (res.ok) {
         navigate('/app/ai-insights');
+      } else {
+        const json = await res.json().catch(() => ({}));
+        setReviewError(json.error || 'Failed to submit review. Please try again.');
       }
     } catch (err) {
       console.error(err);
+      setReviewError('Failed to submit review. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -65,8 +77,8 @@ export default function AiInsightsDetail() {
     return <div className="p-8 text-center text-muted">Loading insight details...</div>;
   }
 
-  if (!insight) {
-    return <div className="p-8 text-center text-red-400">Insight not found.</div>;
+  if (error || !insight) {
+    return <div className="p-8 text-center text-red-400">{error || 'Insight not found.'}</div>;
   }
 
   const statusBadge =
@@ -215,7 +227,9 @@ export default function AiInsightsDetail() {
 
       {/* Review actions */}
       {insight.status === 'pending' && (
-        <div className="flex justify-end gap-4 mt-8">
+        <>
+          {reviewError && <ErrorBanner message={reviewError} />}
+          <div className="flex justify-end gap-4 mt-8">
           <button
             onClick={() => handleReview('rejected')}
             disabled={submitting}
@@ -230,7 +244,8 @@ export default function AiInsightsDetail() {
           >
             <CheckCircle2 size={18} /> Approve Insight
           </button>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

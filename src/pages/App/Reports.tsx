@@ -1,6 +1,7 @@
 import { FileText, Download, TrendingUp, Database, Brain, CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
+import ErrorBanner from '../../components/ErrorBanner';
 
 interface WeeklySummary {
   weeklyInsights: number;
@@ -15,14 +16,19 @@ interface WeeklySummary {
 export default function Reports() {
   const [summary, setSummary] = useState<WeeklySummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     apiFetch('/v1/stats/overview')
       .then(r => r.json())
       .then(json => {
         if (json.success) setSummary(json.data);
+        else setError(json.error || 'Failed to load report summary.');
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        setError('Failed to load report summary. Please try again.');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -56,6 +62,8 @@ export default function Reports() {
           </p>
         </div>
       </div>
+
+      {error && <ErrorBanner message={error} />}
 
       {/* Weekly Summary Card */}
       <div className="glass-panel p-6 mb-6">
