@@ -1,12 +1,19 @@
-# Pinned to match the environment vitamin_model.pkl / label_encoder.pkl were
-# actually pickled with (data/model_training.py, data/.venv). Prisma pickle
-# files are sensitive to library version drift — an unpinned install can
-# silently produce different predictions, or fail to load at all, if a newer
-# scikit-learn changes its internal estimator format. See
+# Pinned so this build is at least reproducible — an unpinned install can
+# silently produce different predictions, or fail to load the pickle at
+# all, if a newer scikit-learn changes its internal estimator format. See
 # data/DATA_PROVENANCE.md — this model is currently gated (POST
 # /v1/ai/predict returns 503) regardless, but keep this pinned in case that
 # ever changes.
+#
+# NOT full parity with the training environment: data/.venv (where
+# vitamin_model.pkl/label_encoder.pkl were actually pickled) runs Python
+# 3.12, but this Docker image's Python 3.11 (node:20-slim's apt default)
+# can't install numpy>=2.5 (requires 3.12+), so numpy is pinned one minor
+# version back. scikit-learn/pandas/joblib match the training venv exactly;
+# numpy does not. If this is ever seriously re-enabled, retrain inside the
+# actual deployment Python version rather than assuming pickle
+# compatibility holds across the gap.
 scikit-learn==1.9.0
 pandas==3.0.5
-numpy==2.5.2
+numpy==2.4.6
 joblib==1.5.3
