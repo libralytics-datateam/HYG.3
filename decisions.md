@@ -168,6 +168,18 @@ A recommendation doesn't ship if it can't populate all four fields honestly:
 
 ### Open questions this scoping raises (not answered here)
 
-1. **Should `POST /v1/analysis/hand-scan` be gated pending pharmacist review, the same way `POST /v1/ai/predict` was?** This is the most urgent follow-up from this document — it's a live gap, not a future one.
-2. Real role enum for `requireRole` — blocks Tier B shipping for real regardless of anything else.
-3. Whether Tier A needs an LLM at all, or ships on rules/thresholds — determines whether the Gemini key is even needed for this specific feature (separate from hand-scan analysis, which already needs it).
+1. ~~Should `POST /v1/analysis/hand-scan` be gated pending pharmacist review, the same way `POST /v1/ai/predict` was?~~ — **Answered 2026-08-28: yes, gate it.** See the follow-up entry below.
+2. Real role enum for `requireRole` — blocks Tier B shipping for real regardless of anything else. Still open.
+3. Whether Tier A needs an LLM at all, or ships on rules/thresholds — determines whether the Gemini key is even needed for this specific feature (separate from hand-scan analysis, which already needs it). Still open.
+
+---
+
+## Hand-scan gate — built 2026-08-28
+
+**Status: done, confirmed with the user before changing.** `POST /v1/analysis/hand-scan` no longer creates a patient-visible `NutritionRecommendation` directly. It now creates a pending `AiOutput` (type `hand_scan_vitamin_concept`) + `CustomVitaminConcept`, routed through the same Accept/Modify/Reject pharmacist-review pipeline already built for other insight types — not a second mechanism. `server/routes/insights.ts`'s review handler builds the real `NutritionRecommendation` only once a pharmacist accepts, from the raw analysis data preserved in `content._raw` at scan time. The overall wellness score and raw visual signals (nail/palm/skin observations) still reach the patient immediately — those are direct observations, not inferred claims; only the deficiency inference, vitamin/dosage suggestions, and meal plan wait for review.
+
+**A required companion fix, found while wiring this, not optional polish:** every consumer self-signup landed in an org (`HYG.3 Consumer Platform`) that had **zero staff users** — meaning nothing could ever be reviewed for anyone who signed up that way, which would have made the new gate leave every hand-scan permanently stuck pending. Confirmed 54 existing patients in that org, all test artifacts from this session's own smoke tests (`smoketest+...`, `checkin+...`, etc. — checked the actual email list before touching anything). Fixed `server/routes/onboarding.ts` to route new signups into whichever org actually has staff; migrated the 54 existing rows to that org after explicit user confirmation (the environment's own safety classifier correctly held back the bulk DB update until asked directly, rather than letting a script quietly run it).
+
+New end-to-end regression test (`server/test/smoke.test.ts`) covers the full path: scan → nothing visible to the patient → pharmacist approves → now visible, with real assertions on both the gated response shape and the org-scoped review flow. 16/16 tests passing.
+
+**Evidence:** `server/routes/handscan.ts`, `server/routes/insights.ts`, `server/routes/onboarding.ts`, `MVP-LAUNCH-CHECKLIST.md` §1.

@@ -9,6 +9,7 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   anomaly: <AlertTriangle size={18} className="text-gold" />,
   data_quality: <Database size={18} className="text-teal" />,
   vitamin_concept: <Brain size={18} className="text-teal" />,
+  hand_scan_vitamin_concept: <Brain size={18} className="text-teal" />,
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -16,6 +17,7 @@ const TYPE_LABELS: Record<string, string> = {
   anomaly: 'Anomaly Detection',
   data_quality: 'Data Quality',
   vitamin_concept: 'Vitamin Concept',
+  hand_scan_vitamin_concept: 'Hand-Scan Recommendation',
 };
 
 export default function AiInsightsDetail() {

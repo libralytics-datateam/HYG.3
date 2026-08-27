@@ -35,8 +35,14 @@ router.post('/', async (req, res) => {
       return;
     }
 
-    // Get or create default org for standalone consumer users
-    let org = await prisma.organization.findFirst({ where: { type: 'consumer' } });
+    // Route new signups into an org that actually has staff. This used to
+    // always go into a separate 'consumer'-type org — found while wiring
+    // hand-scan's pharmacist-review gate (2026-08-28) that that org had
+    // ZERO users, so nobody could ever review anything for anyone who
+    // signed up through it (confirmed: 54 real patients already stuck this
+    // way). org.type isn't checked anywhere else in the codebase for
+    // behavior, so there's no downside to preferring a staffed org here.
+    let org = await prisma.organization.findFirst({ where: { users: { some: {} } } });
     if (!org) {
       org = await prisma.organization.create({
         data: { name: 'HYG.3 Consumer Platform', type: 'consumer' }

@@ -107,6 +107,36 @@ router.post('/:id/review', async (req, res) => {
       });
     }
 
+    // Hand-scan outputs only become visible to the patient once approved —
+    // this is the actual gate (server/routes/handscan.ts stopped creating
+    // NutritionRecommendation directly for exactly this reason). Build it
+    // now from the raw data preserved in content._raw at scan time.
+    if (status === 'accepted' && updatedOutput.type === 'hand_scan_vitamin_concept') {
+      const concept = updatedOutput.customVitaminConcepts[0];
+      const raw = JSON.parse(updatedOutput.content)._raw;
+      if (concept && raw) {
+        const alreadyExists = await prisma.nutritionRecommendation.findUnique({
+          where: { handScanId: raw.handScanId },
+        });
+        if (!alreadyExists) {
+          await prisma.nutritionRecommendation.create({
+            data: {
+              patientId: concept.patientId,
+              handScanId: raw.handScanId,
+              source: 'hand_scan',
+              detectedSignals: JSON.stringify(raw.signals || []),
+              deficiencies: JSON.stringify(raw.deficiencies || []),
+              foods: JSON.stringify(raw.foods || []),
+              fruits: JSON.stringify(raw.fruits || []),
+              vitamins: JSON.stringify(raw.vitamins || []),
+              mealPlan: JSON.stringify(raw.mealPlan || {}),
+              disclaimer: raw.disclaimer || 'INFERENCE only — consult a healthcare professional.',
+            }
+          });
+        }
+      }
+    }
+
     res.json({ success: true, data: updatedOutput });
   } catch (error) {
     console.error('Error reviewing insight:', error);

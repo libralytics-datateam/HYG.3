@@ -123,6 +123,8 @@
     "viewFullReport": "詳細レポートを見る",
     "scanAgain": "再スキャン",
     "demoModeBanner": "デモモードで実行中です — 実際の画像分析にはGemini APIキーを追加してください",
+    "pendingReviewTitle": "薬剤師によるレビュー待ち",
+    "pendingReviewBody": "検出された栄養ギャップ、食品・サプリメントの提案、食事プランは、ダッシュボードに表示される前に薬剤師がレビューします。承認され次第、ダッシュボードに表示されます。",
     "wellnessScore": "ウェルネススコア",
     "wellnessScoreSub": "手に見られる指標に基づく",
     "whatWeDetected": "検出された内容",

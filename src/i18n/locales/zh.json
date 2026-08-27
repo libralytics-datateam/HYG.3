@@ -123,6 +123,8 @@
     "viewFullReport": "查看完整报告",
     "scanAgain": "重新扫描",
     "demoModeBanner": "当前处于演示模式 —— 添加 Gemini API 密钥以进行真实图像分析",
+    "pendingReviewTitle": "等待药剂师审核",
+    "pendingReviewBody": "检测到的营养缺口、食物与营养补充建议以及膳食计划，会先由药剂师审核后才会显示在您的仪表板上。审核通过后即可在仪表板查看。",
     "wellnessScore": "健康评分",
     "wellnessScoreSub": "基于可见的手部指标",
     "whatWeDetected": "我们检测到的内容",

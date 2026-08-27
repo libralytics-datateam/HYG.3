@@ -6,6 +6,23 @@ const router = Router();
 
 // POST /v1/analysis/hand-scan
 // Body: { patientId: string, imageBase64: string, mimeType?: string }
+//
+// GATED as of 2026-08-28 — see decisions.md "Recommendation Engine Scoping".
+// This used to create a NutritionRecommendation directly, visible to the
+// patient immediately, with zero human review. That's exactly what the
+// scoping doc classifies as Tier B (a specific vitamin+dosage suggestion)
+// and Tier C (an inferred deficiency) simultaneously — the same category
+// of risk data/DATA_PROVENANCE.md gated the old prediction model for, just
+// in a pathway that investigation never looked at. Confirmed with the user
+// before changing this (2026-08-28): gate it, reuse the existing
+// pharmacist review pipeline rather than build a second one.
+//
+// What still reaches the patient immediately: the overall wellness score
+// and the raw visual signals (nail/palm/skin observations) — direct
+// observations, not inferred health claims. What now waits for review:
+// likely deficiencies, recommended foods/fruits/vitamins, and the meal
+// plan — all only become visible (as a NutritionRecommendation) once a
+// pharmacist accepts the corresponding AiOutput.
 router.post('/hand-scan', async (req, res) => {
   try {
     const { patientId, imageBase64, mimeType = 'image/jpeg' } = req.body;
@@ -46,23 +63,17 @@ router.post('/hand-scan', async (req, res) => {
       analysis = getSimulatedAnalysis();
     }
 
-    // Save recommendation
-    const recommendation = await prisma.nutritionRecommendation.create({
-      data: {
-        patientId,
-        handScanId: scan.id,
-        source: 'hand_scan',
-        detectedSignals: JSON.stringify(analysis.signals || []),
-        deficiencies: JSON.stringify(analysis.likelyDeficiencies || []),
-        foods: JSON.stringify(analysis.recommendedFoods || []),
-        fruits: JSON.stringify(analysis.recommendedFruits || []),
-        vitamins: JSON.stringify(analysis.recommendedVitamins || []),
-        mealPlan: JSON.stringify(analysis.mealPlan || {}),
-        disclaimer: analysis.disclaimer || 'INFERENCE only — consult a healthcare professional.',
-      }
-    });
+    const signals = analysis.signals || [];
+    const deficiencies = analysis.likelyDeficiencies || [];
+    const foods = analysis.recommendedFoods || [];
+    const fruits = analysis.recommendedFruits || [];
+    const vitamins = analysis.recommendedVitamins || [];
+    const mealPlan = analysis.mealPlan || {};
+    const disclaimer = analysis.disclaimer || 'INFERENCE only — consult a healthcare professional.';
+    const analysisMode = process.env.GEMINI_API_KEY ? 'gemini-vision' : 'simulated';
 
-    // Update scan status
+    // Update scan status — the raw analysis is kept here regardless of
+    // review outcome, as the actual record of what the model produced.
     await prisma.handScan.update({
       where: { id: scan.id },
       data: {
@@ -71,11 +82,9 @@ router.post('/hand-scan', async (req, res) => {
       }
     });
 
-    // Also record this as a BiometricReading — the schema already anticipates
-    // hand-scan data here (metricType comment lists 'antioxidant_score'), but
-    // nothing was actually writing to it before now. This is what makes hand
-    // scans show up in accumulated biometric history alongside WHOOP data,
-    // and in GET /v1/patients/:id/biometric-summary.
+    // Real biometric signal — a holistic visual score, not a specific
+    // clinical claim, so this still reaches the patient immediately (same
+    // treatment as WHOOP's recovery_score etc).
     if (typeof analysis.overallScore === 'number') {
       await prisma.biometricReading.create({
         data: {
@@ -88,20 +97,70 @@ router.post('/hand-scan', async (req, res) => {
       });
     }
 
+    // Everything below (deficiencies, foods, vitamins, meal plan) goes
+    // through the same AiOutput + CustomVitaminConcept pharmacist-review
+    // pipeline already built and verified for other insight types —
+    // deliberately not a second review mechanism.
+    const avgConfidence = deficiencies.length > 0
+      ? deficiencies.reduce((sum: number, d: any) => sum + (d.confidence || 0), 0) / deficiencies.length
+      : 0.5;
+
+    const content = {
+      headline: deficiencies.length > 0
+        ? `Hand-scan: possible ${deficiencies.map((d: any) => d.nutrient).join(', ')}`
+        : 'Hand-scan: no specific deficiencies flagged',
+      fact: signals.length > 0
+        ? signals.map((s: any) => `${s.area}: ${s.observation}`).join('; ')
+        : 'No specific visual signals detected.',
+      inference: deficiencies.length > 0
+        ? deficiencies.map((d: any) => `${d.nutrient} (${Math.round((d.confidence || 0) * 100)}% confidence) — ${d.reason}`).join('; ')
+        : 'No specific deficiencies inferred from this scan.',
+      recommendation: vitamins.length > 0
+        ? vitamins.map((v: any) => `${v.name} ${v.dosage}`).join('; ')
+        : 'No specific supplement recommended.',
+      uncertainty: `${disclaimer} Based on a single hand-scan image (${analysisMode} analysis), not a lab-confirmed result — pharmacist judgment required before this reaches the patient.`,
+      // Preserved verbatim so an approval can reconstruct the patient-facing
+      // NutritionRecommendation without re-running analysis. Namespaced (_raw)
+      // so it doesn't collide with the fact/inference/recommendation/uncertainty
+      // fields above, same pattern as the reviewNote key added for §8's Modify action.
+      _raw: { handScanId: scan.id, signals, deficiencies, foods, fruits, vitamins, mealPlan, disclaimer },
+    };
+
+    const aiOutput = await prisma.aiOutput.create({
+      data: {
+        orgId: patient.orgId,
+        type: 'hand_scan_vitamin_concept',
+        content: JSON.stringify(content),
+        confidenceScore: avgConfidence,
+        modelVersion: analysisMode === 'gemini-vision' ? 'gemini-1.5-flash' : 'simulated',
+        reviewStatus: 'pending',
+      }
+    });
+
+    // Don't fabricate SKU codes against an empty Product catalog (see
+    // decisions.md's Phase 5 data-layer entry) — store the actual
+    // suggested vitamin names, not invented catalog codes.
+    await prisma.customVitaminConcept.create({
+      data: {
+        patientId,
+        status: 'pending_pharmacist_review',
+        recommendedSkus: JSON.stringify(vitamins.map((v: any) => v.name)),
+        rationaleSummary: deficiencies.length > 0
+          ? `Hand-scan suggests possible ${deficiencies.map((d: any) => d.nutrient).join(', ')} based on visual signals — pending pharmacist review before reaching the patient.`
+          : 'Hand-scan analysis complete, no specific deficiencies flagged — pending pharmacist review.',
+        aiOutputId: aiOutput.id,
+      }
+    });
+
     res.json({
       success: true,
       data: {
         scanId: scan.id,
-        recommendationId: recommendation.id,
         overallScore: analysis.overallScore || null,
-        signals: analysis.signals,
-        deficiencies: analysis.likelyDeficiencies,
-        foods: analysis.recommendedFoods,
-        fruits: analysis.recommendedFruits,
-        vitamins: analysis.recommendedVitamins,
-        mealPlan: analysis.mealPlan,
-        disclaimer: analysis.disclaimer,
-        analysisMode: process.env.GEMINI_API_KEY ? 'gemini-vision' : 'simulated'
+        signals,
+        disclaimer,
+        analysisMode,
+        reviewStatus: 'pending',
       }
     });
   } catch (error) {

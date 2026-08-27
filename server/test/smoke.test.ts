@@ -199,6 +199,72 @@ test('hand scan writes a BiometricReading, and biometric-summary reflects it', a
   assert.equal(antioxidant.latestSource, 'hand_scanner');
 });
 
+test('hand-scan output is gated — no recommendation until a pharmacist approves it', async () => {
+  // Regression guard for the 2026-08-28 gating change: hand-scan used to
+  // create a patient-visible NutritionRecommendation directly, with no
+  // review. This confirms the whole pipeline: scan -> pending AiOutput ->
+  // nothing visible to the patient yet -> pharmacist approves -> now visible.
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Gate', lastName: 'Test', email: `gatetest+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  const scanRes = await fetch(`${BASE_URL}/v1/analysis/hand-scan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId }),
+  });
+  const scanJson = await scanRes.json();
+  assert.equal(scanRes.status, 200);
+  assert.equal(scanJson.data.reviewStatus, 'pending');
+  // The gate: deficiencies/vitamins/foods/mealPlan must NOT come back in
+  // this response — that's the whole point of the change.
+  assert.equal(scanJson.data.deficiencies, undefined);
+  assert.equal(scanJson.data.vitamins, undefined);
+  assert.equal(scanJson.data.mealPlan, undefined);
+  // Raw signals and the overall score are direct observations, not
+  // inferred health claims, so they still reach the patient immediately.
+  assert.ok(Array.isArray(scanJson.data.signals));
+  assert.equal(typeof scanJson.data.overallScore, 'number');
+
+  // Nothing visible to the patient yet — no NutritionRecommendation exists.
+  const beforeReview = await fetch(`${BASE_URL}/v1/recommendations/${patient.patientId}/latest`).then((r) => r.json());
+  assert.equal(beforeReview.data, null);
+
+  // Find and approve the pending insight as the pharmacist.
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+
+  const outputsRes = await fetch(`${BASE_URL}/v1/ai/outputs`, {
+    headers: { Authorization: `Bearer ${session.token}` },
+  });
+  const { data: outputs } = await outputsRes.json();
+  const pendingOutput = outputs.find((o: any) => o.patientId === patient.patientId && o.type === 'hand_scan_vitamin_concept');
+  assert.ok(pendingOutput, 'expected a pending hand_scan_vitamin_concept insight for this patient');
+
+  const reviewRes = await fetch(`${BASE_URL}/v1/ai/outputs/${pendingOutput.id}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` },
+    body: JSON.stringify({ status: 'accepted' }),
+  });
+  assert.equal(reviewRes.status, 200);
+
+  // Now it's visible.
+  const afterReview = await fetch(`${BASE_URL}/v1/recommendations/${patient.patientId}/latest`).then((r) => r.json());
+  assert.ok(afterReview.data, 'expected a NutritionRecommendation to exist now');
+  assert.equal(afterReview.data.source, 'hand_scan');
+  assert.ok(afterReview.data.vitamins.length > 0);
+});
+
 test('POST /v1/checkins saves a real check-in and GET .../latest reflects it', async () => {
   const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
     method: 'POST',

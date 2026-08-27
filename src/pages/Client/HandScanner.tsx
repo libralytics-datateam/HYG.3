@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Camera, FlipHorizontal, Loader2, ChevronLeft, Sun, Hand, Stethoscope, AlertTriangle, Search, AlertCircle, Salad, Apple, Pill, UtensilsCrossed, Sunrise, CloudSun, Moon } from 'lucide-react';
+import { Camera, FlipHorizontal, Loader2, ChevronLeft, Sun, Hand, Stethoscope, AlertTriangle, Search, ClipboardCheck } from 'lucide-react';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import './HandScanner.css';
 
@@ -261,90 +261,16 @@ export default function HandScanner() {
           </section>
         )}
 
-        {/* Deficiencies */}
-        {result.deficiencies?.length > 0 && (
-          <section className="results-section glass-panel">
-            <h2 className="results-section-title flex items-center gap-2"><AlertCircle size={18} className="text-gold" /> {t('handScanner.nutritionalGaps')}</h2>
-            {result.deficiencies.map((d: any, i: number) => (
-              <div key={i} className="deficiency-item">
-                <div className="deficiency-header">
-                  <span className="deficiency-name">{d.nutrient}</span>
-                  <span className="deficiency-conf">{Math.round(d.confidence * 100)}% {t('handScanner.confidence')}</span>
-                </div>
-                <div className="deficiency-bar">
-                  <div className="deficiency-fill" style={{ width: `${d.confidence * 100}%` }} />
-                </div>
-                <p className="deficiency-reason">{d.reason}</p>
-              </div>
-            ))}
-          </section>
-        )}
-
-        {/* Foods */}
-        {result.foods?.length > 0 && (
-          <section className="results-section glass-panel">
-            <h2 className="results-section-title flex items-center gap-2"><Salad size={18} className="text-teal" /> {t('handScanner.recommendedFoods')}</h2>
-            <div className="food-grid">
-              {result.foods.map((f: any, i: number) => (
-                <div key={i} className="food-card">
-                  <Salad size={22} className="food-emoji text-teal" />
-                  <span className="food-name">{f.name}</span>
-                  <span className="food-benefit">{f.benefit}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Fruits */}
-        {result.fruits?.length > 0 && (
-          <section className="results-section glass-panel">
-            <h2 className="results-section-title flex items-center gap-2"><Apple size={18} className="text-teal" /> {t('handScanner.recommendedFruits')}</h2>
-            <div className="food-grid">
-              {result.fruits.map((f: any, i: number) => (
-                <div key={i} className="food-card">
-                  <Apple size={22} className="food-emoji text-teal" />
-                  <span className="food-name">{f.name}</span>
-                  <span className="food-benefit">{f.benefit}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Vitamins */}
-        {result.vitamins?.length > 0 && (
-          <section className="results-section glass-panel">
-            <h2 className="results-section-title flex items-center gap-2"><Pill size={18} className="text-teal" /> {t('handScanner.supplementRecommendations')}</h2>
-            {result.vitamins.map((v: any, i: number) => (
-              <div key={i} className="vitamin-item">
-                <div className="vitamin-header">
-                  <span className="vitamin-name">{v.name}</span>
-                  <span className="vitamin-dosage">{v.dosage}</span>
-                </div>
-                <p className="vitamin-reason">{v.reason}</p>
-              </div>
-            ))}
-          </section>
-        )}
-
-        {/* Meal Plan */}
-        {result.mealPlan && (
-          <section className="results-section glass-panel">
-            <h2 className="results-section-title flex items-center gap-2"><UtensilsCrossed size={18} className="text-teal" /> {t('handScanner.mealPlan')}</h2>
-            {[
-              { key: 'breakfast', label: t('handScanner.breakfast'), icon: Sunrise },
-              { key: 'lunch', label: t('handScanner.lunch'), icon: CloudSun },
-              { key: 'dinner', label: t('handScanner.dinner'), icon: Moon },
-              { key: 'snack', label: t('handScanner.snack'), icon: Apple },
-            ].map(({ key, label, icon: Icon }) => result.mealPlan[key] && (
-              <div key={key} className="meal-item">
-                <span className="meal-label flex items-center gap-2"><Icon size={14} className="text-muted" /> {label}</span>
-                <span className="meal-desc">{result.mealPlan[key]}</span>
-              </div>
-            ))}
-          </section>
-        )}
+        {/* Pending pharmacist review — deficiencies, food/vitamin suggestions, and
+            the meal plan no longer come back directly in this response. They're
+            reviewed by a pharmacist first (same pipeline as AI Insights review)
+            and only appear on the dashboard once approved. */}
+        <section className="results-section glass-panel">
+          <h2 className="results-section-title flex items-center gap-2">
+            <ClipboardCheck size={18} className="text-gold" /> {t('handScanner.pendingReviewTitle')}
+          </h2>
+          <p className="text-muted text-sm">{t('handScanner.pendingReviewBody')}</p>
+        </section>
 
         {/* Disclaimer */}
         <div className="disclaimer-banner flex items-center gap-2">

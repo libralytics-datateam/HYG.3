@@ -123,6 +123,8 @@
     "viewFullReport": "View Full Report",
     "scanAgain": "Scan Again",
     "demoModeBanner": "Running in demo mode — add a Gemini API key for real image analysis",
+    "pendingReviewTitle": "Pending Pharmacist Review",
+    "pendingReviewBody": "Your detected nutritional gaps, food and supplement suggestions, and meal plan are reviewed by a pharmacist before they reach your dashboard. You'll see them there once approved.",
     "wellnessScore": "Wellness Score",
     "wellnessScoreSub": "Based on visible hand indicators",
     "whatWeDetected": "What We Detected",
