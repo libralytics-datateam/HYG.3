@@ -51,8 +51,8 @@ export default function Contact() {
               <div className="flex gap-4 items-start">
                 <MapPin className="text-gold" size={24} />
                 <div>
-                  <h4 className="font-bold text-text">Headquarters</h4>
-                  <p className="text-muted">Libralytics Co., Ltd.<br/>123 Health Tech Ave<br/>Innovation District, CA 94103</p>
+                  <h4 className="font-bold text-text">Location</h4>
+                  <p className="text-muted">Thailand</p>
                 </div>
               </div>
             </div>

@@ -1,4 +1,12 @@
-import { Zap, Shield, Database, Activity } from 'lucide-react';
+import { Zap, Shield, Database, Activity, Calendar } from 'lucide-react';
+
+function ComingSoonBadge() {
+  return (
+    <span className="inline-block bg-gold/20 text-gold text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3">
+      Coming Soon
+    </span>
+  );
+}
 
 export default function Features() {
   return (
@@ -23,6 +31,14 @@ export default function Features() {
 
           <div className="bento-card glass-panel col-span-6">
             <div className="bento-icon">
+              <Calendar size={24} />
+            </div>
+            <h3>Wellness Check-ins &amp; Trends</h3>
+            <p>A 30-second periodic check-in — how you feel, any symptoms, whether you followed your plan — builds a real trend over time, visible to you and your pharmacist. Direct self-report, not inferred from any other signal.</p>
+          </div>
+
+          <div className="bento-card glass-panel col-span-12">
+            <div className="bento-icon">
               <Zap size={24} />
             </div>
             <h3>Building Toward Real Prediction</h3>
@@ -41,8 +57,9 @@ export default function Features() {
             <div className="bento-icon">
               <Activity size={24} />
             </div>
+            <ComingSoonBadge />
             <h3>Dynamic Vitamin Concepts</h3>
-            <p>Gone are the days of static daily vitamins. As your biometric data changes (e.g. heavy training weeks, illness, poor sleep), your formulation concept adjusts its baseline ingredient profiles dynamically.</p>
+            <p>Gone are the days of static daily vitamins. Once a real, sourced product catalog and clinically-validated recommendation logic are in place, your formulation concept will adjust its baseline ingredient profile as your biometric data changes — heavy training weeks, illness, poor sleep. On our roadmap, not yet live.</p>
           </div>
 
         </div>
