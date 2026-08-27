@@ -166,11 +166,13 @@ Wellness tracking (MVP) → **Medical-grade tracker** → **Lifespan** (longevit
 
 ## 15. Open Questions Requiring Stakeholder Input
 
-1. Which pilot partner (pharmacy group, supplement retailer, or wellness business) is realistically committable in the next 60–90 days?
-2. Can the three test datasets (Supplement Sales, Pharmaceutical & Vitamins, Vitamin Deficiency Prediction) be confirmed as either real partner data or clearly-labeled public/synthetic data — this changes what governance applies? **Partially answered:** Vitamin Deficiency Prediction is confirmed synthetic/procedurally-generated, not real patient data — see `data/DATA_PROVENANCE.md`. Supplement Sales and Pharmaceutical & Vitamins datasets were not assessed as part of that review and still need this confirmation.
-3. Who at Libralytics owns the legal/privacy and Thai FDA advertising-claims review before any pilot data or AI-generated sales copy goes live?
-4. ~~Explicit decision needed: does the Vitamin Deficiency Disease Prediction dataset stay research-only indefinitely, or is there a roadmap intent to build a governed clinical feature from it later (Phase 5+)?~~ **Answered 2026-08-27:** research-only, enforced at the code level (`POST /v1/ai/predict` gated, returns 503) — see §13 and `data/DATA_PROVENANCE.md`. Revisit only if real, clinically-sourced, properly-licensed training data is obtained.
+Answers to these, once settled, are logged in `decisions.md` rather than edited in place here — check there for the current status of each.
+
+1. Which pilot partner (pharmacy group, supplement retailer, or wellness business) is realistically committable in the next 60–90 days? — **OPEN**, see `decisions.md`.
+2. Can the three test datasets (Supplement Sales, Pharmaceutical & Vitamins, Vitamin Deficiency Prediction) be confirmed as either real partner data or clearly-labeled public/synthetic data — this changes what governance applies? — **Partially answered**, see `decisions.md`.
+3. Who at Libralytics owns the legal/privacy and Thai FDA advertising-claims review before any pilot data or AI-generated sales copy goes live? — **OPEN**, see `decisions.md`.
+4. ~~Explicit decision needed: does the Vitamin Deficiency Disease Prediction dataset stay research-only indefinitely, or is there a roadmap intent to build a governed clinical feature from it later (Phase 5+)?~~ — **Answered**, see `decisions.md`.
 
 ---
 
-*Companion documents: database-schema.md, api-architecture.md, ai-agent-architecture.md, mvp-roadmap.md, web-structure.md*
+*Companion documents: database-schema.md, api-architecture.md, ai-agent-architecture.md, mvp-roadmap.md, web-structure.md, decisions.md*
