@@ -167,6 +167,10 @@
     "wellness4": "良い",
     "wellness5": "とても良い",
     "symptomsQuestion": "今日、以下のいずれかがありますか？該当するものをすべて選択してください。",
+    "adherenceQuestion": "前回のチェックイン以降、推奨プランに従いましたか？",
+    "adherenceYes": "はい",
+    "adherencePartial": "一部",
+    "adherenceNo": "いいえ",
     "symptoms": {
       "fatigue": "倦怠感",
       "poor_sleep": "睡眠不良",

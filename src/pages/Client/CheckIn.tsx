@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Frown, Meh, Smile, CheckCircle2, Check, Calendar,
-  BatteryLow, Moon, Dumbbell, Bone, CloudFog, Utensils, Sparkles,
+  BatteryLow, Moon, Dumbbell, Bone, CloudFog, Utensils, Sparkles, ClipboardCheck,
 } from 'lucide-react';
 import ErrorBanner from '../../components/ErrorBanner';
 import './CheckIn.css';
@@ -29,6 +29,8 @@ const SYMPTOMS = [
   { id: 'skin_issues', icon: Sparkles },
 ];
 
+const ADHERENCE_OPTIONS = ['yes', 'partial', 'no'] as const;
+
 function isToday(dateStr: string): boolean {
   const d = new Date(dateStr);
   const now = new Date();
@@ -42,8 +44,10 @@ export default function CheckIn() {
 
   const [checking, setChecking] = useState(true);
   const [alreadyDone, setAlreadyDone] = useState(false);
+  const [hasRecommendation, setHasRecommendation] = useState(false);
   const [wellness, setWellness] = useState<number | null>(null);
   const [symptoms, setSymptoms] = useState<string[]>([]);
+  const [adherence, setAdherence] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -53,11 +57,18 @@ export default function CheckIn() {
       navigate('/client/onboard');
       return;
     }
-    fetch(`${API_URL}/checkins/${patientId}/latest`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.success && json.data && isToday(json.data.recordedAt)) {
+    Promise.all([
+      fetch(`${API_URL}/checkins/${patientId}/latest`).then((r) => r.json()),
+      // Adherence ("did you follow your plan") only makes sense once a plan
+      // exists — skip the question entirely rather than ask about nothing.
+      fetch(`${API_URL}/recommendations/${patientId}/latest`).then((r) => r.json()).catch(() => ({ success: false })),
+    ])
+      .then(([checkinJson, recJson]) => {
+        if (checkinJson.success && checkinJson.data && isToday(checkinJson.data.recordedAt)) {
           setAlreadyDone(true);
+        }
+        if (recJson.success && recJson.data) {
+          setHasRecommendation(true);
         }
       })
       .catch(() => {})
@@ -76,7 +87,12 @@ export default function CheckIn() {
       const res = await fetch(`${API_URL}/checkins`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patientId, wellnessScore: wellness, symptoms }),
+        body: JSON.stringify({
+          patientId,
+          wellnessScore: wellness,
+          symptoms,
+          ...(hasRecommendation && adherence ? { adherence } : {}),
+        }),
       });
       const json = await res.json();
       if (json.success) {
@@ -160,6 +176,26 @@ export default function CheckIn() {
             ))}
           </div>
         </div>
+
+        {hasRecommendation && (
+          <div className="checkin-section">
+            <span className="checkin-question flex items-center gap-2">
+              <ClipboardCheck size={16} className="text-teal" />
+              {t('checkIn.adherenceQuestion')}
+            </span>
+            <div className="adherence-options">
+              {ADHERENCE_OPTIONS.map((opt) => (
+                <button
+                  key={opt}
+                  className={`adherence-option ${adherence === opt ? 'selected' : ''}`}
+                  onClick={() => setAdherence(opt)}
+                >
+                  {t(`checkIn.adherence${opt.charAt(0).toUpperCase()}${opt.slice(1)}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button
           className="btn btn-primary"

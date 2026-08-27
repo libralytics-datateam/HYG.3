@@ -167,6 +167,10 @@
     "wellness4": "ดี",
     "wellness5": "ดีมาก",
     "symptomsQuestion": "วันนี้คุณมีอาการเหล่านี้หรือไม่? เลือกได้มากกว่าหนึ่งข้อ",
+    "adherenceQuestion": "คุณปฏิบัติตามแผนที่แนะนำตั้งแต่การเช็คอินครั้งล่าสุดหรือไม่?",
+    "adherenceYes": "ใช่",
+    "adherencePartial": "บางส่วน",
+    "adherenceNo": "ไม่",
     "symptoms": {
       "fatigue": "อ่อนเพลีย",
       "poor_sleep": "นอนหลับไม่ดี",

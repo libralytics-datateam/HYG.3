@@ -12,6 +12,7 @@ const METRIC_LABELS: Record<string, { label: string; unit: string }> = {
   hrv: { label: 'HRV', unit: 'ms' },
   antioxidant_score: { label: 'Hand-Scan Wellness Score', unit: '' },
   wellness_score: { label: 'Self-Reported Wellness', unit: '/5' },
+  adherence_score: { label: 'Plan Adherence', unit: '%' },
 };
 
 const SYMPTOM_LABELS: Record<string, string> = {

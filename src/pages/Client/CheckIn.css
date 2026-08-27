@@ -93,6 +93,35 @@
   flex-shrink: 0;
 }
 
+.adherence-options {
+  display: flex;
+  gap: 8px;
+}
+
+.adherence-option {
+  flex: 1;
+  padding: 12px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.adherence-option:hover {
+  border-color: var(--teal);
+}
+
+.adherence-option.selected {
+  border-color: var(--teal);
+  background: rgba(0, 206, 201, 0.12);
+  color: var(--teal);
+}
+
 .checkin-success {
   padding: 48px 32px;
   text-align: center;

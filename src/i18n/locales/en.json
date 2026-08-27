@@ -167,6 +167,10 @@
     "wellness4": "Good",
     "wellness5": "Great",
     "symptomsQuestion": "Any of these today? Select all that apply.",
+    "adherenceQuestion": "Did you follow your recommended plan since your last check-in?",
+    "adherenceYes": "Yes",
+    "adherencePartial": "Partially",
+    "adherenceNo": "No",
     "symptoms": {
       "fatigue": "Fatigue",
       "poor_sleep": "Poor Sleep",

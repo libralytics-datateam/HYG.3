@@ -22,7 +22,16 @@ export const SYMPTOM_KEYS = [
   'skin_issues',
 ] as const;
 
-// POST /v1/checkins — body: { patientId, wellnessScore: 1-5, symptoms: string[] }
+// Adherence — "did the patient follow their recommended plan" — is
+// deliberately a single low-friction question (not a per-supplement
+// checklist) since self-logged adherence has notoriously poor compliance in
+// consumer apps once logging itself becomes a chore. Optional: only makes
+// sense once a recommendation actually exists, so the frontend only shows
+// it when one does, and the backend doesn't require it.
+const ADHERENCE_VALUES: Record<string, number> = { yes: 100, partial: 50, no: 0 };
+const ADHERENCE_LABELS: Record<number, string> = { 100: 'yes', 50: 'partial', 0: 'no' };
+
+// POST /v1/checkins — body: { patientId, wellnessScore: 1-5, symptoms: string[], adherence?: 'yes'|'partial'|'no' }
 // No dedicated CheckIn table — this app's DB role can't ALTER or CREATE
 // tables it doesn't own (see MVP-LAUNCH-CHECKLIST.md §4/§8), so, same as
 // hand-scan and WHOOP data, this is stored as BiometricReading rows
@@ -31,7 +40,7 @@ export const SYMPTOM_KEYS = [
 // absent" stay distinguishable in the data, not just silently missing.
 router.post('/', async (req, res) => {
   try {
-    const { patientId, wellnessScore, symptoms = [] } = req.body;
+    const { patientId, wellnessScore, symptoms = [], adherence } = req.body;
 
     if (!patientId) {
       res.status(400).json({ error: 'patientId is required' });
@@ -44,6 +53,10 @@ router.post('/', async (req, res) => {
     }
     if (!Array.isArray(symptoms) || symptoms.some((s) => !SYMPTOM_KEYS.includes(s))) {
       res.status(400).json({ error: 'symptoms must be an array of known symptom keys' });
+      return;
+    }
+    if (adherence !== undefined && !(adherence in ADHERENCE_VALUES)) {
+      res.status(400).json({ error: 'adherence must be one of: yes, partial, no' });
       return;
     }
 
@@ -66,6 +79,9 @@ router.post('/', async (req, res) => {
           value: symptomSet.has(key) ? 1 : 0,
           recordedAt,
         })),
+        ...(adherence !== undefined
+          ? [{ patientId, source: 'self_report', metricType: 'adherence_score', value: ADHERENCE_VALUES[adherence]!, recordedAt }]
+          : []),
       ],
     });
 
@@ -99,12 +115,15 @@ router.get('/:patientId/latest', async (req, res) => {
       .filter((r) => r.metricType.startsWith('symptom_') && r.value === 1)
       .map((r) => r.metricType.replace('symptom_', ''));
 
+    const adherenceReading = sameCheckIn.find((r) => r.metricType === 'adherence_score');
+
     res.json({
       success: true,
       data: {
         recordedAt: latestWellness.recordedAt,
         wellnessScore: latestWellness.value,
         symptoms,
+        adherence: adherenceReading ? ADHERENCE_LABELS[adherenceReading.value] ?? null : null,
       },
     });
   } catch (error) {

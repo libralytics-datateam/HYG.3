@@ -252,6 +252,37 @@ test('GET /v1/checkins/:patientId/history returns wellness_score readings oldest
   assert.equal(json.data.history[1].value, 4);
 });
 
+test('POST /v1/checkins accepts adherence and GET .../latest reflects it', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Adherence', lastName: 'Test', email: `adherence+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  const res = await fetch(`${BASE_URL}/v1/checkins`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, wellnessScore: 4, symptoms: [], adherence: 'partial' }),
+  });
+  assert.equal(res.status, 201);
+
+  const latest = await fetch(`${BASE_URL}/v1/checkins/${patient.patientId}/latest`).then((r) => r.json());
+  assert.equal(latest.data.adherence, 'partial');
+});
+
+test('POST /v1/checkins rejects an invalid adherence value', async () => {
+  const res = await fetch(`${BASE_URL}/v1/checkins`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: 'whatever', wellnessScore: 3, symptoms: [], adherence: 'sometimes' }),
+  });
+  assert.equal(res.status, 400);
+});
+
 test('POST /v1/checkins rejects an out-of-range wellnessScore', async () => {
   const res = await fetch(`${BASE_URL}/v1/checkins`, {
     method: 'POST',

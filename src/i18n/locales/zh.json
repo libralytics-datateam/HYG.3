@@ -167,6 +167,10 @@
     "wellness4": "良好",
     "wellness5": "很好",
     "symptomsQuestion": "今天是否有以下情况？可多选。",
+    "adherenceQuestion": "自上次签到以来，您是否遵循了推荐方案？",
+    "adherenceYes": "是",
+    "adherencePartial": "部分遵循",
+    "adherenceNo": "否",
     "symptoms": {
       "fatigue": "疲劳",
       "poor_sleep": "睡眠不佳",
