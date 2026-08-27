@@ -2,7 +2,10 @@
   "nav": {
     "product": "ผลิตภัณฑ์",
     "howItWorks": "วิธีการทำงาน",
+    "pricing": "ราคา",
     "about": "เกี่ยวกับเรา",
+    "forBusiness": "สำหรับธุรกิจ",
+    "login": "เข้าสู่ระบบ",
     "getStarted": "เริ่มต้นใช้งานฟรี"
   },
   "footer": {

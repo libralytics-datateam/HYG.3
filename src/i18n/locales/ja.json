@@ -2,7 +2,10 @@
   "nav": {
     "product": "製品",
     "howItWorks": "仕組み",
+    "pricing": "料金",
     "about": "会社概要",
+    "forBusiness": "法人のお客様",
+    "login": "ログイン",
     "getStarted": "無料で始める"
   },
   "footer": {

@@ -38,7 +38,7 @@
 
 .marketing-nav {
   display: flex;
-  gap: 32px;
+  gap: 24px;
   align-items: center;
 }
 
@@ -51,6 +51,25 @@
 }
 
 .marketing-nav a:hover {
+  color: var(--gold);
+}
+
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-login-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.nav-login-link:hover {
   color: var(--gold);
 }
 

@@ -19,10 +19,13 @@ export default function MarketingLayout() {
         <nav className="marketing-nav">
           <Link to="/product">{t('nav.product')}</Link>
           <Link to="/how-it-works">{t('nav.howItWorks')}</Link>
+          <Link to="/pricing">{t('nav.pricing')}</Link>
           <Link to="/about">{t('nav.about')}</Link>
+          <Link to="/contact">{t('nav.forBusiness')}</Link>
         </nav>
         <div className="auth-links">
           <LanguageSwitcher />
+          <Link to="/login" className="nav-login-link">{t('nav.login')}</Link>
           <Link to="/client/onboard" className="btn btn-primary">
             {t('nav.getStarted')}
             <ArrowRight size={18} style={{ marginLeft: '8px' }} />
@@ -50,12 +53,14 @@ export default function MarketingLayout() {
               <strong>{t('footer.product')}</strong>
               <Link to="/product">{t('footer.features')}</Link>
               <Link to="/how-it-works">{t('nav.howItWorks')}</Link>
+              <Link to="/pricing">{t('nav.pricing')}</Link>
               <Link to="/client/onboard">{t('nav.getStarted')}</Link>
             </div>
             <div className="footer-column">
               <strong>{t('footer.company')}</strong>
               <Link to="/about">{t('footer.aboutUs')}</Link>
               <Link to="/contact">{t('footer.contact')}</Link>
+              <Link to="/login">{t('nav.login')}</Link>
             </div>
             <div className="footer-column">
               <strong>{t('footer.legal')}</strong>

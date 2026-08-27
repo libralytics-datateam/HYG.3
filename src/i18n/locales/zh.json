@@ -2,7 +2,10 @@
   "nav": {
     "product": "产品",
     "howItWorks": "工作原理",
+    "pricing": "价格",
     "about": "关于我们",
+    "forBusiness": "企业合作",
+    "login": "登录",
     "getStarted": "免费开始使用"
   },
   "footer": {

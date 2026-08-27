@@ -29,7 +29,7 @@ export default function Contact() {
       <section className="hero-section animate-fade-in">
         <h1 className="hero-title">Get in <span className="text-gold">Touch</span></h1>
         <p className="hero-subtitle">
-          Have questions about our clinical integrations or API? We're here to help.
+          Pharmacy or wellness business exploring a pilot? Question about our clinical integrations or API? We're here to help.
         </p>
       </section>
 

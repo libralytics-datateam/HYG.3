@@ -2,7 +2,10 @@
   "nav": {
     "product": "Product",
     "howItWorks": "How it Works",
+    "pricing": "Pricing",
     "about": "About",
+    "forBusiness": "For Business",
+    "login": "Log In",
     "getStarted": "Get Started Free"
   },
   "footer": {

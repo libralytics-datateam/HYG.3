@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Activity, Camera, LayoutDashboard, LogOut, Calendar } from 'lucide-react';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -7,6 +7,7 @@ import './ClientLayout.css';
 export default function ClientLayout() {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const isActive = (path: string) => location.pathname === path ? 'active' : '';
   const patientName = localStorage.getItem('hyg3_patient_name');
 
@@ -49,7 +50,7 @@ export default function ClientLayout() {
               onClick={() => {
                 localStorage.removeItem('hyg3_patient_id');
                 localStorage.removeItem('hyg3_patient_name');
-                window.location.href = '/client/onboard';
+                navigate('/client/onboard', { replace: true });
               }}
             >
               <LogOut size={18} />
