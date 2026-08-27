@@ -1,8 +1,31 @@
 # HYG.3 — MVP Completion & Deployment Checklist
 
-Snapshot date: 2026-08-22, last swept for accuracy 2026-08-27 (second pass same day: CI added, health check/meta-tags/demo-mode banner confirmed already live). Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
+Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28. Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
 
 **Deploy split (decided):** frontend (Vite/React) → Vercel. Backend (Express + Prisma/Postgres + Python ML subprocess + Gemini vision) stays on Render, as `render.yaml` already targets. Nothing here migrates the backend to Vercel serverless.
+
+---
+
+## Go-live readiness (as of 2026-08-28)
+
+**Not ready for real patient data or a real pilot.** Safe to demo on synthetic/seed data today — infra is stable and CI-tested. Ready status by track:
+
+🔴 **Blocking — resolve before any real (non-demo) launch:**
+1. **Most urgent, found 2026-08-28, still open:** `POST /v1/analysis/hand-scan` is live and outputs an inferred deficiency + a specific vitamin/dosage suggestion to real patients with **zero pharmacist review** — see §1's item on this and `decisions.md`'s "Recommendation Engine Scoping" entry. Decide on gating this before anything else here.
+2. `requireRole` isn't wired anywhere (§1) — any authenticated org member can approve clinical-adjacent AI output regardless of role.
+3. Thai FDA / health-claims legal review — not done (§6).
+4. Legal/DPA sign-off for real (non-synthetic) patient data — not done (§6).
+5. PDPA consent wording is placeholder text, not reviewed by Thai counsel (§6) — the checkbox itself is real and enforced.
+6. Demo credentials still live (`sarah@libralytics.com` / `marcus@libralytics.com`, `password123`) — fine for testing, rotate before real pilot data.
+
+🟡 **Not blocking, but not fully functional yet:**
+- `GEMINI_API_KEY` unset → hand-scan analysis is 100% simulated in production today (honestly labeled with a visible demo-mode banner, not hidden).
+- WHOOP not configured → UI shows "coming soon," nothing broken.
+- `Product` catalog is empty (0 rows) → blocks any real SKU-specific recommendation regardless of the above.
+- Full walkthrough with a real Gemini key never actually run (§3).
+- Custom Vercel domain — optional (§5).
+
+🟢 **Solid:** auth + org-scoping, Render/Vercel both stable and CI-tested, real CSV dataset ingestion, FACT/INFERENCE/RECOMMENDATION/UNCERTAINTY labeling, WHOOP OAuth built correctly (needs only credentials), the check-in/adherence/outcome-tracking feature set, PDPA consent structurally enforced, site navigation/structure audited and fixed, and the data-legitimacy investigation is thorough — the original fake model is properly gated.
 
 ---
 
