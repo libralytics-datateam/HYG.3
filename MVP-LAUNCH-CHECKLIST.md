@@ -53,7 +53,7 @@ Snapshot date: 2026-08-22, last swept for accuracy 2026-08-27. Based on reading 
 ## 4. Backend (Render) readiness
 
 - [ ] Set `GEMINI_API_KEY` as a real Render environment secret (never commit it).
-- [ ] Pin ML dependencies: `server/Dockerfile` runs `pip install --no-cache-dir scikit-learn pandas` with **no version pins and no `requirements.txt`**. If the installed version drifts from whatever version originally pickled `vitamin_model.pkl`/`label_encoder.pkl`, predictions can silently break or change. Add a pinned `requirements.txt` and match it to the training environment.
+- [x] **Resolved 2026-08-27.** `server/ml/requirements.txt` now pins scikit-learn/pandas/joblib to exactly what trained the model; numpy is one minor version back (2.4.6 vs. the training venv's 2.5.2) because the Docker image's Python 3.11 can't install numpy>=2.5 — first pin attempt matched the training venv exactly and broke the build outright (numpy needs Python 3.12), had to walk it back. Documented the remaining version gap in the file itself.
 - [x] **Resolved 2026-08-27 — investigated fully, not just documented.** `data/faulty-valdation-set-f1-score-97.ipynb`'s filename flagged a known validation issue; verified directly against the raw dataset and found it fails any medical-grade bar (synthetic data, invented feature-mapping heuristic). `POST /v1/ai/predict` is now gated (503). Full writeup: `data/DATA_PROVENANCE.md`.
 - [ ] The server's own `npm run build` (tsc) is never actually invoked in the Docker image — it runs via `npx tsx index.ts` directly, so TypeScript errors won't be caught at build time. Consider running `tsc --noEmit` in CI at minimum.
 - [x] Lock CORS down to the deployed Vercel origin(s) (see §1) — code done, real origin value still needs setting in Render.
@@ -78,7 +78,7 @@ Snapshot date: 2026-08-22, last swept for accuracy 2026-08-27. Based on reading 
 
 ## 6. Compliance/legal loose ends (before any real, non-synthetic data)
 
-- [ ] Confirm the Onboarding UI actually captures explicit PDPA consent language — the `Patient` model has `pdpaConsentStatus`/`consentTimestamp` fields, but verify the UI copy meets the "explicit consent" bar PRD §10 calls for, not just an account-creation checkbox.
+- [x] **Investigated 2026-08-27 — worse than this item assumed.** There wasn't a consent checkbox to review the copy of — `server/routes/onboarding.ts` hardcoded `pdpaConsentStatus: true` and a real `consentTimestamp` on every signup unconditionally, regardless of any user action. Fixed the structural gap: added a real, required, unchecked-by-default consent checkbox to `Onboarding.tsx` (all 4 locales) that the backend now actually validates before accepting a submission. **Still open:** the consent wording itself is placeholder copy I wrote, not reviewed by Thai legal counsel — do not treat it as meeting PRD §10's "explicit consent" bar on its own.
 - [ ] Thai FDA / health-claims legal review of AI-generated copy (recommendations, hand-scan disclaimers, any sales-trend language) — PRD §10 flags this as unresolved.
 - [ ] Legal/DPA sign-off before any real partner or patient data (as opposed to seeded/synthetic data) touches this system.
 - [x] Resolved — see `decisions.md` and §1's compliance-conflict item above. Research-only, enforced.
@@ -87,6 +87,6 @@ Snapshot date: 2026-08-22, last swept for accuracy 2026-08-27. Based on reading 
 
 ## 7. Nice-to-have before calling it MVP-done
 
-- [ ] `server/package.json`'s `test` script is a stub (`echo "Error: no test specified"`) — add at least a couple of API smoke tests for `/v1/ai/predict` and `/v1/onboard`.
+- [x] **Resolved 2026-08-27.** `server/test/smoke.test.ts` (`npm test`, Node's built-in test runner, zero new dependencies) — 6 tests: health check, the `/v1/ai/predict` 503 gate as a regression guard, `/v1/onboard` success + missing-fields + missing-consent validation, and auth rejection on protected routes. Verified passing locally and the changes that motivated two of them (the consent check, the gate) are confirmed live in production.
 - [x] **Resolved 2026-08-27.** Added a shared `ErrorBanner` component, wired into DashboardOverview, AiInsightsList, Patients, and Datasets — all four previously swallowed fetch errors via `.catch(console.error)` with zero user-visible feedback.
 - [ ] Audit loading/empty states across pages that fetch data — partially covered by the above, not a full formal pass.
