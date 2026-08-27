@@ -18,10 +18,10 @@ This roadmap reflects the expanded scope of HYG.3, transitioning from a pure B2B
 ## Phase 2: Audit & Explainability (Month 2)
 **Goal:** Prove the AI is safe, trackable, and not a "black box".
 
-* **Platform:** Implement full `ai_outputs` audit trail.
-* **UI:** Build the fixed-layout Explainability View (Headline, Data, Confidence, Missing, Alternatives).
-* **UI:** Build the Review Action Bar (Accept/Modify/Reject).
-* **Compliance:** Exportable weekly summaries for partner IT/Admin teams.
+* **Platform:** Implement full `ai_outputs` audit trail — done (Audit Logs page, `reviewedById` non-spoofable).
+* **UI:** Build the fixed-layout Explainability View (Headline, Data, Confidence, Missing, Alternatives) — done as FACT/INFERENCE/RECOMMENDATION/UNCERTAINTY panels per `prd.md` §6.4's actual labeling standard.
+* **UI:** Build the Review Action Bar (Accept/Modify/Reject) — done (2026-08-27). Modify requires a reviewer note explaining what needs to change.
+* **Compliance:** Exportable weekly summaries for partner IT/Admin teams — done (`Reports.tsx`, real JSON export).
 
 ---
 
@@ -39,10 +39,10 @@ This roadmap reflects the expanded scope of HYG.3, transitioning from a pure B2B
 ## Phase 4: Biometric Integration (Month 4)
 **Goal:** Connect external data sources to patient profiles.
 
-* **Integrations:** WHOOP OAuth flow and daily webhook ingestion (HRV, Sleep, Recovery, Strain).
-* **Integrations:** Hand Scanner data ingestion endpoints (Antioxidant scores).
-* **Database:** Time-series storage for `biometric_readings`.
-* **UI (Client):** "Connect Wearables" screen in the Patient Portal.
+* **Integrations:** WHOOP OAuth flow — done (2026-08-27). Daily webhook ingestion — investigated, not built; blocked on the real webhook payload spec (see `MVP-LAUNCH-CHECKLIST.md` §8). On-demand sync ("Sync Now") is real and working today.
+* **Integrations:** Hand Scanner data ingestion endpoints (Antioxidant scores) — done.
+* **Database:** Time-series storage for `biometric_readings` — done (`BiometricReading`, populated by both hand-scan and WHOOP sync).
+* **UI (Client):** "Connect Wearables" screen in the Patient Portal — done (`WhoopConnectCard`, plus a first-class option at onboarding completion).
 
 ---
 

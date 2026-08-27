@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Brain, CheckCircle2, XCircle, ArrowLeft, TrendingUp, AlertTriangle, Database } from 'lucide-react';
+import { Brain, CheckCircle2, XCircle, ArrowLeft, TrendingUp, AlertTriangle, Database, Pencil } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
 import ErrorBanner from '../../components/ErrorBanner';
 
@@ -26,6 +26,8 @@ export default function AiInsightsDetail() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [reviewError, setReviewError] = useState('');
+  const [showModifyForm, setShowModifyForm] = useState(false);
+  const [modifyNote, setModifyNote] = useState('');
 
   useEffect(() => {
     fetchInsights();
@@ -51,13 +53,13 @@ export default function AiInsightsDetail() {
     }
   };
 
-  const handleReview = async (status: 'accepted' | 'rejected') => {
+  const handleReview = async (status: 'accepted' | 'rejected' | 'modified', note?: string) => {
     try {
       setSubmitting(true);
       setReviewError('');
       const res = await apiFetch(`/v1/ai/outputs/${id}/review`, {
         method: 'POST',
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ status, note })
       });
       if (res.ok) {
         navigate('/app/ai-insights');
@@ -83,7 +85,8 @@ export default function AiInsightsDetail() {
 
   const statusBadge =
     insight.status === 'pending' ? 'bg-gold/20 text-gold' :
-    insight.status === 'rejected' ? 'bg-red-500/20 text-red-400' : 'bg-teal/20 text-teal';
+    insight.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+    insight.status === 'modified' ? 'bg-blue-500/20 text-blue-400' : 'bg-teal/20 text-teal';
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto">
@@ -217,6 +220,19 @@ export default function AiInsightsDetail() {
         </div>
       )}
 
+      {/* Reviewer's modification note, if this insight was sent back for changes */}
+      {insight.content?.reviewNote && (
+        <div className="glass-panel p-6 mb-6 border border-blue-500/30">
+          <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+            <Pencil size={14} /> Reviewer Note — Changes Requested
+          </h2>
+          <p className="text-text text-sm leading-relaxed">{insight.content.reviewNote}</p>
+          {insight.content.reviewNoteAt && (
+            <p className="text-muted text-xs mt-2">{new Date(insight.content.reviewNoteAt).toLocaleString()}</p>
+          )}
+        </div>
+      )}
+
       {/* Rationale */}
       {insight.rationaleSummary && (
         <div className="glass-panel p-6 mb-6">
@@ -229,6 +245,38 @@ export default function AiInsightsDetail() {
       {insight.status === 'pending' && (
         <>
           {reviewError && <ErrorBanner message={reviewError} />}
+
+          {showModifyForm && (
+            <div className="glass-panel p-6 mb-4">
+              <label className="text-sm font-bold text-text block mb-2">
+                What needs to change before this can be approved?
+              </label>
+              <textarea
+                className="w-full bg-bg border border-border rounded p-3 text-sm text-text"
+                rows={3}
+                placeholder="e.g. Dosage looks too high given the patient's weight — recheck before this goes out."
+                value={modifyNote}
+                onChange={(e) => setModifyNote(e.target.value)}
+              />
+              <div className="flex justify-end gap-3 mt-3">
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => { setShowModifyForm(false); setModifyNote(''); }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn flex items-center gap-2 btn-sm"
+                  style={{ background: 'rgba(96,165,250,0.2)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.5)' }}
+                  disabled={submitting || !modifyNote.trim()}
+                  onClick={() => handleReview('modified', modifyNote)}
+                >
+                  <Pencil size={14} /> Submit for Modification
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end gap-4 mt-8">
           <button
             onClick={() => handleReview('rejected')}
@@ -236,6 +284,13 @@ export default function AiInsightsDetail() {
             className="btn bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30 flex items-center gap-2"
           >
             <XCircle size={18} /> Reject Insight
+          </button>
+          <button
+            onClick={() => setShowModifyForm(true)}
+            disabled={submitting || showModifyForm}
+            className="btn bg-blue-500/20 text-blue-400 border border-blue-500/50 hover:bg-blue-500/30 flex items-center gap-2"
+          >
+            <Pencil size={18} /> Request Modification
           </button>
           <button
             onClick={() => handleReview('accepted')}

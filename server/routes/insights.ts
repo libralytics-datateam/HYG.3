@@ -46,14 +46,19 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /v1/ai/outputs/:id/review (Approve or Reject an AI Insight)
+// POST /v1/ai/outputs/:id/review (Approve, Reject, or request Modification of an AI Insight)
 router.post('/:id/review', async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body; // status: 'accepted', 'rejected', 'modified'
+    const { status, note } = req.body; // status: 'accepted', 'rejected', 'modified'
 
     if (!['accepted', 'rejected', 'modified'].includes(status)) {
       res.status(400).json({ error: 'Invalid status' });
+      return;
+    }
+
+    if (status === 'modified' && !note?.trim()) {
+      res.status(400).json({ error: 'A note explaining what needs to change is required for "modified"' });
       return;
     }
 
@@ -63,13 +68,29 @@ router.post('/:id/review', async (req, res) => {
       return;
     }
 
+    // There's no dedicated review-note column on AiOutput — the DB role this
+    // app runs as doesn't have ALTER privileges on tables it doesn't own
+    // (confirmed directly: `prisma db push` fails with "must be owner of
+    // table AiOutput"), so a new column isn't available without someone with
+    // real DB ownership running that migration by hand. Instead, the note is
+    // embedded into the existing `content` JSON column under a `reviewNote`
+    // key, namespaced separately from whatever the AI itself generated.
+    let content = existing.content;
+    if (status === 'modified') {
+      const parsed = JSON.parse(existing.content);
+      parsed.reviewNote = note.trim();
+      parsed.reviewNoteAt = new Date().toISOString();
+      content = JSON.stringify(parsed);
+    }
+
     // reviewedById always comes from the authenticated session, never the client —
     // this is the audit trail's attribution and must not be spoofable.
     const updatedOutput = await prisma.aiOutput.update({
       where: { id },
       data: {
         reviewStatus: status,
-        reviewedById: req.user!.id
+        reviewedById: req.user!.id,
+        content
       },
       include: {
         customVitaminConcepts: true

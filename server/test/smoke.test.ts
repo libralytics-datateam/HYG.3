@@ -137,6 +137,25 @@ test('protected routes reject requests with no token', async () => {
   assert.equal(res.status, 401);
 });
 
+test('POST /v1/ai/outputs/:id/review rejects "modified" without a note', async () => {
+  // Validation runs before the insight lookup, so a fake id is fine here —
+  // this only tests that a note is actually required for "modified", not
+  // that a specific insight gets updated correctly.
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data } = await loginRes.json();
+
+  const res = await fetch(`${BASE_URL}/v1/ai/outputs/nonexistent-id/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.token}` },
+    body: JSON.stringify({ status: 'modified' }),
+  });
+  assert.equal(res.status, 400);
+});
+
 test('GET /v1/wearables/status requires patientId', async () => {
   const res = await fetch(`${BASE_URL}/v1/wearables/status`);
   assert.equal(res.status, 400);

@@ -93,8 +93,9 @@ export default function AiInsightsList() {
                   </td>
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                      insight.status === 'pending' ? 'bg-gold/20 text-gold' : 
-                      insight.status === 'rejected' ? 'bg-red-500/20 text-red-400' : 'bg-teal/20 text-teal'
+                      insight.status === 'pending' ? 'bg-gold/20 text-gold' :
+                      insight.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                      insight.status === 'modified' ? 'bg-blue-500/20 text-blue-400' : 'bg-teal/20 text-teal'
                     }`}>
                       {insight.status}
                     </span>
