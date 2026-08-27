@@ -156,6 +156,49 @@ test('POST /v1/ai/outputs/:id/review rejects "modified" without a note', async (
   assert.equal(res.status, 400);
 });
 
+test('hand scan writes a BiometricReading, and biometric-summary reflects it', async () => {
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+
+  // Use a seeded patient (same org as sarah) rather than /v1/onboard, which
+  // always creates patients under a different ('HYG.3 Consumer Platform')
+  // org that sarah's session can't see — org-scoping is correct, but this
+  // test needs a same-org patient to exercise the real positive path.
+  const patientsRes = await fetch(`${BASE_URL}/v1/patients`, {
+    headers: { Authorization: `Bearer ${session.token}` },
+  });
+  const { data: patients } = await patientsRes.json();
+  const patientId = patients[0].id;
+
+  const before = await fetch(`${BASE_URL}/v1/patients/${patientId}/biometric-summary`, {
+    headers: { Authorization: `Bearer ${session.token}` },
+  }).then((r) => r.json());
+  const readingsBefore = before.data.totalReadings;
+
+  // No imageBase64 + no GEMINI_API_KEY in this env → simulated analysis path
+  // (overallScore: 72, per geminiService.ts's getSimulatedAnalysis), which
+  // still exercises the real BiometricReading write in handscan.ts.
+  const scanRes = await fetch(`${BASE_URL}/v1/analysis/hand-scan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId }),
+  });
+  assert.equal(scanRes.status, 200);
+
+  const after = await fetch(`${BASE_URL}/v1/patients/${patientId}/biometric-summary`, {
+    headers: { Authorization: `Bearer ${session.token}` },
+  }).then((r) => r.json());
+  assert.equal(after.data.totalReadings, readingsBefore + 1);
+  const antioxidant = after.data.metrics.find((m: any) => m.metricType === 'antioxidant_score');
+  assert.ok(antioxidant, 'expected an antioxidant_score metric after a hand scan');
+  assert.equal(antioxidant.latestValue, 72);
+  assert.equal(antioxidant.latestSource, 'hand_scanner');
+});
+
 test('GET /v1/wearables/status requires patientId', async () => {
   const res = await fetch(`${BASE_URL}/v1/wearables/status`);
   assert.equal(res.status, 400);

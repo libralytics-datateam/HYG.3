@@ -49,7 +49,8 @@ This roadmap reflects the expanded scope of HYG.3, transitioning from a pure B2B
 ## Phase 5: Custom Vitamin Concepts (Month 5 - Expanded MVP Target)
 **Goal:** Generate personalized, safe supplement recommendations based on biometric data.
 
-* **AI:** Build the Recommendation Engine (mapping biometrics to the product catalog).
+* **Data layer (2026-08-28):** Biometric side ready — `GET /v1/patients/:id/biometric-summary` aggregates real accumulated signal (hand scans + WHOOP). Product-catalog side is genuinely empty (0 rows, not even seed data) — needs a real sourcing decision, most likely a pilot partner's actual catalog, not fabricated placeholder data. See `decisions.md`.
+* **AI:** Build the Recommendation Engine (mapping biometrics to the product catalog) — **not started, deliberately.** This is the step that caused every compliance problem found this session (the gated fake prediction model, the false marketing claims). Needs a scoping conversation before any code, not another unilateral build.
 * **Safety:** Implement strict guardrails preventing disease-treatment claims.
 * **Workflow:** Pharmacist review queue (Concepts must be approved before client visibility).
 * **UI (Client):** The personalized Dashboard showing the active, approved Custom Vitamin Concept.

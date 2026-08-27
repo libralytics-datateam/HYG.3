@@ -67,3 +67,17 @@ Needs a real WHOOP developer account (register free at https://developer.whoop.c
 **Also found in the process:** 4 live pages (`/how-it-works`, `/product`, `/trust`, and `PrivacyPolicy`) making claims that didn't match reality — a working Apple Health integration that was never built at all, a "live" prediction engine that's actually the model gated in `data/DATA_PROVENANCE.md`, and (most seriously) the Trust Center claiming "fully HIPAA compliant" infrastructure — wrong jurisdiction entirely; this is a Thai company under PDPA, not a US HIPAA-covered entity, no BAA or HIPAA audit exists. All four rewritten to state only what's true. See `MVP-LAUNCH-CHECKLIST.md` §8 for the full list.
 
 **Evidence:** `server/services/whoopService.ts`, `server/routes/wearables.ts`, `MVP-LAUNCH-CHECKLIST.md` §8.
+
+---
+
+## Phase 5 data layer: built the biometric side, product catalog remains unresolved
+
+**Question:** `mvp-roadmap.md` Phase 5 needs "biometrics mapped to the product catalog." What data actually exists to build that on?
+
+**Status: PARTIALLY ANSWERED 2026-08-28.** The biometric side is real and ready: hand scans now write to `BiometricReading` (they never did before — `server/routes/handscan.ts`, `metricType: 'antioxidant_score'`), and a new `GET /v1/patients/:id/biometric-summary` aggregates real accumulated signal (latest value, trend, reading count per metric) from both hand scans and WHOOP. Surfaced on the admin `PatientDetail` page. No recommendation logic was built on top of this — that still needs its own scoping conversation.
+
+**The product-catalog side has zero real data**, and this wasn't a gap I could close by building more: `Product` (schema: sku/name/category/ingredients/dosageForm) has **0 rows** — not even seed data. The one Kaggle resource that looked like it might cover this (`Pharmaceutical Drugs and Vitamins Dataset V2`) turned out to be 51,104 product-packaging *photos*, not a tabular catalog — see `data/DATA_PROVENANCE.md`. There is currently no source, real or synthetic, for what a Thai pharmacy's actual SKU catalog looks like. This needs an actual sourcing decision (a partner's real catalog export, once a pilot partner is chosen — see the still-open "Pilot partner selection" entry above) — not something to fabricate placeholder rows for.
+
+**Also found and fixed while building this:** `hyg3_app` can't `ALTER TABLE` on existing tables, not just `CREATE TABLE` — confirmed via a failed `prisma db push` (`must be owner of table AiOutput`). More restrictive than previously documented; see the correction in `MVP-LAUNCH-CHECKLIST.md` §4.
+
+**Evidence:** `server/routes/handscan.ts`, `server/routes/patients.ts` (`biometric-summary`), `src/pages/App/PatientDetail.tsx`, `MVP-LAUNCH-CHECKLIST.md` §4 and §8.

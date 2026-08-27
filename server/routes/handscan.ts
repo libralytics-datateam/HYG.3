@@ -71,6 +71,23 @@ router.post('/hand-scan', async (req, res) => {
       }
     });
 
+    // Also record this as a BiometricReading — the schema already anticipates
+    // hand-scan data here (metricType comment lists 'antioxidant_score'), but
+    // nothing was actually writing to it before now. This is what makes hand
+    // scans show up in accumulated biometric history alongside WHOOP data,
+    // and in GET /v1/patients/:id/biometric-summary.
+    if (typeof analysis.overallScore === 'number') {
+      await prisma.biometricReading.create({
+        data: {
+          patientId,
+          source: 'hand_scanner',
+          metricType: 'antioxidant_score',
+          value: analysis.overallScore,
+          recordedAt: scan.scannedAt,
+        }
+      });
+    }
+
     res.json({
       success: true,
       data: {

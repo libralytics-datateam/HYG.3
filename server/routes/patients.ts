@@ -53,4 +53,68 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// GET /v1/patients/:id/biometric-summary — aggregated view of accumulated
+// biometric signal (hand scans + connected wearables). Pure data plumbing:
+// real counts and trends computed from real BiometricReading rows, no
+// inference/recommendation logic. This is the data layer a future
+// recommendation engine (mvp-roadmap.md Phase 5) would read from — building
+// it now without building any recommendation logic on top, since that part
+// needs its own scoping conversation given this project's compliance history
+// (see data/DATA_PROVENANCE.md, decisions.md).
+router.get('/:id/biometric-summary', async (req, res) => {
+  try {
+    const patient = await prisma.patient.findUnique({ where: { id: req.params['id'] } });
+    if (!patient || patient.orgId !== req.user!.orgId) {
+      res.status(404).json({ error: 'Patient not found' });
+      return;
+    }
+
+    const readings = await prisma.biometricReading.findMany({
+      where: { patientId: patient.id },
+      orderBy: { recordedAt: 'desc' },
+    });
+
+    const byType = new Map<string, typeof readings>();
+    for (const r of readings) {
+      const list = byType.get(r.metricType) ?? [];
+      list.push(r);
+      byType.set(r.metricType, list);
+    }
+
+    const metrics = [...byType.entries()].map(([metricType, list]) => {
+      const latest = list[0]!;
+      const previous = list[1];
+      let trend: 'up' | 'down' | 'flat' | null = null;
+      if (previous) {
+        trend = latest.value > previous.value ? 'up' : latest.value < previous.value ? 'down' : 'flat';
+      }
+      return {
+        metricType,
+        latestValue: latest.value,
+        latestRecordedAt: latest.recordedAt,
+        latestSource: latest.source,
+        previousValue: previous?.value ?? null,
+        trend,
+        readingCount: list.length,
+      };
+    });
+
+    const sources = [...new Set(readings.map((r) => r.source))];
+
+    res.json({
+      success: true,
+      data: {
+        totalReadings: readings.length,
+        sources,
+        earliestReadingAt: readings.length ? readings[readings.length - 1]!.recordedAt : null,
+        latestReadingAt: readings.length ? readings[0]!.recordedAt : null,
+        metrics,
+      },
+    });
+  } catch (error) {
+    console.error('Error building biometric summary:', error);
+    res.status(500).json({ error: 'Failed to build biometric summary' });
+  }
+});
+
 export default router;

@@ -1,7 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Brain, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { ArrowLeft, User, Brain, CheckCircle2, Clock, XCircle, Activity, TrendingUp, TrendingDown, Minus, Watch, ScanLine } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
+import ErrorBanner from '../../components/ErrorBanner';
+
+const METRIC_LABELS: Record<string, { label: string; unit: string }> = {
+  recovery_score: { label: 'Recovery', unit: '%' },
+  sleep_score: { label: 'Sleep Performance', unit: '%' },
+  strain: { label: 'Strain', unit: '' },
+  hrv: { label: 'HRV', unit: 'ms' },
+  antioxidant_score: { label: 'Hand-Scan Wellness Score', unit: '' },
+};
+
+const SOURCE_ICON: Record<string, any> = {
+  whoop: Watch,
+  hand_scanner: ScanLine,
+};
 
 export default function PatientDetail() {
   const { id } = useParams();
@@ -9,6 +23,8 @@ export default function PatientDetail() {
   const [patient, setPatient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [biometrics, setBiometrics] = useState<any>(null);
+  const [biometricsError, setBiometricsError] = useState('');
 
   useEffect(() => {
     apiFetch(`/v1/patients/${id}`)
@@ -22,6 +38,17 @@ export default function PatientDetail() {
         setError('Failed to load patient. Please try again.');
       })
       .finally(() => setLoading(false));
+
+    apiFetch(`/v1/patients/${id}/biometric-summary`)
+      .then(r => r.json())
+      .then(json => {
+        if (json.success) setBiometrics(json.data);
+        else setBiometricsError(json.error || 'Failed to load biometric summary.');
+      })
+      .catch((err) => {
+        console.error(err);
+        setBiometricsError('Failed to load biometric summary.');
+      });
   }, [id]);
 
   if (loading) return <div className="p-8 text-center text-muted">Loading patient...</div>;
@@ -55,6 +82,57 @@ export default function PatientDetail() {
           <p className="text-muted mt-1">DOB: {patient.dob || '—'} &bull; {patient.email || '—'} &bull; {patient.phone || '—'}</p>
         </div>
         <span className="px-3 py-1 rounded text-xs font-bold bg-teal/20 text-teal uppercase">Active</span>
+      </div>
+
+      {/* Biometric Signal — real accumulated data from hand scans + connected wearables.
+          No recommendation logic here, just accurate accumulated signal (see
+          mvp-roadmap.md Phase 5 / decisions.md for why the two are kept separate). */}
+      <div className="glass-panel p-6 mb-6">
+        <h2 className="text-xl font-bold text-text mb-4 flex items-center gap-2">
+          <Activity className="text-teal" size={22} />
+          Biometric Signal
+        </h2>
+
+        {biometricsError && <ErrorBanner message={biometricsError} />}
+
+        {!biometrics ? (
+          <p className="text-muted text-sm">Loading...</p>
+        ) : biometrics.totalReadings === 0 ? (
+          <p className="text-muted text-sm">No biometric readings yet — none from a hand scan or a connected wearable.</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+              {biometrics.metrics.map((m: any) => {
+                const meta = METRIC_LABELS[m.metricType] ?? { label: m.metricType, unit: '' };
+                const SrcIcon = SOURCE_ICON[m.latestSource] ?? Activity;
+                const TrendIcon = m.trend === 'up' ? TrendingUp : m.trend === 'down' ? TrendingDown : Minus;
+                return (
+                  <div key={m.metricType} className="p-4 bg-bg rounded-lg border border-border">
+                    <div className="flex items-center justify-between text-xs text-muted uppercase tracking-wider font-bold mb-2">
+                      <span>{meta.label}</span>
+                      <SrcIcon size={13} />
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-text">{m.latestValue}{meta.unit}</span>
+                      {m.trend && (
+                        <TrendIcon
+                          size={16}
+                          className={m.trend === 'up' ? 'text-teal' : m.trend === 'down' ? 'text-red-400' : 'text-muted'}
+                        />
+                      )}
+                    </div>
+                    <div className="text-xs text-muted mt-1">
+                      {m.readingCount} reading{m.readingCount === 1 ? '' : 's'} &bull; last {new Date(m.latestRecordedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="text-xs text-muted">
+              {biometrics.totalReadings} total readings from {biometrics.sources.join(', ')}, since {new Date(biometrics.earliestReadingAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}.
+            </div>
+          </>
+        )}
       </div>
 
       {/* AI Concepts */}
