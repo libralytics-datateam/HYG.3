@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Activity, User, Heart, Leaf, ChevronRight, ChevronLeft, Check, Camera, Watch, Zap, ShieldCheck, Moon, Sparkles, Scale, Wind, Brain, CheckCircle2 } from 'lucide-react';
+import { Activity, User, Heart, Leaf, ChevronRight, ChevronLeft, Check, Camera, Watch, Zap, ShieldCheck, Moon, Sparkles, Scale, Wind, Brain, CheckCircle2, LayoutDashboard } from 'lucide-react';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import './Onboarding.css';
 
@@ -32,6 +32,17 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [whoopConfigured, setWhoopConfigured] = useState(false);
+
+  useEffect(() => {
+    // Only offer "Connect WHOOP" as a step-3 option if this deployment
+    // actually has WHOOP credentials configured — no point promising a
+    // button that just leads to a "coming soon" state.
+    fetch(`${API_URL}/health`)
+      .then((r) => r.json())
+      .then((json) => setWhoopConfigured(!!json.whoopConfigured))
+      .catch(() => setWhoopConfigured(false));
+  }, []);
 
   const [form, setForm] = useState({
     firstName: '',
@@ -313,15 +324,32 @@ export default function Onboarding() {
                 </p>
               </button>
 
+              {whoopConfigured && (
+                <button
+                  className="start-option glass-panel"
+                  onClick={() => navigate('/client/dashboard')}
+                >
+                  <Watch size={32} className="text-gold mb-3" />
+                  <strong className="text-text">{t('onboarding.connectWearable')}</strong>
+                  <p className="text-muted text-xs mt-1">
+                    {t('onboarding.connectWearableDesc')}
+                  </p>
+                </button>
+              )}
+
               <button
-                className="start-option glass-panel"
+                className={whoopConfigured ? 'start-option start-option-wide glass-panel' : 'start-option glass-panel'}
                 onClick={() => navigate('/client/dashboard')}
               >
-                <Watch size={32} className="text-gold mb-3" />
-                <strong className="text-text">{t('onboarding.viewDashboard')}</strong>
-                <p className="text-muted text-xs mt-1">
-                  {t('onboarding.viewDashboardDesc')}
-                </p>
+                <LayoutDashboard size={whoopConfigured ? 20 : 32} className={whoopConfigured ? 'text-teal' : 'text-teal mb-3'} />
+                {whoopConfigured ? (
+                  <span className="text-text text-sm font-bold">{t('onboarding.viewDashboard')}</span>
+                ) : (
+                  <>
+                    <strong className="text-text">{t('onboarding.viewDashboard')}</strong>
+                    <p className="text-muted text-xs mt-1">{t('onboarding.viewDashboardDesc')}</p>
+                  </>
+                )}
               </button>
             </div>
           </div>
