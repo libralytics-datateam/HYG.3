@@ -155,6 +155,26 @@
     "snack": "加餐",
     "scanAgainCta": "重新扫描以获取最新分析"
   },
+  "wearables": {
+    "title": "可穿戴设备数据",
+    "checkingStatus": "正在检查可穿戴设备连接状态...",
+    "comingSoon": "WHOOP 集成即将推出",
+    "connected": "WHOOP 已连接",
+    "notConnected": "连接 WHOOP 以获取更深入的恢复、睡眠和压力分析",
+    "lastSynced": "上次同步 {{date}}",
+    "syncNow": "立即同步",
+    "syncing": "同步中...",
+    "disconnect": "断开连接",
+    "connectButton": "连接 WHOOP",
+    "consentText": "我同意 HYG.3 访问我的 WHOOP 恢复、睡眠和压力数据，以改进个性化分析。",
+    "loadFailed": "无法加载可穿戴设备状态。",
+    "syncFailed": "同步 WHOOP 数据失败，请重试。",
+    "disconnectFailed": "断开 WHOOP 连接失败。",
+    "callbackSuccess": "您的 WHOOP 账户已连接。",
+    "callbackDenied": "WHOOP 授权已取消。",
+    "callbackError": "连接 WHOOP 账户时出现问题，请重试。",
+    "backToDashboard": "返回仪表板"
+  },
   "clientLayout": {
     "myReport": "我的报告",
     "scanHand": "扫描手部",

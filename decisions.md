@@ -53,3 +53,17 @@ Tracks product/scope decisions referenced from `prd.md`, in the order they were 
 **Question** (`prd.md` §15.3): Who at Libralytics owns the legal/privacy and Thai FDA advertising-claims review before any pilot data or AI-generated sales copy goes live?
 
 **Status: OPEN — not yet answered.**
+
+---
+
+## Wearable integration: WHOOP now, Apple Watch deferred
+
+**Question:** User asked to link WHOOP or Apple Watch data for deeper analysis — which, and how much?
+
+**Status: ANSWERED 2026-08-27.** Build WHOOP as a real OAuth 2.0 integration now (`server/services/whoopService.ts`, `server/routes/wearables.ts`, `WhoopConnectCard`); defer Apple Watch. Reason: they're not the same kind of work. WHOOP has a public server-callable OAuth API. Apple HealthKit has no cloud API at all — the only paths in are a native iOS companion app (this project has none) or a paid third-party aggregator (Terra/Vital/Spike), which is a bigger product/vendor decision, not scoped here. Building a WHOOP-shaped "connect" button for Apple would have been fake, the same category of problem as everything else in this log.
+
+Needs a real WHOOP developer account (register free at https://developer.whoop.com) and `WHOOP_CLIENT_ID`/`WHOOP_CLIENT_SECRET`/`WHOOP_REDIRECT_URI` set as real Render secrets before it does anything in production — currently `whoopConfigured: false`, and the UI says so honestly instead of failing silently.
+
+**Also found in the process:** 4 live pages (`/how-it-works`, `/product`, `/trust`, and `PrivacyPolicy`) making claims that didn't match reality — a working Apple Health integration that was never built at all, a "live" prediction engine that's actually the model gated in `data/DATA_PROVENANCE.md`, and (most seriously) the Trust Center claiming "fully HIPAA compliant" infrastructure — wrong jurisdiction entirely; this is a Thai company under PDPA, not a US HIPAA-covered entity, no BAA or HIPAA audit exists. All four rewritten to state only what's true. See `MVP-LAUNCH-CHECKLIST.md` §8 for the full list.
+
+**Evidence:** `server/services/whoopService.ts`, `server/routes/wearables.ts`, `MVP-LAUNCH-CHECKLIST.md` §8.

@@ -155,6 +155,26 @@
     "snack": "間食",
     "scanAgainCta": "最新の分析結果を得るために再スキャン"
   },
+  "wearables": {
+    "title": "ウェアラブルデータ",
+    "checkingStatus": "ウェアラブル接続を確認中...",
+    "comingSoon": "WHOOP連携は近日公開予定です",
+    "connected": "WHOOP接続済み",
+    "notConnected": "WHOOPを接続して回復・睡眠・ストレインの詳しい分析を受け取る",
+    "lastSynced": "最終同期 {{date}}",
+    "syncNow": "今すぐ同期",
+    "syncing": "同期中...",
+    "disconnect": "接続解除",
+    "connectButton": "WHOOPを接続",
+    "consentText": "パーソナライズ分析の向上のため、WHOOPの回復・睡眠・ストレインデータへのHYG.3のアクセスに同意します。",
+    "loadFailed": "ウェアラブルの状態を読み込めませんでした。",
+    "syncFailed": "WHOOPデータの同期に失敗しました。もう一度お試しください。",
+    "disconnectFailed": "WHOOPの接続解除に失敗しました。",
+    "callbackSuccess": "WHOOPアカウントが接続されました。",
+    "callbackDenied": "WHOOPの認証がキャンセルされました。",
+    "callbackError": "WHOOPアカウントの接続中に問題が発生しました。もう一度お試しください。",
+    "backToDashboard": "ダッシュボードに戻る"
+  },
   "clientLayout": {
     "myReport": "マイレポート",
     "scanHand": "手をスキャン",

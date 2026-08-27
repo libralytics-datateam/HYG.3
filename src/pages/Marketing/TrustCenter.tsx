@@ -17,16 +17,16 @@ export default function TrustCenter() {
             <div className="bento-icon mb-4">
               <Lock size={24} />
             </div>
-            <h3>End-to-End Encryption</h3>
-            <p>All data in transit and at rest is secured using AES-256 encryption. We never sell your biometric data to third parties.</p>
+            <h3>Encryption in Transit, and Where It Matters Most at Rest</h3>
+            <p>All traffic is encrypted in transit (TLS). Connected wearable credentials (e.g. WHOOP OAuth tokens) are encrypted at rest with AES-256-GCM. We never sell your biometric data to third parties.</p>
           </div>
 
           <div className="bento-card glass-panel col-span-4" style={{ textAlign: 'center', alignItems: 'center' }}>
             <div className="bento-icon mb-4">
               <Server size={24} />
             </div>
-            <h3>HIPAA Compliance</h3>
-            <p>Our infrastructure is fully HIPAA compliant. Access to PHI is strictly audited and limited to reviewing clinicians.</p>
+            <h3>Built for Thailand's PDPA</h3>
+            <p>We operate under Thailand's Personal Data Protection Act (PDPA), not HIPAA — this is a Thai platform, and we don't claim a US compliance framework that doesn't apply here. Formal legal/DPA sign-off is in progress ahead of handling real, non-synthetic patient data.</p>
           </div>
 
           <div className="bento-card glass-panel col-span-4" style={{ textAlign: 'center', alignItems: 'center' }}>
@@ -34,7 +34,7 @@ export default function TrustCenter() {
               <FileText size={24} />
             </div>
             <h3>Data Portability</h3>
-            <p>You own your data. Export your biometric inferences, clinical reviews, and formulations in standard CSV or JSON formats at any time.</p>
+            <p>Clinical teams can export insight and review data in JSON from the admin dashboard today. Self-serve export for individual patients is on our roadmap, not yet built.</p>
           </div>
           
         </div>

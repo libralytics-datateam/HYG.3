@@ -18,15 +18,15 @@ export default function Features() {
               <Database size={24} />
             </div>
             <h3>Biometric Ingestion API</h3>
-            <p>Connect WHOOP, Apple Health, or physical clinic hand scanners directly into our HIPAA-compliant ingestion pipeline. Data flows into your patient profile automatically.</p>
+            <p>Connect WHOOP, or use a physical clinic hand scan — no wearable required. Data flows into your patient profile automatically.</p>
           </div>
 
           <div className="bento-card glass-panel col-span-6">
             <div className="bento-icon">
               <Zap size={24} />
             </div>
-            <h3>Random Forest Prediction Engine</h3>
-            <p>Our proprietary Scikit-Learn models analyze physiological anomalies in real time. We map sleep disturbances, recovery scores, and resting heart rates to clinical micronutrient deficiencies.</p>
+            <h3>Building Toward Real Prediction</h3>
+            <p>We deliberately gated our first prediction model after finding its training data had no clinical provenance. Every pharmacist-reviewed case and connected wearable reading is now accumulating as real, first-party ground truth toward a model worth trusting.</p>
           </div>
 
           <div className="bento-card glass-panel col-span-12">

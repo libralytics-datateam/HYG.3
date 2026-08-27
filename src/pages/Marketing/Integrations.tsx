@@ -6,7 +6,7 @@ export default function Integrations() {
       <section className="hero-section animate-fade-in">
         <h1 className="hero-title">How It <span className="text-teal">Works</span></h1>
         <p className="hero-subtitle">
-          Seamlessly connect your biometric hardware to HYG.3 in seconds. We support WHOOP, Apple Health, and clinical hand scanners.
+          Connect WHOOP for deeper recovery, sleep, and strain insight, or start with just a clinical hand scan — no wearable required.
         </p>
       </section>
 
@@ -25,8 +25,8 @@ export default function Integrations() {
             <div className="bento-icon mb-4">
               <LinkIcon size={24} />
             </div>
-            <h3>2. Connect Wearable</h3>
-            <p>Authorize WHOOP or Apple Health via our secure OAuth 2.0 integration.</p>
+            <h3>2. Connect WHOOP</h3>
+            <p>Authorize WHOOP via secure OAuth 2.0 to bring in recovery, sleep, and strain data.</p>
           </div>
 
           <div className="bento-card glass-panel col-span-4" style={{ textAlign: 'center', alignItems: 'center' }}>

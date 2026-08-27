@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
           <div className="prose prose-invert max-w-none">
             <h2 className="text-2xl font-bold mb-4 text-text">1. Information We Collect</h2>
             <p className="text-muted mb-6">
-              When you use HYG.3, we collect biometric data (such as resting heart rate, sleep duration, and recovery scores) authorized by you via third-party integrations like WHOOP or Apple Health.
+              When you use HYG.3, we collect biometric data (such as resting heart rate, sleep duration, and recovery scores) authorized by you via third-party integrations such as WHOOP.
             </p>
 
             <h2 className="text-2xl font-bold mb-4 text-text">2. How We Use Your Data</h2>

@@ -155,6 +155,26 @@
     "snack": "Snack",
     "scanAgainCta": "Scan Again for Updated Analysis"
   },
+  "wearables": {
+    "title": "Wearable Data",
+    "checkingStatus": "Checking wearable connection...",
+    "comingSoon": "WHOOP integration coming soon",
+    "connected": "WHOOP connected",
+    "notConnected": "Connect WHOOP for deeper recovery, sleep, and strain insight",
+    "lastSynced": "last synced {{date}}",
+    "syncNow": "Sync Now",
+    "syncing": "Syncing...",
+    "disconnect": "Disconnect",
+    "connectButton": "Connect WHOOP",
+    "consentText": "I consent to HYG.3 accessing my WHOOP recovery, sleep, and strain data to improve my personalized analysis.",
+    "loadFailed": "Failed to load wearable status.",
+    "syncFailed": "Failed to sync WHOOP data. Please try again.",
+    "disconnectFailed": "Failed to disconnect WHOOP.",
+    "callbackSuccess": "Your WHOOP account is now connected.",
+    "callbackDenied": "WHOOP authorization was cancelled.",
+    "callbackError": "Something went wrong connecting your WHOOP account. Please try again.",
+    "backToDashboard": "Back to Dashboard"
+  },
   "clientLayout": {
     "myReport": "My Report",
     "scanHand": "Scan Hand",

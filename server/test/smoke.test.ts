@@ -136,3 +136,28 @@ test('protected routes reject requests with no token', async () => {
   const res = await fetch(`${BASE_URL}/v1/patients`);
   assert.equal(res.status, 401);
 });
+
+test('GET /v1/wearables/status requires patientId', async () => {
+  const res = await fetch(`${BASE_URL}/v1/wearables/status`);
+  assert.equal(res.status, 400);
+});
+
+test('GET /v1/wearables/status reports whoopConfigured honestly when no WHOOP credentials are set', async () => {
+  // Regression guard: this env has no WHOOP_CLIENT_ID/SECRET set, so the
+  // endpoint must say so rather than pretending the integration is live.
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Wearable', lastName: 'Test', email: `wearable+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data } = await onboardRes.json();
+
+  const res = await fetch(`${BASE_URL}/v1/wearables/status?patientId=${data.patientId}`);
+  assert.equal(res.status, 200);
+  const json = await res.json();
+  assert.equal(json.data.whoopConfigured, false);
+  assert.equal(json.data.connected, false);
+});
