@@ -97,3 +97,77 @@ Deliberately did not reach for another public dataset to fill this gap — every
 **Follow-up, 2026-08-28: outcome tracking (item 2 on that list) built.** Trend history (up to 20 points) now flows from both hand-scan/WHOOP data and the new self-report check-ins into a real sparkline, visible to both the clinician (`PatientDetail`) and the patient themselves (`CheckInCard`). Scoped deliberately narrow: this shows *whether a metric is trending*, not *whether a specific recommendation caused it* — tying a trend to a recommendation's timing needs real longitudinal data to do responsibly, which doesn't exist yet.
 
 **Follow-up, 2026-08-28: adherence tracking (item 3) built.** One question added to the existing check-in — "did you follow your recommended plan?" (Yes/Partially/No) — shown only when a recommendation actually exists. Deliberately not a per-supplement checklist; kept to the smallest real question given self-logged adherence's known compliance problems in consumer apps. Lab integration (item 4) remains unbuilt — it's a clinical-lab partnership decision, not a code task.
+
+---
+
+## Recommendation Engine Scoping (pre-build, no code) — 2026-08-28
+
+**Status: this document IS the deliverable.** No recommendation-generation code should be written against anything below until this tiering has been reviewed — that instruction came directly from the user, not something this doc is proposing on its own.
+
+**Why this came first, ahead of the WHOOP dev account / Gemini key / Thai legal review:** the shape of this tiering determines what to ask legal to review and what WHOOP scopes to actually request. Scoping after those three would mean re-scoping.
+
+### 0. Urgent finding surfaced while doing this inventory — not a future risk, a current one
+
+Before the tiers: `server/services/geminiService.ts` → `server/routes/handscan.ts` → `NutritionRecommendation` is **already live in production right now**, patient-facing, and does exactly what Tier C below says should stay quarantined — it infers a deficiency ("likelyDeficiencies": nutrient + confidence + reason) from a hand photo — **and** exactly what Tier B says needs a pharmacist checkpoint — it outputs a specific supplement name + dosage (`recommendedVitamins`). It has **zero human-in-the-loop review**. `CustomVitaminConcept`/`AiOutput` — the pharmacist-reviewed workflow already built and verified this session (Accept/Modify/Reject, `reviewedById`, FACT/INFERENCE/RECOMMENDATION/UNCERTAINTY) — sits right next to this and reviews nothing this pathway produces; it was built for a different (currently-gated) model.
+
+This predates today's work and wasn't caught by the earlier `data/DATA_PROVENANCE.md` investigation, which scoped only the WHOOP-based prediction model. Recommend treating this as its own decision, separate from the forward-looking scoping below: **should `POST /v1/analysis/hand-scan`'s output be gated behind pharmacist review before it reaches a patient, the same way the WHOOP model was gated?** Flagging here rather than silently fixing it, since gating a live patient-facing feature is a call worth confirming first, not a unilateral one — see the open question this raises at the bottom of this entry.
+
+### 1. Trigger inventory — every signal that could feed a recommendation
+
+| Signal | Where it lives | Status |
+|---|---|---|
+| Self-reported health goals (energy/sleep/skin/etc.) | `HealthProfile.healthGoals` | In-scope |
+| Self-reported dietary restrictions | `HealthProfile.dietaryRestrictions` | In-scope |
+| Self-reported medical notes (freeform) | `HealthProfile.medicalNotes` | In-scope, but unstructured — not usable as a rule input until it's a structured field, which is a schema change this DB role currently can't make (see §4/§8) |
+| Hand-scan visual signals (nail/palm/skin observations) | `HandScan.rawAnalysis` | In-scope as raw signal |
+| Hand-scan inferred deficiencies + vitamin/dosage suggestions | `NutritionRecommendation` | **Already live, ungated — see §0 above.** Tier C + Tier B simultaneously. |
+| WHOOP recovery / sleep / strain / HRV | `BiometricReading` (source: whoop) | In-scope once WHOOP is configured (currently `whoopConfigured: false` in production) |
+| Hand-scan wellness score | `BiometricReading` (antioxidant_score) | In-scope |
+| Self-report wellness score | `BiometricReading` (wellness_score) | In-scope |
+| Self-report symptom flags (8 items) | `BiometricReading` (symptom_*) | In-scope |
+| Adherence to plan | `BiometricReading` (adherence_score) | In-scope |
+| Supplement sales/usage history | `Dataset` / `Product` | Quarantined for a different reason than clinical risk: `Product` has 0 rows (see the Phase 5 data-layer entry above) and this is operational/business data, not per-patient clinical data — a different risk category from everything else in this table, not comparable to Tier A/B/C |
+| Lab results | Not collected anywhere | Deferred — no lab integration exists (see "More data gathering" entry above) |
+| Family/medical history | Not collected anywhere | Deferred — would need real clinical involvement before collecting at all |
+
+### 2. Risk tiers
+
+**Tier A — safe to build now.** No clinical inference, rules/thresholds on already-collected data, always defers to a human rather than asserting a health fact:
+- "You haven't checked in for N days"
+- "You haven't logged a hand scan in N weeks"
+- "Your WHOOP hasn't synced in N days"
+- "You reported low wellness N check-ins in a row — consider a check-in with your pharmacist" (flags a pattern, names no condition, suggests talking to a licensed person — not a diagnosis)
+- Adherence nudge: "You said you didn't follow your plan last time — want to review it?"
+- Non-personalized general wellness content (no inference from this patient's data)
+
+**Tier B — needs a pharmacist-in-the-loop checkpoint.** Anything suggesting a specific supplement, dose, or timing change:
+- A future rules-based "based on your goals + adherence + activity level, consider X" suggestion naming a real catalog SKU
+- `CustomVitaminConcept` (the existing formulation workflow) — once it has legitimate data behind it, which it currently doesn't (see the Phase 5 catalog-gap entry above)
+- **`NutritionRecommendation.vitamins`** (existing, live, currently NOT routed through this checkpoint — see §0)
+
+**Tier C — quarantined, internal-research-only, same posture as the original gated model.** Anything that infers a deficiency, condition, or health risk from data:
+- **`NutritionRecommendation.likelyDeficiencies`** (existing, live, currently NOT quarantined — see §0)
+- Any future "based on your symptoms, this may indicate [condition]" — not planned, named here only so it's explicitly off the table without both `prd.md` §14 gates (licensed specialist review + FDA/Thai FDA certification)
+- Correlating non-adherence with worsening self-report trend to suggest a condition is "worsening" — quarantined; a trend going down is Tier A to *show* (the sparkline already does this, with no interpretation attached), but naming *why* it's happening crosses into Tier C
+
+### 3. Tier B checkpoint spec
+
+Reuse the existing mechanism rather than building a second one — it's already built and verified this session:
+- **Who reviews:** the org's pharmacist/clinician role (today: free-form strings from seed data — `requireRole` is still unwired, see `MVP-LAUNCH-CHECKLIST.md` §1; a real role enum is a prerequisite for this, not optional once Tier B ships for real)
+- **What they see:** the FACT/INFERENCE/RECOMMENDATION/UNCERTAINTY panel (`AiInsightsDetail.tsx`), not the raw model output
+- **What they can do:** Accept / Modify (with a required note — built this session) / Reject
+- **What's logged:** `reviewedById` (non-spoofable, from the authenticated session) + `reviewNote` when modified — both already real
+
+### 4. Explainability spec
+
+A recommendation doesn't ship if it can't populate all four fields honestly:
+- **Fact** — the actual observed data point (a real reading, a real self-report answer), not a summary
+- **Inference** — what pattern was drawn from it, stated as inference, not fact
+- **Recommendation** — the suggested action, always phrased as a suggestion for a licensed reviewer or the patient's own judgment, never a directive
+- **Uncertainty** — what's missing, how much data this is based on, and (for Tier B/C) that it hasn't been clinically validated — the same honesty standard `data/DATA_PROVENANCE.md` already forced onto the old model applies to every future one
+
+### Open questions this scoping raises (not answered here)
+
+1. **Should `POST /v1/analysis/hand-scan` be gated pending pharmacist review, the same way `POST /v1/ai/predict` was?** This is the most urgent follow-up from this document — it's a live gap, not a future one.
+2. Real role enum for `requireRole` — blocks Tier B shipping for real regardless of anything else.
+3. Whether Tier A needs an LLM at all, or ships on rules/thresholds — determines whether the Gemini key is even needed for this specific feature (separate from hand-scan analysis, which already needs it).
