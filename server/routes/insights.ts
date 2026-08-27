@@ -30,6 +30,7 @@ router.get('/', async (req, res) => {
         headline: predictionData.headline || predictionData.prediction || '',
         type: insight.type,
         confidence: insight.confidenceScore,
+        modelVersion: insight.modelVersion,
         status: insight.reviewStatus,
         date: insight.createdAt,
         conceptId: concept?.id,

@@ -114,7 +114,7 @@ export default function AiInsightsDetail() {
           <div className="flex flex-col gap-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Model Version</span>
-              <span className="text-text font-bold font-mono">hyg-v1</span>
+              <span className="text-text font-bold font-mono">{insight.modelVersion || 'unknown'}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted">Generated On</span>
@@ -127,6 +127,36 @@ export default function AiInsightsDetail() {
           </div>
         </div>
       </div>
+
+      {/* FACT / INFERENCE / RECOMMENDATION / UNCERTAINTY — required labeling per prd.md §6.4 */}
+      {insight.content && (insight.content.fact || insight.content.inference || insight.content.recommendation || insight.content.uncertainty) && (
+        <div className="glass-panel p-6 mb-6 flex flex-col gap-4">
+          {insight.content.fact && (
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-teal block mb-1">Fact</span>
+              <p className="text-text text-sm leading-relaxed">{insight.content.fact}</p>
+            </div>
+          )}
+          {insight.content.inference && (
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-gold block mb-1">Inference</span>
+              <p className="text-text text-sm leading-relaxed">{insight.content.inference}</p>
+            </div>
+          )}
+          {insight.content.recommendation && (
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-teal block mb-1">Recommendation</span>
+              <p className="text-text text-sm leading-relaxed">{insight.content.recommendation}</p>
+            </div>
+          )}
+          {insight.content.uncertainty && (
+            <div className="p-3 rounded bg-bg border border-border">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted block mb-1">Uncertainty</span>
+              <p className="text-muted text-sm leading-relaxed">{insight.content.uncertainty}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Supporting detail from content */}
       {insight.content && (
