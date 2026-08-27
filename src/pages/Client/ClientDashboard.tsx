@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon } from 'lucide-react';
 import WhoopConnectCard from '../../components/WhoopConnectCard';
 import CheckInCard from '../../components/CheckInCard';
+import HealthTrendChart from '../../components/HealthTrendChart';
 import './ClientDashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
@@ -67,6 +68,7 @@ export default function ClientDashboard() {
 
       {patientId && <CheckInCard patientId={patientId} />}
       {patientId && <WhoopConnectCard patientId={patientId} />}
+      {patientId && <HealthTrendChart patientId={patientId} />}
 
       {loading ? (
         <div className="empty-state glass-panel">

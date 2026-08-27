@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../db';
 import * as whoop from '../services/whoopService';
+import { buildBiometricSummary } from '../services/biometrics';
 
 const router = Router();
 
@@ -41,6 +42,32 @@ router.get('/status', async (req, res) => {
   } catch (error) {
     console.error('Wearable status error:', error);
     res.status(500).json({ error: 'Failed to fetch wearable status' });
+  }
+});
+
+// GET /v1/wearables/biometric-summary?patientId=xxx — the patient's own trend
+// data (WHOOP recovery/sleep/strain/HRV + hand-scan wellness score), for the
+// health chart on their dashboard. Same computation and shape as the
+// pharmacist-side /v1/patients/:id/biometric-summary (routes/patients.ts) —
+// just reached by patientId rather than a staff session, matching every
+// other Phase 1 consumer route in this app.
+router.get('/biometric-summary', async (req, res) => {
+  try {
+    const patientId = req.query.patientId as string;
+    if (!patientId) {
+      res.status(400).json({ error: 'patientId is required' });
+      return;
+    }
+    const patient = await prisma.patient.findUnique({ where: { id: patientId } });
+    if (!patient) {
+      res.status(404).json({ error: 'Patient not found' });
+      return;
+    }
+    const summary = await buildBiometricSummary(patientId);
+    res.json({ success: true, data: summary });
+  } catch (error) {
+    console.error('Error building patient biometric summary:', error);
+    res.status(500).json({ error: 'Failed to build biometric summary' });
   }
 });
 

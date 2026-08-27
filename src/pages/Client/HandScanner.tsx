@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Camera, FlipHorizontal, Loader2, ChevronLeft, Sun, Hand, Stethoscope, AlertTriangle, Search, ClipboardCheck } from 'lucide-react';
+import { Camera, FlipHorizontal, Loader2, ChevronLeft, Sun, Hand, Stethoscope, AlertTriangle, Search, ClipboardCheck, PhoneCall, CheckCircle2 } from 'lucide-react';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import './HandScanner.css';
 
@@ -21,6 +21,9 @@ export default function HandScanner() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [requestingReview, setRequestingReview] = useState(false);
+  const [reviewRequested, setReviewRequested] = useState(false);
+  const [reviewRequestError, setReviewRequestError] = useState('');
 
   const patientId = localStorage.getItem('hyg3_patient_id');
 
@@ -118,6 +121,27 @@ export default function HandScanner() {
     } catch (err) {
       setError(t('handScanner.analysisFailedRetry'));
       setState('guide');
+    }
+  };
+
+  const handleRequestReview = async () => {
+    if (!result?.scanId || !patientId) return;
+    setRequestingReview(true);
+    setReviewRequestError('');
+    try {
+      const res = await fetch(`${API_URL}/telemedicine/request-review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patientId, source: 'hand_scan', scanId: result.scanId }),
+      });
+      const json = await res.json();
+      if (json.success) setReviewRequested(true);
+      else setReviewRequestError(json.error || t('handScanner.requestReviewFailed'));
+    } catch (err) {
+      console.error(err);
+      setReviewRequestError(t('handScanner.requestReviewFailed'));
+    } finally {
+      setRequestingReview(false);
     }
   };
 
@@ -270,6 +294,22 @@ export default function HandScanner() {
             <ClipboardCheck size={18} className="text-gold" /> {t('handScanner.pendingReviewTitle')}
           </h2>
           <p className="text-muted text-sm">{t('handScanner.pendingReviewBody')}</p>
+
+          {reviewRequestError && <p className="scanner-error">{reviewRequestError}</p>}
+
+          {reviewRequested ? (
+            <span className="pending-review-requested flex items-center gap-2">
+              <CheckCircle2 size={16} /> {t('handScanner.requestReviewSent')}
+            </span>
+          ) : (
+            <button
+              className="btn btn-secondary mt-4 flex items-center gap-2"
+              onClick={handleRequestReview}
+              disabled={requestingReview}
+            >
+              <PhoneCall size={16} /> {requestingReview ? t('handScanner.requestingReview') : t('handScanner.requestReviewCta')}
+            </button>
+          )}
         </section>
 
         {/* Disclaimer */}

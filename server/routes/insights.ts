@@ -35,8 +35,25 @@ router.get('/', async (req, res) => {
         date: insight.createdAt,
         conceptId: concept?.id,
         rationaleSummary: concept?.rationaleSummary || null,
+        // Surfaced so the queue can show urgency without the frontend needing
+        // to know the content JSON's internal shape — set either when a
+        // patient taps "Request Pharmacist Review" on a pending hand-scan, or
+        // immediately on a telemedicine_request (patient-initiated, no scan
+        // behind it). See server/routes/telemedicine.ts.
+        patientRequestedAt: predictionData.patientRequestedAt || null,
         content: predictionData
       };
+    });
+
+    // Patient-requested items surface first (oldest request first among
+    // them), everything else stays newest-first behind them.
+    formattedInsights.sort((a, b) => {
+      if (a.patientRequestedAt && b.patientRequestedAt) {
+        return new Date(a.patientRequestedAt).getTime() - new Date(b.patientRequestedAt).getTime();
+      }
+      if (a.patientRequestedAt) return -1;
+      if (b.patientRequestedAt) return 1;
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
 
     res.json({ success: true, data: formattedInsights });

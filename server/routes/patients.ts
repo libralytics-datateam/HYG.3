@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { prisma } from '../db';
+import { buildBiometricSummary } from '../services/biometrics';
 
 const router = Router();
 
@@ -69,57 +70,8 @@ router.get('/:id/biometric-summary', async (req, res) => {
       return;
     }
 
-    const readings = await prisma.biometricReading.findMany({
-      where: { patientId: patient.id },
-      orderBy: { recordedAt: 'desc' },
-    });
-
-    const byType = new Map<string, typeof readings>();
-    for (const r of readings) {
-      const list = byType.get(r.metricType) ?? [];
-      list.push(r);
-      byType.set(r.metricType, list);
-    }
-
-    const metrics = [...byType.entries()].map(([metricType, list]) => {
-      const latest = list[0]!;
-      const previous = list[1];
-      let trend: 'up' | 'down' | 'flat' | null = null;
-      if (previous) {
-        trend = latest.value > previous.value ? 'up' : latest.value < previous.value ? 'down' : 'flat';
-      }
-      // Oldest-to-newest, capped to the most recent 20 points — enough for a
-      // real trend sparkline (mvp-roadmap.md Phase 5's "outcome tracking"
-      // follow-up) without an unbounded payload as reading history grows.
-      const history = list
-        .slice(0, 20)
-        .map((r) => ({ value: r.value, recordedAt: r.recordedAt }))
-        .reverse();
-
-      return {
-        metricType,
-        latestValue: latest.value,
-        latestRecordedAt: latest.recordedAt,
-        latestSource: latest.source,
-        previousValue: previous?.value ?? null,
-        trend,
-        readingCount: list.length,
-        history,
-      };
-    });
-
-    const sources = [...new Set(readings.map((r) => r.source))];
-
-    res.json({
-      success: true,
-      data: {
-        totalReadings: readings.length,
-        sources,
-        earliestReadingAt: readings.length ? readings[readings.length - 1]!.recordedAt : null,
-        latestReadingAt: readings.length ? readings[0]!.recordedAt : null,
-        metrics,
-      },
-    });
+    const summary = await buildBiometricSummary(patient.id);
+    res.json({ success: true, data: summary });
   } catch (error) {
     console.error('Error building biometric summary:', error);
     res.status(500).json({ error: 'Failed to build biometric summary' });

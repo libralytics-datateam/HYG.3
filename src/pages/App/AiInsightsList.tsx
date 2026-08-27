@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Brain, Filter, RefreshCw } from 'lucide-react';
+import { Brain, Filter, RefreshCw, BellRing } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
 import ErrorBanner from '../../components/ErrorBanner';
@@ -79,10 +79,19 @@ export default function AiInsightsList() {
               </tr>
             ) : (
               insights.map((insight) => (
-                <tr key={insight.id} className="border-b border-border last:border-0 hover:bg-bg/50 transition-colors">
+                <tr key={insight.id} className={`border-b border-border last:border-0 hover:bg-bg/50 transition-colors ${insight.patientRequestedAt ? 'bg-gold/5' : ''}`}>
                   <td className="p-4 text-muted font-mono text-xs" title={insight.id}>{insight.id.substring(0,8)}...</td>
                   <td className="p-4 text-text font-bold">{insight.patientName}</td>
-                  <td className="p-4 text-text">{insight.prediction}</td>
+                  <td className="p-4 text-text">
+                    <div className="flex items-center gap-2">
+                      {insight.patientRequestedAt && (
+                        <span title={`Patient requested review ${new Date(insight.patientRequestedAt).toLocaleString()}`} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gold/20 text-gold text-xs font-bold uppercase tracking-wider shrink-0">
+                          <BellRing size={11} /> Requested
+                        </span>
+                      )}
+                      <span>{insight.prediction}</span>
+                    </div>
+                  </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <div className="w-16 h-2 rounded-full bg-bg overflow-hidden">

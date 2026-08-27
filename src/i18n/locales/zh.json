@@ -137,7 +137,11 @@
     "breakfast": "早餐",
     "lunch": "午餐",
     "dinner": "晚餐",
-    "snack": "加餐"
+    "snack": "加餐",
+    "requestReviewCta": "请求药剂师审核",
+    "requestingReview": "正在发送请求...",
+    "requestReviewSent": "请求已发送 — 药剂师会优先处理您的审核。",
+    "requestReviewFailed": "发送请求失败，请重试。"
   },
   "clientDashboard": {
     "greeting": "你好,{{name}}",
@@ -231,5 +235,32 @@
     "loading": "加载中…",
     "error": "出现错误",
     "language": "语言"
+  },
+  "healthChart": {
+    "title": "健康趋势",
+    "subtitle": "您的恢复、睡眠和整体健康信号变化趋势",
+    "loading": "正在加载您的健康趋势...",
+    "loadFailed": "加载健康趋势失败。",
+    "needMorePoints": "数据还不够多，暂时无法显示趋势 — 请在下次同步或扫描后再查看。",
+    "lastReading": "截至 {{date}}",
+    "metric": {
+      "recovery_score": "恢复",
+      "sleep_score": "睡眠",
+      "antioxidant_score": "手部扫描健康评分",
+      "strain": "压力值",
+      "hrv": "HRV"
+    },
+    "trend": {
+      "up": "正在改善",
+      "down": "正在下降",
+      "flat": "保持稳定"
+    },
+    "thresholdLabel": "参考值：{{value}}+",
+    "alertBody": "您最近的{{label}}平均为 {{value}}{{unit}}，低于建议范围 {{threshold}}{{unit}}。如果持续如此，可以请药剂师查看。",
+    "requestReviewCta": "请求药剂师审核",
+    "requesting": "正在发送请求...",
+    "requestSent": "请求已发送 — 药剂师会优先处理您的审核。",
+    "requestFailed": "发送请求失败，请重试。",
+    "requestReason": "最近的{{label}}平均为 {{value}}{{unit}}，低于建议范围 {{threshold}}{{unit}}。"
   }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Brain, CheckCircle2, XCircle, ArrowLeft, TrendingUp, AlertTriangle, Database, Pencil } from 'lucide-react';
+import { Brain, CheckCircle2, XCircle, ArrowLeft, TrendingUp, AlertTriangle, Database, Pencil, PhoneCall, BellRing } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
 import ErrorBanner from '../../components/ErrorBanner';
 
@@ -10,6 +10,7 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   data_quality: <Database size={18} className="text-teal" />,
   vitamin_concept: <Brain size={18} className="text-teal" />,
   hand_scan_vitamin_concept: <Brain size={18} className="text-teal" />,
+  telemedicine_request: <PhoneCall size={18} className="text-gold" />,
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -18,6 +19,7 @@ const TYPE_LABELS: Record<string, string> = {
   data_quality: 'Data Quality',
   vitamin_concept: 'Vitamin Concept',
   hand_scan_vitamin_concept: 'Hand-Scan Recommendation',
+  telemedicine_request: 'Pharmacist Review Request',
 };
 
 export default function AiInsightsDetail() {
@@ -113,6 +115,19 @@ export default function AiInsightsDetail() {
           {insight.status}
         </span>
       </div>
+
+      {/* Patient explicitly asked for this — surfaced above everything else,
+          same as the queue-list badge (AiInsightsList.tsx) and the sort order
+          the backend already applies (server/routes/insights.ts). */}
+      {insight.content?.patientRequestedAt && (
+        <div className="glass-panel p-4 mb-6 border border-gold/40 bg-gold/5 flex items-center gap-3">
+          <BellRing size={18} className="text-gold shrink-0" />
+          <p className="text-text text-sm">
+            <span className="font-bold text-gold">Patient requested this review</span>
+            {' — '}{new Date(insight.content.patientRequestedAt).toLocaleString()}
+          </p>
+        </div>
+      )}
 
       {/* Key detail panels */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

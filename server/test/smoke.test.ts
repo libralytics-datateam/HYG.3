@@ -382,3 +382,132 @@ test('GET /v1/wearables/status reports whoopConfigured honestly when no WHOOP cr
   assert.equal(json.data.whoopConfigured, false);
   assert.equal(json.data.connected, false);
 });
+
+test('GET /v1/wearables/biometric-summary matches the pharmacist-side biometric-summary for the same patient', async () => {
+  // Same computation (server/services/biometrics.ts), reached without a
+  // session — this is what the client dashboard's health chart calls.
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Chart', lastName: 'Test', email: `charttest+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  const beforeScan = await fetch(`${BASE_URL}/v1/wearables/biometric-summary?patientId=${patient.patientId}`).then((r) => r.json());
+  assert.equal(beforeScan.data.totalReadings, 0);
+
+  await fetch(`${BASE_URL}/v1/analysis/hand-scan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId }),
+  });
+
+  const patientSide = await fetch(`${BASE_URL}/v1/wearables/biometric-summary?patientId=${patient.patientId}`).then((r) => r.json());
+  assert.equal(patientSide.data.totalReadings, 1);
+  const metric = patientSide.data.metrics.find((m: any) => m.metricType === 'antioxidant_score');
+  assert.ok(metric, 'expected an antioxidant_score metric after a hand scan');
+  assert.equal(metric.latestValue, 72);
+});
+
+test('GET /v1/wearables/biometric-summary requires patientId and 404s on an unknown one', async () => {
+  const missing = await fetch(`${BASE_URL}/v1/wearables/biometric-summary`);
+  assert.equal(missing.status, 400);
+  const unknown = await fetch(`${BASE_URL}/v1/wearables/biometric-summary?patientId=nonexistent`);
+  assert.equal(unknown.status, 404);
+});
+
+test('POST /v1/telemedicine/request-review (wearable_trend) creates a pending, patient-flagged insight the pharmacist queue surfaces first', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Telemed', lastName: 'Trend', email: `telemedtrend+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  const reqRes = await fetch(`${BASE_URL}/v1/telemedicine/request-review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, source: 'wearable_trend', reason: 'Recovery averaging 28% — below the 34% guidance range.' }),
+  });
+  assert.equal(reqRes.status, 200);
+  const reqJson = await reqRes.json();
+  assert.equal(reqJson.data.created, true);
+
+  // But this test onboarded through /v1/onboard, which routes into the
+  // staffed consumer org (see decisions.md's hand-scan gate entry) — same
+  // org sarah manages, so her session can see it.
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+
+  const outputsRes = await fetch(`${BASE_URL}/v1/ai/outputs`, {
+    headers: { Authorization: `Bearer ${session.token}` },
+  });
+  const { data: outputs } = await outputsRes.json();
+  const found = outputs.find((o: any) => o.patientId === patient.patientId && o.type === 'telemedicine_request');
+  assert.ok(found, 'expected a telemedicine_request insight for this patient');
+  assert.equal(found.status, 'pending');
+  assert.ok(found.patientRequestedAt, 'expected patientRequestedAt to be set');
+  // Patient-requested items sort ahead of every non-requested item in the
+  // queue (not asserting an exact index — other patient-requested items may
+  // already exist from earlier test runs against this same seeded org).
+  const foundIdx = outputs.findIndex((o: any) => o.id === found.id);
+  const firstNonRequestedIdx = outputs.findIndex((o: any) => !o.patientRequestedAt);
+  assert.ok(
+    firstNonRequestedIdx === -1 || foundIdx < firstNonRequestedIdx,
+    'expected the patient-requested insight to sort ahead of non-requested ones'
+  );
+});
+
+test('POST /v1/telemedicine/request-review (hand_scan) flags the existing pending insight instead of duplicating it', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Telemed', lastName: 'Scan', email: `telemedscan+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  const scanRes = await fetch(`${BASE_URL}/v1/analysis/hand-scan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId }),
+  });
+  const { data: scan } = await scanRes.json();
+
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+
+  const before = await fetch(`${BASE_URL}/v1/ai/outputs`, { headers: { Authorization: `Bearer ${session.token}` } }).then((r) => r.json());
+  const countBefore = before.data.filter((o: any) => o.patientId === patient.patientId).length;
+  assert.equal(countBefore, 1);
+
+  const reqRes = await fetch(`${BASE_URL}/v1/telemedicine/request-review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, source: 'hand_scan', scanId: scan.scanId }),
+  });
+  assert.equal(reqRes.status, 200);
+  const reqJson = await reqRes.json();
+  assert.equal(reqJson.data.flagged, true);
+
+  const after = await fetch(`${BASE_URL}/v1/ai/outputs`, { headers: { Authorization: `Bearer ${session.token}` } }).then((r) => r.json());
+  const patientOutputs = after.data.filter((o: any) => o.patientId === patient.patientId);
+  assert.equal(patientOutputs.length, 1, 'expected the existing insight to be flagged, not duplicated');
+  assert.ok(patientOutputs[0].patientRequestedAt, 'expected patientRequestedAt to now be set');
+});

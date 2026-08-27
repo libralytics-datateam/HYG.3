@@ -137,7 +137,11 @@
     "breakfast": "Breakfast",
     "lunch": "Lunch",
     "dinner": "Dinner",
-    "snack": "Snack"
+    "snack": "Snack",
+    "requestReviewCta": "Request Pharmacist Review",
+    "requestingReview": "Sending request...",
+    "requestReviewSent": "Request sent — a pharmacist will prioritize your review.",
+    "requestReviewFailed": "Couldn't send your request. Please try again."
   },
   "clientDashboard": {
     "greeting": "Hi, {{name}}",
@@ -231,5 +235,32 @@
     "loading": "Loading…",
     "error": "Something went wrong",
     "language": "Language"
+  },
+  "healthChart": {
+    "title": "Health Trends",
+    "subtitle": "Your recovery, sleep, and wellness signal over time",
+    "loading": "Loading your health trends...",
+    "loadFailed": "Failed to load health trends.",
+    "needMorePoints": "Not enough readings yet for a trend line — check back after your next sync or scan.",
+    "lastReading": "as of {{date}}",
+    "metric": {
+      "recovery_score": "Recovery",
+      "sleep_score": "Sleep",
+      "antioxidant_score": "Hand-Scan Wellness",
+      "strain": "Strain",
+      "hrv": "HRV"
+    },
+    "trend": {
+      "up": "improving",
+      "down": "declining",
+      "flat": "steady"
+    },
+    "thresholdLabel": "guidance: {{value}}+",
+    "alertBody": "Your {{label}} has averaged {{value}}{{unit}} recently — below the {{threshold}}{{unit}} guidance range. If this continues, a pharmacist can take a look.",
+    "requestReviewCta": "Request Pharmacist Review",
+    "requesting": "Sending request...",
+    "requestSent": "Request sent — a pharmacist will prioritize your review.",
+    "requestFailed": "Couldn't send your request. Please try again.",
+    "requestReason": "{{label}} has averaged {{value}}{{unit}} over the last few readings (below the {{threshold}}{{unit}} guidance range)."
   }
 }

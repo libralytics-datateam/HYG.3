@@ -361,6 +361,13 @@
   margin-bottom: 16px;
 }
 
+.pending-review-requested {
+  margin-top: 14px;
+  color: var(--teal);
+  font-size: 14px;
+  font-weight: 700;
+}
+
 /* Signals */
 .signals-list { display: flex; flex-direction: column; gap: 10px; }
 

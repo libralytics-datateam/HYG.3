@@ -183,3 +183,22 @@ A recommendation doesn't ship if it can't populate all four fields honestly:
 New end-to-end regression test (`server/test/smoke.test.ts`) covers the full path: scan → nothing visible to the patient → pharmacist approves → now visible, with real assertions on both the gated response shape and the org-scoped review flow. 16/16 tests passing.
 
 **Evidence:** `server/routes/handscan.ts`, `server/routes/insights.ts`, `server/routes/onboarding.ts`, `MVP-LAUNCH-CHECKLIST.md` §1.
+
+---
+
+## Health trend chart + telemedicine review request — built 2026-08-28
+
+User ask, in two parts across the same conversation: "adding Whoop data to dashboard... [pharmacist review] can be add on like telemedicine eg. request pharmacist for reviews," then "adding health chart to make user see if they get better or worst and if it under some number suggest to get advice from 'pharmacist' via telemedicine."
+
+**Gap found:** WHOOP recovery/sleep/strain/HRV data was already being collected (`BiometricReading`, real OAuth sync per §8 of the checklist) and already displayed on the *pharmacist's* side (`PatientDetail.tsx`'s biometric summary cards). The patient's own dashboard only ever showed a WHOOP *connection* status card — never the actual numbers. Same gap for the hand-scan wellness score.
+
+**Built:**
+- `server/services/biometrics.ts` — extracted the trend-computation logic that used to live only in the authenticated pharmacist route, so a new unauthenticated patientId-scoped twin (`GET /v1/wearables/biometric-summary`) can't drift from the original.
+- `src/components/HealthTrendChart.tsx` — an actual line chart (hover tooltip, trend arrow, threshold reference line), not another stat tile, per the user's explicit "chart... see if they get better or worse."
+- Threshold banner: **only** for Recovery (<34%) and Sleep (<50%), WHOOP's own published bands. Deliberately no threshold for Strain or HRV — neither has a universal "low" number (HRV is highly individual), and inventing one would repeat the exact fabricated-clinical-threshold mistake `data/DATA_PROVENANCE.md` already caught and fixed once in this project. Under threshold → plain-language banner + "Request Pharmacist Review," never a diagnosis.
+- `POST /v1/telemedicine/request-review` (`server/routes/telemedicine.ts`) — the "telemedicine" ask. Two triggers, one pipeline: a hand-scan request flags the *existing* pending `AiOutput` (`patientRequestedAt` in its `content` JSON); a wearable-trend request creates a new one (`type: 'telemedicine_request'`). Both go through the same `AiOutput`/`CustomVitaminConcept` review pipeline as hand-scan gating above — a third parallel mechanism was never considered. No schema change (same DB-ownership wall).
+- Pharmacist queue (`GET /v1/ai/outputs`) now sorts patient-requested items first and exposes `patientRequestedAt`; `AiInsightsList`/`AiInsightsDetail` show a "Requested" badge/banner.
+
+4 new regression tests (patient-side summary parity with the pharmacist-side one, both request-review paths, no-duplicate check on the hand-scan path); 20/20 passing. All 4 locales translated.
+
+**Evidence:** `server/services/biometrics.ts`, `server/routes/wearables.ts`, `server/routes/telemedicine.ts`, `server/routes/insights.ts`, `src/components/HealthTrendChart.tsx`, `src/pages/Client/HandScanner.tsx`, `MVP-LAUNCH-CHECKLIST.md` §10.
