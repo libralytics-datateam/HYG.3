@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Activity, Camera, LayoutDashboard, LogOut } from 'lucide-react';
+import { Activity, Camera, LayoutDashboard, LogOut, Calendar } from 'lucide-react';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import './ClientLayout.css';
 
@@ -31,6 +31,10 @@ export default function ClientLayout() {
             <Link to="/client/scan" className={isActive('/client/scan')}>
               <Camera size={18} />
               {t('clientLayout.scanHand')}
+            </Link>
+            <Link to="/client/checkin" className={isActive('/client/checkin')}>
+              <Calendar size={18} />
+              {t('clientLayout.checkIn')}
             </Link>
           </nav>
           <div className="client-profile">

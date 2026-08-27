@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon } from 'lucide-react';
 import WhoopConnectCard from '../../components/WhoopConnectCard';
+import CheckInCard from '../../components/CheckInCard';
 import './ClientDashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
@@ -64,6 +65,7 @@ export default function ClientDashboard() {
         </div>
       </div>
 
+      {patientId && <CheckInCard patientId={patientId} />}
       {patientId && <WhoopConnectCard patientId={patientId} />}
 
       {loading ? (

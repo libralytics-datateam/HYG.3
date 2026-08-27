@@ -81,3 +81,15 @@ Needs a real WHOOP developer account (register free at https://developer.whoop.c
 **Also found and fixed while building this:** `hyg3_app` can't `ALTER TABLE` on existing tables, not just `CREATE TABLE` — confirmed via a failed `prisma db push` (`must be owner of table AiOutput`). More restrictive than previously documented; see the correction in `MVP-LAUNCH-CHECKLIST.md` §4.
 
 **Evidence:** `server/routes/handscan.ts`, `server/routes/patients.ts` (`biometric-summary`), `src/pages/App/PatientDetail.tsx`, `MVP-LAUNCH-CHECKLIST.md` §4 and §8.
+
+---
+
+## More data gathering for better analysis: self-report check-in built, ranked ahead of adherence tracking and lab integration
+
+**Question:** User asked whether more data should be gathered from patients to improve analysis quality.
+
+**Status: ANSWERED 2026-08-28.** Recommended and built, in priority order: (1) a structured self-report symptom/wellness check-in — built now, see `MVP-LAUNCH-CHECKLIST.md` §9; (2) outcome tracking over time (does a recommendation actually help?) — not built, needs a design decision on cadence/UX; (3) supplement adherence tracking — deprioritized, typically low compliance in consumer apps; (4) lab results — real ground truth, but a clinical-lab partnership is a much bigger lift than anything else here (WHOOP's own spec has a "Partner" API for exactly this — lab requisitions via a company called Unilabs — worth remembering if a lab partnership is ever pursued).
+
+Deliberately did not reach for another public dataset to fill this gap — every one of the above should come from this product's own patients, with real consent, which is the same lesson `data/DATA_PROVENANCE.md` already drew from the original vitamin-deficiency dataset.
+
+**Evidence:** `server/routes/checkins.ts`, `src/pages/Client/CheckIn.tsx`, `MVP-LAUNCH-CHECKLIST.md` §9.

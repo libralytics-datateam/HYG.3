@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Brain, CheckCircle2, Clock, XCircle, Activity, TrendingUp, TrendingDown, Minus, Watch, ScanLine } from 'lucide-react';
+import { ArrowLeft, User, Brain, CheckCircle2, Clock, XCircle, Activity, TrendingUp, TrendingDown, Minus, Watch, ScanLine, Calendar, AlertCircle } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
 import ErrorBanner from '../../components/ErrorBanner';
 
@@ -10,11 +10,24 @@ const METRIC_LABELS: Record<string, { label: string; unit: string }> = {
   strain: { label: 'Strain', unit: '' },
   hrv: { label: 'HRV', unit: 'ms' },
   antioxidant_score: { label: 'Hand-Scan Wellness Score', unit: '' },
+  wellness_score: { label: 'Self-Reported Wellness', unit: '/5' },
+};
+
+const SYMPTOM_LABELS: Record<string, string> = {
+  fatigue: 'Fatigue',
+  poor_sleep: 'Poor Sleep',
+  muscle_weakness: 'Muscle Weakness',
+  joint_pain: 'Joint Pain',
+  low_mood: 'Low Mood',
+  poor_concentration: 'Poor Concentration',
+  digestive_issues: 'Digestive Issues',
+  skin_issues: 'Skin Issues',
 };
 
 const SOURCE_ICON: Record<string, any> = {
   whoop: Watch,
   hand_scanner: ScanLine,
+  self_report: Calendar,
 };
 
 export default function PatientDetail() {
@@ -102,32 +115,59 @@ export default function PatientDetail() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-              {biometrics.metrics.map((m: any) => {
-                const meta = METRIC_LABELS[m.metricType] ?? { label: m.metricType, unit: '' };
-                const SrcIcon = SOURCE_ICON[m.latestSource] ?? Activity;
-                const TrendIcon = m.trend === 'up' ? TrendingUp : m.trend === 'down' ? TrendingDown : Minus;
-                return (
-                  <div key={m.metricType} className="p-4 bg-bg rounded-lg border border-border">
-                    <div className="flex items-center justify-between text-xs text-muted uppercase tracking-wider font-bold mb-2">
-                      <span>{meta.label}</span>
-                      <SrcIcon size={13} />
+              {biometrics.metrics
+                .filter((m: any) => !m.metricType.startsWith('symptom_'))
+                .map((m: any) => {
+                  const meta = METRIC_LABELS[m.metricType] ?? { label: m.metricType, unit: '' };
+                  const SrcIcon = SOURCE_ICON[m.latestSource] ?? Activity;
+                  const TrendIcon = m.trend === 'up' ? TrendingUp : m.trend === 'down' ? TrendingDown : Minus;
+                  return (
+                    <div key={m.metricType} className="p-4 bg-bg rounded-lg border border-border">
+                      <div className="flex items-center justify-between text-xs text-muted uppercase tracking-wider font-bold mb-2">
+                        <span>{meta.label}</span>
+                        <SrcIcon size={13} />
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-text">{m.latestValue}{meta.unit}</span>
+                        {m.trend && (
+                          <TrendIcon
+                            size={16}
+                            className={m.trend === 'up' ? 'text-teal' : m.trend === 'down' ? 'text-red-400' : 'text-muted'}
+                          />
+                        )}
+                      </div>
+                      <div className="text-xs text-muted mt-1">
+                        {m.readingCount} reading{m.readingCount === 1 ? '' : 's'} &bull; last {new Date(m.latestRecordedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                      </div>
                     </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold text-text">{m.latestValue}{meta.unit}</span>
-                      {m.trend && (
-                        <TrendIcon
-                          size={16}
-                          className={m.trend === 'up' ? 'text-teal' : m.trend === 'down' ? 'text-red-400' : 'text-muted'}
-                        />
-                      )}
-                    </div>
-                    <div className="text-xs text-muted mt-1">
-                      {m.readingCount} reading{m.readingCount === 1 ? '' : 's'} &bull; last {new Date(m.latestRecordedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
+
+            {/* Symptoms currently reported (most recent self check-in only) */}
+            {(() => {
+              const activeSymptoms = biometrics.metrics.filter(
+                (m: any) => m.metricType.startsWith('symptom_') && m.latestValue === 1
+              );
+              return activeSymptoms.length > 0 ? (
+                <div className="mb-4">
+                  <div className="text-xs font-bold text-muted uppercase tracking-wider mb-2">
+                    Currently Reported Symptoms
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {activeSymptoms.map((m: any) => {
+                      const key = m.metricType.replace('symptom_', '');
+                      return (
+                        <span key={m.metricType} className="flex items-center gap-1 px-2 py-1 bg-gold/10 text-gold text-xs font-bold rounded-full border border-gold/20">
+                          <AlertCircle size={12} /> {SYMPTOM_LABELS[key] ?? key}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null;
+            })()}
+
             <div className="text-xs text-muted">
               {biometrics.totalReadings} total readings from {biometrics.sources.join(', ')}, since {new Date(biometrics.earliestReadingAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}.
             </div>

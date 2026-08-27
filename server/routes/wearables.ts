@@ -171,13 +171,27 @@ router.post('/whoop/sync', async (req, res) => {
     // Skip readings already recorded (same patient/source/metric/timestamp) so
     // clicking "Sync now" repeatedly with no new WHOOP data doesn't spam duplicates.
     let savedCount = 0;
-    for (const r of readings) {
-      const exists = await prisma.biometricReading.findFirst({
-        where: { patientId, source: 'whoop', metricType: r.metricType, recordedAt: r.recordedAt },
+    if (readings.length > 0) {
+      const existing = await prisma.biometricReading.findMany({
+        where: {
+          patientId,
+          source: 'whoop',
+          OR: readings.map((r) => ({
+            metricType: r.metricType,
+            recordedAt: r.recordedAt,
+          })),
+        },
+        select: { metricType: true, recordedAt: true },
       });
-      if (!exists) {
-        await prisma.biometricReading.create({ data: { patientId, source: 'whoop', ...r } });
-        savedCount++;
+
+      const existingSet = new Set(existing.map((e) => `${e.metricType}-${e.recordedAt.getTime()}`));
+      const toInsert = readings.filter((r) => !existingSet.has(`${r.metricType}-${r.recordedAt.getTime()}`));
+
+      if (toInsert.length > 0) {
+        await prisma.biometricReading.createMany({
+          data: toInsert.map((r) => ({ patientId, source: 'whoop', ...r })),
+        });
+        savedCount = toInsert.length;
       }
     }
 

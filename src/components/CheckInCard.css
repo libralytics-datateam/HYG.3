@@ -1,0 +1,37 @@
+.checkin-status-card {
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.checkin-status-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: var(--teal-glow);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkin-status-body {
+  flex: 1;
+  min-width: 180px;
+}
+
+.checkin-status-title {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.checkin-status-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}

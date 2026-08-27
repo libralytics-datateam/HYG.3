@@ -199,6 +199,41 @@ test('hand scan writes a BiometricReading, and biometric-summary reflects it', a
   assert.equal(antioxidant.latestSource, 'hand_scanner');
 });
 
+test('POST /v1/checkins saves a real check-in and GET .../latest reflects it', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'CheckIn', lastName: 'Test', email: `checkin+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  const before = await fetch(`${BASE_URL}/v1/checkins/${patient.patientId}/latest`).then((r) => r.json());
+  assert.equal(before.data, null);
+
+  const submitRes = await fetch(`${BASE_URL}/v1/checkins`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, wellnessScore: 3, symptoms: ['fatigue', 'poor_sleep'] }),
+  });
+  assert.equal(submitRes.status, 201);
+
+  const after = await fetch(`${BASE_URL}/v1/checkins/${patient.patientId}/latest`).then((r) => r.json());
+  assert.equal(after.data.wellnessScore, 3);
+  assert.deepEqual([...after.data.symptoms].sort(), ['fatigue', 'poor_sleep']);
+});
+
+test('POST /v1/checkins rejects an out-of-range wellnessScore', async () => {
+  const res = await fetch(`${BASE_URL}/v1/checkins`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: 'whatever', wellnessScore: 9, symptoms: [] }),
+  });
+  assert.equal(res.status, 400);
+});
+
 test('GET /v1/wearables/status requires patientId', async () => {
   const res = await fetch(`${BASE_URL}/v1/wearables/status`);
   assert.equal(res.status, 400);

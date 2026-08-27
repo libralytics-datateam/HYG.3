@@ -157,6 +157,40 @@
     "snack": "間食",
     "scanAgainCta": "最新の分析結果を得るために再スキャン"
   },
+  "checkIn": {
+    "title": "週間チェックイン",
+    "subtitle": "30秒の簡単なチェックインで、前回のスキャン時だけでなく、日々の体調の変化を記録できます。",
+    "wellnessQuestion": "全体的にどう感じますか？",
+    "wellness1": "とても悪い",
+    "wellness2": "悪い",
+    "wellness3": "普通",
+    "wellness4": "良い",
+    "wellness5": "とても良い",
+    "symptomsQuestion": "今日、以下のいずれかがありますか？該当するものをすべて選択してください。",
+    "symptoms": {
+      "fatigue": "倦怠感",
+      "poor_sleep": "睡眠不良",
+      "muscle_weakness": "筋力低下",
+      "joint_pain": "関節痛",
+      "low_mood": "気分の落ち込み",
+      "poor_concentration": "集中力低下",
+      "digestive_issues": "消化器の不調",
+      "skin_issues": "肌トラブル"
+    },
+    "submit": "チェックインを送信",
+    "submitting": "保存中...",
+    "submitFailed": "チェックインの保存に失敗しました。もう一度お試しください。",
+    "successTitle": "チェックインありがとうございます",
+    "successBody": "これにより、経過の正確な記録を積み上げていくことができます。",
+    "backToDashboard": "ダッシュボードに戻る",
+    "alreadyCheckedInTitle": "本日はすでにチェックイン済みです",
+    "alreadyCheckedInBody": "次のチェックインは明日どうぞ。",
+    "cardTitle": "週間チェックイン",
+    "cardBody": "30秒のチェックインでスキャンの合間の経過を記録できます。",
+    "cardCta": "今すぐチェックイン",
+    "lastCheckIn": "前回のチェックイン: {{date}}",
+    "noCheckInYet": "まだチェックインしていません"
+  },
   "wearables": {
     "title": "ウェアラブルデータ",
     "checkingStatus": "ウェアラブル接続を確認中...",
@@ -181,6 +215,7 @@
   "clientLayout": {
     "myReport": "マイレポート",
     "scanHand": "手をスキャン",
+    "checkIn": "チェックイン",
     "signOut": "サインアウト"
   },
   "common": {

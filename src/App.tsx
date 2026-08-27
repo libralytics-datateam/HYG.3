@@ -36,6 +36,7 @@ const ClientDashboard = lazy(() => import('./pages/Client/ClientDashboard'));
 const Onboarding = lazy(() => import('./pages/Client/Onboarding'));
 const HandScanner = lazy(() => import('./pages/Client/HandScanner'));
 const WearableCallback = lazy(() => import('./pages/Client/WearableCallback'));
+const CheckIn = lazy(() => import('./pages/Client/CheckIn'));
 
 // Simple loading fallback
 const PageLoader = () => (
@@ -98,6 +99,7 @@ function App() {
             <Route path="dashboard" element={<ClientDashboard />} />
             <Route path="scan" element={<HandScanner />} />
             <Route path="wearables/callback" element={<WearableCallback />} />
+            <Route path="checkin" element={<CheckIn />} />
           </Route>
         </Routes>
       </Suspense>

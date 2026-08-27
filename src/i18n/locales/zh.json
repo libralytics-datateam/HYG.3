@@ -157,6 +157,40 @@
     "snack": "加餐",
     "scanAgainCta": "重新扫描以获取最新分析"
   },
+  "checkIn": {
+    "title": "每周签到",
+    "subtitle": "只需30秒的快速签到，帮助我们持续追踪您的状态变化，而不仅仅是上次扫描时的情况。",
+    "wellnessQuestion": "您整体感觉如何？",
+    "wellness1": "很差",
+    "wellness2": "较差",
+    "wellness3": "一般",
+    "wellness4": "良好",
+    "wellness5": "很好",
+    "symptomsQuestion": "今天是否有以下情况？可多选。",
+    "symptoms": {
+      "fatigue": "疲劳",
+      "poor_sleep": "睡眠不佳",
+      "muscle_weakness": "肌肉无力",
+      "joint_pain": "关节疼痛",
+      "low_mood": "情绪低落",
+      "poor_concentration": "注意力不集中",
+      "digestive_issues": "消化问题",
+      "skin_issues": "皮肤问题"
+    },
+    "submit": "提交签到",
+    "submitting": "保存中...",
+    "submitFailed": "签到保存失败，请重试。",
+    "successTitle": "感谢您的签到",
+    "successBody": "这有助于真实记录您随时间的进展。",
+    "backToDashboard": "返回仪表板",
+    "alreadyCheckedInTitle": "今天已经签到过了",
+    "alreadyCheckedInBody": "明天再来进行下一次签到。",
+    "cardTitle": "每周签到",
+    "cardBody": "30秒签到，帮助追踪扫描间隔期间的进展。",
+    "cardCta": "立即签到",
+    "lastCheckIn": "上次签到：{{date}}",
+    "noCheckInYet": "您还没有签到过"
+  },
   "wearables": {
     "title": "可穿戴设备数据",
     "checkingStatus": "正在检查可穿戴设备连接状态...",
@@ -181,6 +215,7 @@
   "clientLayout": {
     "myReport": "我的报告",
     "scanHand": "扫描手部",
+    "checkIn": "签到",
     "signOut": "退出登录"
   },
   "common": {

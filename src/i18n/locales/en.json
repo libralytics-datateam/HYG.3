@@ -157,6 +157,40 @@
     "snack": "Snack",
     "scanAgainCta": "Scan Again for Updated Analysis"
   },
+  "checkIn": {
+    "title": "Weekly Check-in",
+    "subtitle": "A quick 30-second check-in helps us track how you're doing over time — not just at your last scan.",
+    "wellnessQuestion": "How are you feeling overall?",
+    "wellness1": "Very Low",
+    "wellness2": "Low",
+    "wellness3": "Okay",
+    "wellness4": "Good",
+    "wellness5": "Great",
+    "symptomsQuestion": "Any of these today? Select all that apply.",
+    "symptoms": {
+      "fatigue": "Fatigue",
+      "poor_sleep": "Poor Sleep",
+      "muscle_weakness": "Muscle Weakness",
+      "joint_pain": "Joint Pain",
+      "low_mood": "Low Mood",
+      "poor_concentration": "Poor Concentration",
+      "digestive_issues": "Digestive Issues",
+      "skin_issues": "Skin Issues"
+    },
+    "submit": "Submit Check-in",
+    "submitting": "Saving...",
+    "submitFailed": "Failed to save check-in. Please try again.",
+    "successTitle": "Thanks for checking in",
+    "successBody": "This helps build a real picture of your progress over time.",
+    "backToDashboard": "Back to Dashboard",
+    "alreadyCheckedInTitle": "Already checked in today",
+    "alreadyCheckedInBody": "Come back tomorrow for your next check-in.",
+    "cardTitle": "Weekly Check-in",
+    "cardBody": "A 30-second check-in helps track your progress between scans.",
+    "cardCta": "Check In Now",
+    "lastCheckIn": "Last check-in: {{date}}",
+    "noCheckInYet": "You haven't checked in yet"
+  },
   "wearables": {
     "title": "Wearable Data",
     "checkingStatus": "Checking wearable connection...",
@@ -181,6 +215,7 @@
   "clientLayout": {
     "myReport": "My Report",
     "scanHand": "Scan Hand",
+    "checkIn": "Check-in",
     "signOut": "Sign Out"
   },
   "common": {

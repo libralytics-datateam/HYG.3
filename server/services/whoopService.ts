@@ -140,8 +140,12 @@ export async function revokeAccess(accessToken: string): Promise<void> {
 // OAuth tokens granting access to actual biometric health data, not a
 // shared API key like GEMINI_API_KEY. Derives the encryption key from
 // JWT_SECRET (scrypt) instead of requiring yet another secret to configure.
+let cachedEncryptionKey: Buffer | null = null;
 function getEncryptionKey(): Buffer {
-  return crypto.scryptSync(getStateSecret(), 'hyg3-whoop-token-v1', 32);
+  if (!cachedEncryptionKey) {
+    cachedEncryptionKey = crypto.scryptSync(getStateSecret(), 'hyg3-whoop-token-v1', 32);
+  }
+  return cachedEncryptionKey;
 }
 
 export function encryptToken(plaintext: string): string {

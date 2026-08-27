@@ -12,6 +12,7 @@ import handscanRoutes from './routes/handscan';
 import recommendationsRoutes from './routes/recommendations';
 import contactRoutes from './routes/contact';
 import wearablesRoutes from './routes/wearables';
+import checkinsRoutes from './routes/checkins';
 import { requireAuth } from './middleware/auth';
 
 const app = express();
@@ -55,6 +56,7 @@ app.use('/v1/analysis', handscanRoutes);
 app.use('/v1/recommendations', recommendationsRoutes);
 app.use('/v1/contact', contactRoutes);
 app.use('/v1/wearables', wearablesRoutes);
+app.use('/v1/checkins', checkinsRoutes);
 
 app.listen(port, () => {
   const geminiStatus = process.env.GEMINI_API_KEY ? '✅ Gemini Vision active' : '⚠️  No GEMINI_API_KEY — using simulated analysis';
