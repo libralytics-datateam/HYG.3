@@ -1,0 +1,43 @@
+name: CI
+
+# Typecheck + build both packages on every push/PR. Deliberately does NOT run
+# server/test/smoke.test.ts here — those tests spawn the real server against
+# a live DATABASE_URL (server/.env), and wiring a real Postgres credential
+# into GitHub Actions secrets is a deliberate decision for a human to make,
+# not something to do silently in CI config. Run `npm test` locally/in
+# Render instead. See MVP-LAUNCH-CHECKLIST.md §4.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: Frontend build (tsc -b && vite build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+
+  server:
+    name: Server typecheck (tsc)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npm run build
