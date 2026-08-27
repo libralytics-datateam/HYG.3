@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Calendar } from 'lucide-react';
+import Sparkline from './Sparkline';
 import './CheckInCard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
@@ -21,13 +22,17 @@ function timeAgo(dateStr: string): string {
 export default function CheckInCard({ patientId }: { patientId: string }) {
   const { t } = useTranslation();
   const [lastCheckIn, setLastCheckIn] = useState<string | null>(null);
+  const [history, setHistory] = useState<{ value: number; recordedAt: string }[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_URL}/checkins/${patientId}/latest`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.success && json.data) setLastCheckIn(json.data.recordedAt);
+    Promise.all([
+      fetch(`${API_URL}/checkins/${patientId}/latest`).then((r) => r.json()),
+      fetch(`${API_URL}/checkins/${patientId}/history`).then((r) => r.json()),
+    ])
+      .then(([latestJson, historyJson]) => {
+        if (latestJson.success && latestJson.data) setLastCheckIn(latestJson.data.recordedAt);
+        if (historyJson.success) setHistory(historyJson.data.history);
       })
       .catch(() => {})
       .finally(() => setLoaded(true));
@@ -46,6 +51,11 @@ export default function CheckInCard({ patientId }: { patientId: string }) {
           {lastCheckIn ? t('checkIn.lastCheckIn', { date: timeAgo(lastCheckIn) }) : t('checkIn.noCheckInYet')}
         </div>
       </div>
+      {history.length >= 2 && (
+        <div className="checkin-status-sparkline">
+          <Sparkline history={history} width={90} height={28} />
+        </div>
+      )}
       <Link to="/client/checkin" className="btn btn-primary btn-sm">
         {t('checkIn.cardCta')}
       </Link>

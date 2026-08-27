@@ -35,3 +35,7 @@
   color: var(--muted);
   margin-top: 2px;
 }
+
+.checkin-status-sparkline {
+  flex-shrink: 0;
+}

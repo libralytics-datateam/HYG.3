@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Brain, CheckCircle2, Clock, XCircle, Activity, TrendingUp, TrendingDown, Minus, Watch, ScanLine, Calendar, AlertCircle } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
 import ErrorBanner from '../../components/ErrorBanner';
+import Sparkline from '../../components/Sparkline';
 
 const METRIC_LABELS: Record<string, { label: string; unit: string }> = {
   recovery_score: { label: 'Recovery', unit: '%' },
@@ -136,9 +137,10 @@ export default function PatientDetail() {
                           />
                         )}
                       </div>
-                      <div className="text-xs text-muted mt-1">
+                      <div className="text-xs text-muted mt-1 mb-2">
                         {m.readingCount} reading{m.readingCount === 1 ? '' : 's'} &bull; last {new Date(m.latestRecordedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                       </div>
+                      {m.history?.length >= 2 && <Sparkline history={m.history} width={140} height={32} />}
                     </div>
                   );
                 })}

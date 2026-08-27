@@ -113,4 +113,26 @@ router.get('/:patientId/latest', async (req, res) => {
   }
 });
 
+// GET /v1/checkins/:patientId/history — recent wellness_score history for the
+// patient's own trend view (mvp-roadmap.md Phase 5's "outcome tracking"
+// follow-up). Separate from the admin-only biometric-summary endpoint
+// (mounted under /v1/patients with requireAuth) since the consumer/patient
+// portal has no session auth by design (prd.md Phase 3) — same public,
+// patientId-scoped model as every other route in this file.
+router.get('/:patientId/history', async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const readings = await prisma.biometricReading.findMany({
+      where: { patientId, source: 'self_report', metricType: 'wellness_score' },
+      orderBy: { recordedAt: 'desc' },
+      take: 20,
+    });
+    const history = readings.map((r) => ({ value: r.value, recordedAt: r.recordedAt })).reverse();
+    res.json({ success: true, data: { history } });
+  } catch (error) {
+    console.error('Error fetching check-in history:', error);
+    res.status(500).json({ error: 'Failed to fetch check-in history' });
+  }
+});
+
 export default router;

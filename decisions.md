@@ -93,3 +93,5 @@ Needs a real WHOOP developer account (register free at https://developer.whoop.c
 Deliberately did not reach for another public dataset to fill this gap — every one of the above should come from this product's own patients, with real consent, which is the same lesson `data/DATA_PROVENANCE.md` already drew from the original vitamin-deficiency dataset.
 
 **Evidence:** `server/routes/checkins.ts`, `src/pages/Client/CheckIn.tsx`, `MVP-LAUNCH-CHECKLIST.md` §9.
+
+**Follow-up, 2026-08-28: outcome tracking (item 2 on that list) built.** Trend history (up to 20 points) now flows from both hand-scan/WHOOP data and the new self-report check-ins into a real sparkline, visible to both the clinician (`PatientDetail`) and the patient themselves (`CheckInCard`). Scoped deliberately narrow: this shows *whether a metric is trending*, not *whether a specific recommendation caused it* — tying a trend to a recommendation's timing needs real longitudinal data to do responsibly, which doesn't exist yet. Adherence tracking (item 3) and lab integration (item 4) remain unbuilt.

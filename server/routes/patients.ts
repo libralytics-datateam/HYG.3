@@ -88,6 +88,14 @@ router.get('/:id/biometric-summary', async (req, res) => {
       if (previous) {
         trend = latest.value > previous.value ? 'up' : latest.value < previous.value ? 'down' : 'flat';
       }
+      // Oldest-to-newest, capped to the most recent 20 points — enough for a
+      // real trend sparkline (mvp-roadmap.md Phase 5's "outcome tracking"
+      // follow-up) without an unbounded payload as reading history grows.
+      const history = list
+        .slice(0, 20)
+        .map((r) => ({ value: r.value, recordedAt: r.recordedAt }))
+        .reverse();
+
       return {
         metricType,
         latestValue: latest.value,
@@ -96,6 +104,7 @@ router.get('/:id/biometric-summary', async (req, res) => {
         previousValue: previous?.value ?? null,
         trend,
         readingCount: list.length,
+        history,
       };
     });
 

@@ -225,6 +225,33 @@ test('POST /v1/checkins saves a real check-in and GET .../latest reflects it', a
   assert.deepEqual([...after.data.symptoms].sort(), ['fatigue', 'poor_sleep']);
 });
 
+test('GET /v1/checkins/:patientId/history returns wellness_score readings oldest-to-newest', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'History', lastName: 'Test', email: `history+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  for (const score of [2, 4]) {
+    await fetch(`${BASE_URL}/v1/checkins`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patientId: patient.patientId, wellnessScore: score, symptoms: [] }),
+    });
+  }
+
+  const res = await fetch(`${BASE_URL}/v1/checkins/${patient.patientId}/history`);
+  const json = await res.json();
+  assert.equal(res.status, 200);
+  assert.equal(json.data.history.length, 2);
+  assert.equal(json.data.history[0].value, 2);
+  assert.equal(json.data.history[1].value, 4);
+});
+
 test('POST /v1/checkins rejects an out-of-range wellnessScore', async () => {
   const res = await fetch(`${BASE_URL}/v1/checkins`, {
     method: 'POST',
