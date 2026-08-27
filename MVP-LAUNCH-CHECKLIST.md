@@ -1,6 +1,6 @@
 # HYG.3 — MVP Completion & Deployment Checklist
 
-Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28. Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
+Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10 added same day). Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
 
 **Deploy split (decided):** frontend (Vite/React) → Vercel. Backend (Express + Prisma/Postgres + Python ML subprocess + Gemini vision) stays on Render, as `render.yaml` already targets. Nothing here migrates the backend to Vercel serverless.
 
@@ -19,14 +19,16 @@ Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28. Based on reading 
 
 **Resolved since the last sweep:** hand-scan's unreviewed deficiency/vitamin output — now gated behind pharmacist review, confirmed with the user first. See §1.
 
+**Added since the last sweep, doesn't change the blocking list:** health trend chart + telemedicine-style "Request Pharmacist Review" on the patient dashboard (§10) — purely additive, reuses the existing gated review pipeline, no new auth/legal/consent surface.
+
 🟡 **Not blocking, but not fully functional yet:**
 - `GEMINI_API_KEY` unset → hand-scan analysis is 100% simulated in production today (honestly labeled with a visible demo-mode banner, not hidden).
-- WHOOP not configured → UI shows "coming soon," nothing broken.
+- WHOOP not configured → UI shows "coming soon" on the connect card; the new health chart (§10) is real but only plots Hand-Scan Wellness until WHOOP credentials exist — no fabricated Recovery/Sleep/Strain/HRV data.
 - `Product` catalog is empty (0 rows) → blocks any real SKU-specific recommendation regardless of the above.
 - Full walkthrough with a real Gemini key never actually run (§3).
 - Custom Vercel domain — optional (§5).
 
-🟢 **Solid:** auth + org-scoping, Render/Vercel both stable and CI-tested, real CSV dataset ingestion, FACT/INFERENCE/RECOMMENDATION/UNCERTAINTY labeling, WHOOP OAuth built correctly (needs only credentials), the check-in/adherence/outcome-tracking feature set, PDPA consent structurally enforced, site navigation/structure audited and fixed, and the data-legitimacy investigation is thorough — the original fake model is properly gated.
+🟢 **Solid:** auth + org-scoping, Render/Vercel both stable and CI-tested, real CSV dataset ingestion, FACT/INFERENCE/RECOMMENDATION/UNCERTAINTY labeling, WHOOP OAuth built correctly (needs only credentials), the check-in/adherence/outcome-tracking feature set, the health chart + telemedicine review request (§10), PDPA consent structurally enforced, site navigation/structure audited and fixed, and the data-legitimacy investigation is thorough — the original fake model is properly gated.
 
 ---
 
