@@ -1,7 +1,11 @@
 import { Router } from 'express';
+import multer from 'multer';
+import { parse } from 'csv-parse/sync';
 import { prisma } from '../db';
+import { isSalesShaped, scoreQuality, computeSalesInsight } from '../services/datasetAnalysis';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 // GET /v1/datasets — list all datasets for the caller's org
 router.get('/', async (req, res) => {
@@ -32,14 +36,44 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /v1/datasets — register a new dataset (CSV upload stub)
-router.post('/', async (req, res) => {
+// POST /v1/datasets — register a dataset. If a CSV file is attached
+// (multipart field "file"), it's actually parsed: rowCount and
+// qualityScore are computed from real row validity, and — when the
+// columns look like sales data — a genuine trend/anomaly AiOutput is
+// created from the parsed rows. The file itself is not persisted; only
+// the computed summary is (no DB permission to add a raw-rows table —
+// see data/DATA_PROVENANCE.md "Path forward" for the same constraint
+// elsewhere).
+router.post('/', upload.single('file'), async (req, res) => {
   try {
-    const { name, type, rowCount = 0 } = req.body;
+    const { name, type } = req.body;
 
     if (!name || !type) {
       res.status(400).json({ error: 'name and type are required' });
       return;
+    }
+
+    let rowCount = Number(req.body.rowCount) || 0;
+    let qualityScore = 0;
+    let insight: ReturnType<typeof computeSalesInsight> = null;
+
+    if (req.file) {
+      let rows: Record<string, string>[];
+      try {
+        rows = parse(req.file.buffer, { columns: true, skip_empty_lines: true, trim: true });
+      } catch {
+        res.status(400).json({ error: 'Could not parse file as CSV' });
+        return;
+      }
+
+      const columns = rows.length > 0 ? Object.keys(rows[0]!) : [];
+      const scored = scoreQuality(rows, columns);
+      rowCount = scored.rowCount;
+      qualityScore = scored.qualityScore;
+
+      if (isSalesShaped(columns)) {
+        insight = computeSalesInsight(rows);
+      }
     }
 
     const dataset = await prisma.dataset.create({
@@ -47,12 +81,33 @@ router.post('/', async (req, res) => {
         orgId: req.user!.orgId,
         name,
         type,
-        rowCount: Number(rowCount),
-        qualityScore: 0, // Will be computed after ingestion
+        rowCount,
+        qualityScore,
       }
     });
 
-    res.status(201).json({ success: true, data: dataset });
+    if (insight) {
+      await prisma.aiOutput.create({
+        data: {
+          orgId: req.user!.orgId,
+          type: 'sales_trend',
+          content: JSON.stringify({
+            headline: insight.headline,
+            prediction: insight.headline,
+            fact: insight.fact,
+            inference: insight.inference,
+            recommendation: insight.recommendation,
+            uncertainty: insight.uncertainty,
+            sourceDatasetId: dataset.id,
+          }),
+          confidenceScore: insight.confidence,
+          modelVersion: 'sales-trend-v1',
+          reviewStatus: 'pending',
+        }
+      });
+    }
+
+    res.status(201).json({ success: true, data: dataset, insightGenerated: !!insight });
   } catch (error) {
     console.error('Error creating dataset:', error);
     res.status(500).json({ error: 'Failed to create dataset' });

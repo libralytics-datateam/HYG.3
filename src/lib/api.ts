@@ -18,7 +18,9 @@ export function setToken(token: string | null): void {
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken();
   const headers = new Headers(options.headers);
-  if (!headers.has('Content-Type') && options.body) {
+  // Don't set Content-Type for FormData — the browser needs to add its own
+  // multipart boundary, which it can only do if the header is left unset.
+  if (!headers.has('Content-Type') && options.body && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
   if (token) headers.set('Authorization', `Bearer ${token}`);

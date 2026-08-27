@@ -1,4 +1,5 @@
-import { Database, Upload, RefreshCw, X } from 'lucide-react';
+import { Database, Upload, RefreshCw, X, FileText, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
 import ErrorBanner from '../../components/ErrorBanner';
@@ -25,9 +26,11 @@ export default function Datasets() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: '', type: 'sales_export' });
+  const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
+  const [lastInsightGenerated, setLastInsightGenerated] = useState(false);
 
   useEffect(() => {
     fetchDatasets();
@@ -54,16 +57,20 @@ export default function Datasets() {
     setSubmitting(true);
     setFormError('');
     try {
-      const res = await apiFetch('/v1/datasets', {
-        method: 'POST',
-        body: JSON.stringify({ name: form.name, type: form.type }),
-      });
+      const body = new FormData();
+      body.append('name', form.name);
+      body.append('type', form.type);
+      if (file) body.append('file', file);
+
+      const res = await apiFetch('/v1/datasets', { method: 'POST', body });
+      const json = await res.json().catch(() => ({}));
       if (res.ok) {
         setShowModal(false);
         setForm({ name: '', type: 'sales_export' });
+        setFile(null);
+        setLastInsightGenerated(!!json.insightGenerated);
         await fetchDatasets();
       } else {
-        const json = await res.json().catch(() => ({}));
         setFormError(json.error || 'Failed to register dataset.');
       }
     } catch (err) {
@@ -108,6 +115,16 @@ export default function Datasets() {
       </div>
 
       {error && <ErrorBanner message={error} />}
+
+      {lastInsightGenerated && (
+        <div className="glass-panel p-4 mb-6 flex items-center gap-3 border border-teal/40 bg-teal/5">
+          <Sparkles size={20} className="text-teal" style={{ flexShrink: 0 }} />
+          <span className="text-text text-sm">
+            A real sales trend insight was computed from your upload — check{' '}
+            <Link to="/app/ai-insights" className="text-teal font-bold underline">AI Insights</Link>.
+          </span>
+        </div>
+      )}
 
       <div className="glass-panel overflow-hidden">
         <div className="overflow-x-auto">
@@ -232,12 +249,29 @@ export default function Datasets() {
                 </select>
               </div>
 
+              <div>
+                <label className="block text-sm font-bold text-muted mb-2 uppercase tracking-wider">
+                  CSV File (optional)
+                </label>
+                <label className="w-full flex items-center gap-3 bg-bg border border-border rounded p-3 text-muted cursor-pointer hover:border-teal transition-colors">
+                  <FileText size={18} className="text-teal" style={{ flexShrink: 0 }} />
+                  <span className="text-sm truncate">{file ? file.name : 'Choose a CSV to compute real row count, quality score, and trends'}</span>
+                  <input
+                    type="file"
+                    accept=".csv,text/csv"
+                    className="hidden"
+                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+                <p className="text-xs text-muted mt-2">Without a file, the dataset is registered with a 0 quality score, same as before.</p>
+              </div>
+
               {formError && <p className="text-xs text-red-400">{formError}</p>}
 
               <div className="flex justify-end gap-3 mt-2">
                 <button
                   className="btn btn-secondary"
-                  onClick={() => { setShowModal(false); setFormError(''); }}
+                  onClick={() => { setShowModal(false); setFormError(''); setFile(null); }}
                 >
                   Cancel
                 </button>
