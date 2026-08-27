@@ -25,11 +25,14 @@ COPY . .
 # before COPY, so its postinstall prisma generate had no schema to use)
 RUN npx prisma generate
 
-# Set up Python virtual environment and install Scikit-learn + Pandas
+# Set up Python virtual environment and install pinned ML dependencies
+# (server/ml/requirements.txt — pinned to match the versions
+# vitamin_model.pkl/label_encoder.pkl were actually pickled with; see that
+# file's comment and data/DATA_PROVENANCE.md).
 # We run the python script using the venv python
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir scikit-learn pandas
+RUN pip install --no-cache-dir -r ml/requirements.txt
 
 # Expose the Express port
 EXPOSE 3000

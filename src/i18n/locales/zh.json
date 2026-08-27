@@ -64,6 +64,8 @@
     "dietaryPreferences": "饮食偏好",
     "back": "返回",
     "completeSetup": "完成设置",
+    "consentText": "我同意 HYG.3 收集和处理我的健康档案、手部扫描图像和生物特征数据,以生成个性化的营养建议,详情请参阅",
+    "consentPrivacyLink": "隐私政策",
     "creatingProfile": "正在创建个人资料...",
     "step3Title": "一切就绪!",
     "step3Subtitle": "选择您希望如何开始首次健康分析。",

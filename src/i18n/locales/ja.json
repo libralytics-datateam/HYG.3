@@ -64,6 +64,8 @@
     "dietaryPreferences": "食事の好み",
     "back": "戻る",
     "completeSetup": "設定を完了する",
+    "consentText": "HYG.3が、パーソナライズされた栄養ガイダンスを作成するために、私の健康プロフィール、手のスキャン画像、バイオメトリックデータを収集・処理することに同意します。詳細は以下をご覧ください:",
+    "consentPrivacyLink": "プライバシーポリシー",
     "creatingProfile": "プロフィールを作成中...",
     "step3Title": "準備完了です!",
     "step3Subtitle": "最初の健康分析をどのように始めるか選択してください。",

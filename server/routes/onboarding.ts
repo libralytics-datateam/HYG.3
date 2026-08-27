@@ -16,11 +16,22 @@ router.post('/', async (req, res) => {
       weightKg,
       healthGoals = [],
       dietaryRestrictions = [],
-      medicalNotes = ''
+      medicalNotes = '',
+      pdpaConsent = false,
     } = req.body;
 
     if (!firstName || !lastName || !email || !age || !gender) {
       res.status(400).json({ error: 'firstName, lastName, email, age, and gender are required' });
+      return;
+    }
+
+    // pdpaConsentStatus used to be hardcoded to true unconditionally here —
+    // meaning the DB recorded "explicit consent" was given on every signup
+    // regardless of whether the frontend even showed a consent checkbox (it
+    // didn't). Now genuinely required: the frontend sends pdpaConsent only
+    // when the user actually checked the box (src/pages/Client/Onboarding.tsx).
+    if (!pdpaConsent) {
+      res.status(400).json({ error: 'PDPA consent is required to create a profile' });
       return;
     }
 

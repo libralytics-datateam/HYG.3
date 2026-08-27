@@ -1,0 +1,12 @@
+# Pinned to match the environment vitamin_model.pkl / label_encoder.pkl were
+# actually pickled with (data/model_training.py, data/.venv). Prisma pickle
+# files are sensitive to library version drift — an unpinned install can
+# silently produce different predictions, or fail to load at all, if a newer
+# scikit-learn changes its internal estimator format. See
+# data/DATA_PROVENANCE.md — this model is currently gated (POST
+# /v1/ai/predict returns 503) regardless, but keep this pinned in case that
+# ever changes.
+scikit-learn==1.9.0
+pandas==3.0.5
+numpy==2.5.2
+joblib==1.5.3

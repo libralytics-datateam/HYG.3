@@ -64,6 +64,8 @@
     "dietaryPreferences": "Dietary Preferences",
     "back": "Back",
     "completeSetup": "Complete Setup",
+    "consentText": "I consent to HYG.3 collecting and processing my health profile, hand-scan images, and biometric data to generate personalized nutrition guidance, as described in the",
+    "consentPrivacyLink": "Privacy Policy",
     "creatingProfile": "Creating Profile...",
     "step3Title": "You're all set!",
     "step3Subtitle": "Choose how you'd like to start your first health analysis.",

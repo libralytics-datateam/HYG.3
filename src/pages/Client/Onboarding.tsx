@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Activity, User, Heart, Leaf, ChevronRight, ChevronLeft, Check, Camera, Watch, Zap, ShieldCheck, Moon, Sparkles, Scale, Wind, Brain, CheckCircle2 } from 'lucide-react';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
@@ -43,6 +43,7 @@ export default function Onboarding() {
     weightKg: '',
     healthGoals: [] as string[],
     dietaryRestrictions: [] as string[],
+    pdpaConsent: false,
   });
 
   const toggleGoal = (id: string) => {
@@ -97,7 +98,7 @@ export default function Onboarding() {
   };
 
   const step1Valid = form.firstName && form.lastName && form.email && form.age && form.gender;
-  const step2Valid = form.healthGoals.length > 0;
+  const step2Valid = form.healthGoals.length > 0 && form.pdpaConsent;
 
   return (
     <div className="onboarding-page">
@@ -254,6 +255,25 @@ export default function Onboarding() {
                 ))}
               </div>
             </div>
+
+            {/* PDPA consent — required, not a pre-checked or implied checkbox.
+                Placeholder wording pending real Thai PDPA legal review
+                (MVP-LAUNCH-CHECKLIST.md §6 / decisions.md) — do not treat
+                this copy as legally sufficient on its own. */}
+            <label className="consent-checkbox">
+              <input
+                type="checkbox"
+                checked={form.pdpaConsent}
+                onChange={(e) => setForm({ ...form, pdpaConsent: e.target.checked })}
+              />
+              <span>
+                {t('onboarding.consentText')}{' '}
+                <Link to="/legal/privacy-policy" target="_blank" rel="noopener noreferrer">
+                  {t('onboarding.consentPrivacyLink')}
+                </Link>
+                .
+              </span>
+            </label>
 
             {error && <p className="error-text">{error}</p>}
 
