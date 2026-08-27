@@ -21,7 +21,7 @@ The data behind the vitamin-deficiency prediction model has **no clinical proven
 | Pharmaceutical Drugs and Vitamins Dataset V2 | `vencerlanz09/pharmaceutical-drugs-and-vitamins-dataset-v2` | Image dataset (pill/box photos), unused by any served feature — see assessment below |
 | Drugs and Vitamins Classification | `utkarshsaxenadn/drugs-and-vitamins-classification` | **Not a dataset** — a pretrained model file, unused by any served feature — see assessment below |
 | Supplement Sales Data | `zahidmughal2343/supplement-sales-data` | Referenced in `prd.md` §6 as in-scope operational data — see assessment below |
-| Kaggle kernel: `faulty-valdation-set-f1-score-97` | (kernel, not a dataset) | A public notebook whose own title states the widely-cited 97% F1 score on this dataset is a validation-methodology artifact |
+| Kaggle kernel: `faulty-valdation-set-f1-score-97` | (kernel, not a dataset) | A generic image-classifier template notebook, unrelated to this dataset — see the correction below. Not part of the evidence for this verdict. |
 
 All findings below concern the first row — the one dataset that actually produces a served prediction.
 
@@ -31,8 +31,9 @@ Verified directly against the cached CSV (`vitamin_deficiency_disease_dataset_20
 
 1. **Floating-point generation artifacts.** Values like `94.98999999999998` for a lab measurement (`serum_folate_ng_ml` and similar columns) are the signature of `random.uniform()`-style procedural generation, not a real lab result. No real lab assay reports values with that kind of binary floating-point noise.
 2. **No real-world source.** There is no associated clinical study, cohort, hospital, IRB approval, or patient consent process referenced anywhere in the dataset or this repo. Column names (`serum_vitamin_d_ng_ml`, `hemoglobin_g_dl`) mimic real lab panels but back nothing.
-3. **A public Kaggle kernel already flags it.** The kernel `gpiosenka/faulty-valdation-set-f1-score-97` — present in this repo as `data/faulty-valdation-set-f1-score-97.ipynb` — exists specifically to document that the dataset's widely-cited 97% F1 score does not hold up under correct validation methodology.
-4. **It was never actually reviewed here.** `data/data_exploration.ipynb` — the notebook that should contain exactly this kind of scrutiny — is a 0-byte empty file. This assessment is the first time anyone looked.
+3. **It was never actually reviewed here.** `data/data_exploration.ipynb` — the notebook that should contain exactly this kind of scrutiny — is a 0-byte empty file. This assessment is the first time anyone looked.
+
+**Correction (2026-08-27, re-verified by actually running the notebook's cells):** an earlier version of this document claimed `data/faulty-valdation-set-f1-score-97.ipynb` was a public kernel specifically documenting this dataset's F1 score problem. That was wrong and has been struck. Having now read every cell: it's a generic, dataset-agnostic image-classification **template** notebook by Kaggle author `gpiosenka` (`ImageDataGenerator`, EfficientNet/MobileNet transfer learning, `input()` prompts for train/test/val directory paths) — it processes image folders, not a CSV of lab values, and nothing in the file or its metadata names the vitamin-deficiency dataset. Its final cell (a real, load-bearing finding, just about a different dataset) does describe a defective validation set — training accuracy >99%, validation accuracy stuck at 45%, and a corrected 80/10/10 re-split of the train data alone recovering 97% validation accuracy / 97% F1 — but that's evidence about *an* image dataset the author ran this template against, not evidence about *this* one. The verdict below does not depend on this kernel — points 1 and 2 (synthetic-generation artifacts, no review ever done) stand on their own — but the citation itself was inaccurate and is corrected here rather than left standing.
 
 ## A second, independent problem: the runtime feature mapping is also fabricated
 
