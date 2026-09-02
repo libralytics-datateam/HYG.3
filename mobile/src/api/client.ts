@@ -1,12 +1,21 @@
+import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Same normalization as src/lib/api.ts on the web side, so both clients can
 // be pointed at the same VITE_API_URL-style value without callers caring.
+//
+// On web with no explicit override, default to the same-origin "/api"
+// proxy (see /api/[...path].js) rather than localhost:3000 — a deployed
+// web build has no way to reach a developer's local server, and hitting
+// the real backend directly from the browser would need it to allow this
+// deployment's origin in CORS_ORIGIN (server/index.ts), which nothing here
+// can configure. The proxy sidesteps that: same-origin requests need no
+// CORS at all.
 const RAW_BASE =
   process.env.EXPO_PUBLIC_API_URL ||
   (Constants.expoConfig?.extra as { apiUrl?: string } | undefined)?.apiUrl ||
-  'http://localhost:3000';
+  (Platform.OS === 'web' ? '/api' : 'http://localhost:3000');
 
 export const API_BASE = RAW_BASE.replace(/\/+$/, '').replace(/\/v1$/, '');
 

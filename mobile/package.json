@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo-google-fonts/figtree": "^0.4.1",
     "@expo-google-fonts/noto-sans": "^0.4.2",
+    "@expo/metro-runtime": "^57.0.15",
     "@react-native-async-storage/async-storage": "^3.1.1",
     "@react-navigation/bottom-tabs": "^7.18.18",
     "@react-navigation/native": "^7.3.18",
@@ -19,11 +20,13 @@
     "i18next": "^26.4.1",
     "lucide-react-native": "^1.39.0",
     "react": "19.2.3",
+    "react-dom": "^19.2.3",
     "react-i18next": "^17.0.13",
     "react-native": "0.86.3",
     "react-native-safe-area-context": "^5.9.1",
     "react-native-screens": "^4.27.0",
-    "react-native-svg": "^15.15.5"
+    "react-native-svg": "^15.15.5",
+    "react-native-web": "^0.21.2"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
@@ -33,7 +36,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build": "expo export -p web"
   },
   "private": true
 }
