@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "HYG.3",
+    "slug": "hyg3-mobile",
+    "scheme": "hyg3",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F5FAFB",
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "HYG.3 uses your camera to scan your hand for nutrition insights."
+        }
+      ]
+    ],
+    "ios": {
+      "bundleIdentifier": "com.hyg3.mobile",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "HYG.3 uses your camera to scan your hand for nutrition insights."
+      }
+    },
+    "android": {
+      "package": "com.hyg3.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["android.permission.CAMERA"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "apiUrl": "http://localhost:3000"
+    }
+  }
+}
