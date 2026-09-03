@@ -238,3 +238,19 @@ User ask: "adding telemedicine session, schedule and alert. Make sure according 
 New end-to-end regression test covers the full lifecycle (request → pending alert → reject missing/past date → schedule → alert reflects it → complete → alert clears → can't re-complete); 23/23 passing. Both builds clean. All 4 locales translated.
 
 **Evidence:** `server/routes/insights.ts`, `server/routes/telemedicine.ts`, `server/services/healthThresholds.ts`, `src/components/TelemedicineAlerts.tsx`, `src/pages/App/AiInsightsDetail.tsx`, `MVP-LAUNCH-CHECKLIST.md` §12.
+
+---
+
+## Patient-experience audit — built 2026-09-04
+
+Asked to think as an actual patient using the app, find where it falls short, and fix what's finishable today (as opposed to what needs the user's own action — real WHOOP/Fitbit/Gemini credentials — or a decision — where the product catalog data comes from). Two real gaps found by walking the actual patient flow rather than re-reading the checklist:
+
+**The dashboard silently erased evidence of a submitted scan.** `ClientDashboard.tsx` decided "no analysis yet" purely from whether an *approved* `NutritionRecommendation` existed. A patient who scanned and is sitting in review — the normal, expected state for most of a scan's lifetime — saw the exact same "take your first scan" empty state as someone who'd never opened the camera. Fixed with a new `GET /v1/recommendations/:patientId/pending` and a banner showing elapsed time. Deliberately **not** a promised turnaround number ("usually within 24h") — no real pharmacist-staffing SLA exists anywhere in this project to back that claim, and inventing one would be exactly the kind of unearned promise `data/DATA_PROVENANCE.md` exists to catch elsewhere. Elapsed time is honest; a made-up ETA wouldn't be.
+
+**The patient never saw why.** The API already returned the raw hand-scan observations (`signals`) on every recommendation — pure dead data, never rendered. The pharmacist sees FACT/INFERENCE/RECOMMENDATION/UNCERTAINTY (prd.md §6.4); the patient only ever saw the RECOMMENDATION. Added a "What We Observed" section using data that already existed, shown first, same order as the pharmacist's view.
+
+Both are small, additive, no schema change, no new external dependency — the honest distinction the user asked for ("start where can finished") from the bigger, genuinely blocked items (real credentials, a real product catalog + purchase path) discussed in the prior turn but not started.
+
+3 new regression tests; 24/24 passing. Both builds clean. All 4 locales translated.
+
+**Evidence:** `server/routes/recommendations.ts`, `src/pages/Client/ClientDashboard.tsx`, `src/lib/timeAgo.ts`, `MVP-LAUNCH-CHECKLIST.md` §13.

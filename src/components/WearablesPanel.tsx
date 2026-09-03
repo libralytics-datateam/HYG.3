@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Watch, Activity, RefreshCw, CheckCircle2, Unlink, Clock, Hourglass, AlertTriangle, Smartphone } from 'lucide-react';
 import ErrorBanner from './ErrorBanner';
+import { timeAgo } from '../lib/timeAgo';
 import './WearablesPanel.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
@@ -23,18 +24,6 @@ const PROVIDER_META: Record<ProviderKey, { icon: any; nameKey: string }> = {
   whoop: { icon: Watch, nameKey: 'wearables.whoopName' },
   fitbit: { icon: Activity, nameKey: 'wearables.fitbitName' },
 };
-
-function timeAgo(dateStr: string): string {
-  const diffMs = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-}
 
 function DeviceRow({
   provider,

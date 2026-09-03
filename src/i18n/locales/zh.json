@@ -164,7 +164,11 @@
     "lunch": "午餐",
     "dinner": "晚餐",
     "snack": "加餐",
-    "scanAgainCta": "重新扫描以获取最新分析"
+    "scanAgainCta": "重新扫描以获取最新分析",
+    "whatWeObserved": "我们观察到的内容",
+    "pendingReviewTitle": "扫描已提交 — 等待审核",
+    "pendingReviewBody": "提交于 {{time}}。药剂师正在审核您的扫描结果，营养缺口、食物和补充剂建议将在审核通过后显示在此处。",
+    "pendingReviewBodyModified": "您的扫描已退回给药剂师做进一步确认，尚未最终确定。"
   },
   "checkIn": {
     "title": "每周签到",

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon } from 'lucide-react';
+import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon, Search, Hourglass } from 'lucide-react';
 import WearablesPanel from '../../components/WearablesPanel';
 import CheckInCard from '../../components/CheckInCard';
 import HealthTrendChart from '../../components/HealthTrendChart';
 import TelemedicineAlerts from '../../components/TelemedicineAlerts';
+import { timeAgo } from '../../lib/timeAgo';
 import './ClientDashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
@@ -17,6 +18,7 @@ export default function ClientDashboard() {
   const patientName = localStorage.getItem('hyg3_patient_name');
 
   const [rec, setRec] = useState<any>(null);
+  const [pending, setPending] = useState<{ submittedAt: string; wasSentBackForChanges: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [alertsRefreshKey, setAlertsRefreshKey] = useState(0);
 
@@ -31,9 +33,14 @@ export default function ClientDashboard() {
   const fetchLatest = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/recommendations/${patientId}/latest`);
-      const json = await res.json();
-      if (json.success) setRec(json.data);
+      const [recRes, pendingRes] = await Promise.all([
+        fetch(`${API_URL}/recommendations/${patientId}/latest`),
+        fetch(`${API_URL}/recommendations/${patientId}/pending`),
+      ]);
+      const recJson = await recRes.json();
+      if (recJson.success) setRec(recJson.data);
+      const pendingJson = await pendingRes.json();
+      if (pendingJson.success) setPending(pendingJson.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -78,19 +85,39 @@ export default function ClientDashboard() {
           <RefreshCw className="animate-spin text-teal" size={36} />
           <p className="text-muted">{t('clientDashboard.loadingReport')}</p>
         </div>
-      ) : !rec ? (
-        /* No scan yet */
-        <div className="empty-state glass-panel animate-fade-in">
-          <div className="empty-icon flex justify-center"><Hand size={40} className="text-teal" /></div>
-          <h2 className="text-xl font-bold text-text mt-4">{t('clientDashboard.noAnalysisTitle')}</h2>
-          <p className="text-muted text-sm mt-2" style={{ maxWidth: 340, textAlign: 'center' }}>
-            {t('clientDashboard.noAnalysisBody')}
-          </p>
-          <Link to="/client/scan" className="btn btn-primary mt-6 flex items-center gap-2">
-            <Camera size={18} /> {t('clientDashboard.startHandScan')}
-          </Link>
-        </div>
       ) : (
+        <>
+          {/* A scan sitting in pharmacist review — shown instead of, or above,
+              whatever else is on the dashboard, so it never looks like the
+              scan was never submitted. Elapsed time, not a promised turnaround
+              (see server/routes/recommendations.ts's /pending endpoint). */}
+          {pending && (
+            <div className="empty-state glass-panel animate-fade-in pending-review-state">
+              <div className="empty-icon flex justify-center"><Hourglass size={40} className="text-gold" /></div>
+              <h2 className="text-xl font-bold text-text mt-4">{t('clientDashboard.pendingReviewTitle')}</h2>
+              <p className="text-muted text-sm mt-2" style={{ maxWidth: 340, textAlign: 'center' }}>
+                {pending.wasSentBackForChanges
+                  ? t('clientDashboard.pendingReviewBodyModified')
+                  : t('clientDashboard.pendingReviewBody', { time: timeAgo(pending.submittedAt) })}
+              </p>
+            </div>
+          )}
+
+          {!rec ? (
+            !pending && (
+              /* No scan yet, and nothing pending either */
+              <div className="empty-state glass-panel animate-fade-in">
+                <div className="empty-icon flex justify-center"><Hand size={40} className="text-teal" /></div>
+                <h2 className="text-xl font-bold text-text mt-4">{t('clientDashboard.noAnalysisTitle')}</h2>
+                <p className="text-muted text-sm mt-2" style={{ maxWidth: 340, textAlign: 'center' }}>
+                  {t('clientDashboard.noAnalysisBody')}
+                </p>
+                <Link to="/client/scan" className="btn btn-primary mt-6 flex items-center gap-2">
+                  <Camera size={18} /> {t('clientDashboard.startHandScan')}
+                </Link>
+              </div>
+            )
+          ) : (
         <div className="report-content">
           {/* Meta */}
           <div className="report-meta">
@@ -102,6 +129,29 @@ export default function ClientDashboard() {
               {new Date(rec.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
             </span>
           </div>
+
+          {/* What We Observed (Fact) — the API already returns this
+              (recommendations.ts's detectedSignals -> signals), it just
+              never had anywhere to render before now. Shown first, ahead of
+              Deficiencies (Inference), so the patient sees the same
+              Fact -> Inference -> Recommendation order the pharmacist does
+              (prd.md §6.4), not just the end conclusion. */}
+          {rec.signals?.length > 0 && (
+            <section className="report-card glass-panel">
+              <h2 className="report-card-title">
+                <Search size={18} className="text-teal" />
+                {t('clientDashboard.whatWeObserved')}
+              </h2>
+              <div className="signals-list">
+                {rec.signals.map((s: any, i: number) => (
+                  <div key={i} className="signal-item">
+                    <span className="signal-area">{s.area}</span>
+                    <span className="signal-obs">{s.observation}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Detected Deficiencies — top priority */}
           {rec.deficiencies?.length > 0 && (
@@ -239,6 +289,8 @@ export default function ClientDashboard() {
             </Link>
           </div>
         </div>
+          )}
+        </>
       )}
     </div>
   );

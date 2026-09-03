@@ -236,6 +236,13 @@ test('hand-scan output is gated — no recommendation until a pharmacist approve
   const beforeReview = await fetch(`${BASE_URL}/v1/recommendations/${patient.patientId}/latest`).then((r) => r.json());
   assert.equal(beforeReview.data, null);
 
+  // But the dashboard shouldn't look like the patient never scanned at all —
+  // /pending should say a review is genuinely in progress.
+  const pendingBefore = await fetch(`${BASE_URL}/v1/recommendations/${patient.patientId}/pending`).then((r) => r.json());
+  assert.ok(pendingBefore.data, 'expected a pending review to be reported before approval');
+  assert.equal(pendingBefore.data.wasSentBackForChanges, false);
+  assert.ok(pendingBefore.data.submittedAt);
+
   // Find and approve the pending insight as the pharmacist.
   const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
     method: 'POST',
@@ -263,6 +270,52 @@ test('hand-scan output is gated — no recommendation until a pharmacist approve
   assert.ok(afterReview.data, 'expected a NutritionRecommendation to exist now');
   assert.equal(afterReview.data.source, 'hand_scan');
   assert.ok(afterReview.data.vitamins.length > 0);
+
+  // And /pending clears once approved — the dashboard shouldn't keep
+  // showing "awaiting review" for something already resolved.
+  const pendingAfter = await fetch(`${BASE_URL}/v1/recommendations/${patient.patientId}/pending`).then((r) => r.json());
+  assert.equal(pendingAfter.data, null);
+});
+
+test('GET /v1/recommendations/:patientId/pending reflects "sent back for changes"', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Pending', lastName: 'Modified', email: `pendingmodified+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  await fetch(`${BASE_URL}/v1/analysis/hand-scan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId }),
+  });
+
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+
+  const { data: outputs } = await fetch(`${BASE_URL}/v1/ai/outputs`, {
+    headers: { Authorization: `Bearer ${session.token}` },
+  }).then((r) => r.json());
+  const pendingOutput = outputs.find((o: any) => o.patientId === patient.patientId && o.type === 'hand_scan_vitamin_concept');
+  assert.ok(pendingOutput);
+
+  await fetch(`${BASE_URL}/v1/ai/outputs/${pendingOutput.id}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` },
+    body: JSON.stringify({ status: 'modified', note: 'Recheck the dosage.' }),
+  });
+
+  const pending = await fetch(`${BASE_URL}/v1/recommendations/${patient.patientId}/pending`).then((r) => r.json());
+  assert.ok(pending.data);
+  assert.equal(pending.data.wasSentBackForChanges, true);
 });
 
 test('POST /v1/checkins saves a real check-in and GET .../latest reflects it', async () => {

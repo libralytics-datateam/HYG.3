@@ -164,7 +164,11 @@
     "lunch": "Lunch",
     "dinner": "Dinner",
     "snack": "Snack",
-    "scanAgainCta": "Scan Again for Updated Analysis"
+    "scanAgainCta": "Scan Again for Updated Analysis",
+    "whatWeObserved": "What We Observed",
+    "pendingReviewTitle": "Scan Submitted — Awaiting Review",
+    "pendingReviewBody": "Submitted {{time}}. A pharmacist is reviewing your scan; your gaps, food, and supplement suggestions will appear here once approved.",
+    "pendingReviewBodyModified": "Your scan is back with the pharmacist for a closer look before it's finalized."
   },
   "checkIn": {
     "title": "Weekly Check-in",

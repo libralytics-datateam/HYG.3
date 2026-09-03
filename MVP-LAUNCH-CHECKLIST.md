@@ -1,6 +1,6 @@
 # HYG.3 — MVP Completion & Deployment Checklist
 
-Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added same day; §12 added 2026-09-04). Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
+Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added same day; §12, §13 added 2026-09-04). Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
 
 **Deploy split (decided):** frontend (Vite/React) → Vercel. Backend (Express + Prisma/Postgres + Python ML subprocess + Gemini vision) stays on Render, as `render.yaml` already targets. Nothing here migrates the backend to Vercel serverless.
 
@@ -19,7 +19,7 @@ Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added 
 
 **Resolved since the last sweep:** hand-scan's unreviewed deficiency/vitamin output — now gated behind pharmacist review, confirmed with the user first. See §1.
 
-**Added since the last sweep, doesn't change the blocking list:** health trend chart + telemedicine-style "Request Pharmacist Review" on the patient dashboard (§10); real Fitbit integration + device-connection UX overhaul (§11); telemedicine session scheduling + preventive dashboard alerts (§12) — all purely additive, all reuse the existing gated review pipeline, no new auth/legal/consent surface.
+**Added since the last sweep, doesn't change the blocking list:** health trend chart + telemedicine-style "Request Pharmacist Review" on the patient dashboard (§10); real Fitbit integration + device-connection UX overhaul (§11); telemedicine session scheduling + preventive dashboard alerts (§12); patient-experience audit fixing a "looks like nothing happened" dashboard gap and surfacing hand-scan Facts to the patient (§13) — all purely additive, all reuse the existing gated review pipeline, no new auth/legal/consent surface.
 
 🟡 **Not blocking, but not fully functional yet:**
 - `GEMINI_API_KEY` unset → hand-scan analysis is 100% simulated in production today (honestly labeled with a visible demo-mode banner, not hidden).
@@ -180,3 +180,14 @@ User ask: "adding telemedicine session, schedule and alert. Make sure according 
 - [x] **Pharmacist queue shows the schedule, not just that a session exists.** `AiInsightsList.tsx` gets a small date chip on scheduled telemedicine rows (same badge treatment as the existing "Requested" flag from §10).
 - [x] **No push/SMS/email alerts — checked, none of that infrastructure exists in this app** (grepped for nodemailer/twilio/sendgrid/etc — nothing). "Alert" here means in-app, surfaced proactively on load; building a real out-of-band notification channel is a separate, larger integration decision not implied by this request.
 - [x] **New regression test covers the full session lifecycle** (request → pending alert → reject-missing-date → reject-past-date → schedule → alert reflects it → complete → alert clears → can't re-complete); 23/23 passing. Both builds clean. All 4 locales translated.
+
+---
+
+## 13. Patient-experience audit + fixes (2026-09-04)
+
+Asked to think from the patient's actual day-to-day perspective and find where the app falls short. Two real gaps found and fixed (small, code-only, no external dependency); the bigger gaps (real WHOOP/Fitbit/Gemini credentials, a real product catalog + purchase path) need the user's action or a data-source decision, not more code — see the go-live readiness summary for those.
+
+- [x] **The dashboard used to look like "no scan yet" even after a real scan was submitted and sitting in review.** `ClientDashboard.tsx` only ever checked `/recommendations/:patientId/latest`, which reflects an *approved* recommendation only — a patient who scanned and is genuinely waiting saw the identical empty state as someone who never opened the scanner. New `GET /v1/recommendations/:patientId/pending` + a dashboard banner showing elapsed time since submission ("Submitted 3 hours ago"), not a fabricated ETA — no real pharmacist-staffing turnaround commitment exists anywhere in this project to promise a number against, same honesty rule `data/DATA_PROVENANCE.md` established. Distinguishes a plain pending review from one sent back for pharmacist changes (`wasSentBackForChanges`).
+- [x] **The patient never saw the "Fact" behind their own recommendation.** The API already returned `signals` (the raw hand-scan observations) on every `NutritionRecommendation` — `ClientDashboard.tsx` just never rendered them, so the patient only ever saw the end conclusion ("Iron, 65mg"), never the observation it came from ("pale nail beds"). New "What We Observed" section, shown first — Fact ahead of Inference/Recommendation, same order the pharmacist already sees per prd.md §6.4.
+- [x] **Deduplicated a `timeAgo` helper into `src/lib/timeAgo.ts`** while adding the second place that needed it (`WearablesPanel.tsx` had its own copy already).
+- [x] 3 new regression tests (pending-before-approval, cleared-after-approval, reflects sent-back-for-changes); 24/24 passing. Both builds clean. All 4 locales translated.
