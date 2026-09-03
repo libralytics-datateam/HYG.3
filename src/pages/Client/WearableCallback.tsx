@@ -11,14 +11,16 @@ export default function WearableCallback() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const status = params.get('status');
+  const providerKey = params.get('provider') === 'fitbit' ? 'fitbit' : 'whoop';
+  const provider = t(providerKey === 'fitbit' ? 'wearables.fitbitName' : 'wearables.whoopName');
   const [countdown, setCountdown] = useState(AUTO_REDIRECT_SECONDS);
 
   const content = {
-    success: { icon: CheckCircle2, ring: 'is-success', text: t('wearables.callbackSuccess') },
-    denied: { icon: XCircle, ring: 'is-error', text: t('wearables.callbackDenied') },
+    success: { icon: CheckCircle2, ring: 'is-success', text: t('wearables.callbackSuccess', { provider }) },
+    denied: { icon: XCircle, ring: 'is-error', text: t('wearables.callbackDenied', { provider }) },
     not_configured: { icon: AlertTriangle, ring: 'is-pending', text: t('wearables.comingSoon') },
-    error: { icon: XCircle, ring: 'is-error', text: t('wearables.callbackError') },
-  }[status || 'error'] || { icon: XCircle, ring: 'is-error', text: t('wearables.callbackError') };
+    error: { icon: XCircle, ring: 'is-error', text: t('wearables.callbackError', { provider }) },
+  }[status || 'error'] || { icon: XCircle, ring: 'is-error', text: t('wearables.callbackError', { provider }) };
 
   const Icon = content.icon;
   const isSuccess = status === 'success';

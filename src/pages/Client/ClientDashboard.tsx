@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon } from 'lucide-react';
-import WhoopConnectCard from '../../components/WhoopConnectCard';
+import WearablesPanel from '../../components/WearablesPanel';
 import CheckInCard from '../../components/CheckInCard';
 import HealthTrendChart from '../../components/HealthTrendChart';
 import './ClientDashboard.css';
@@ -67,7 +67,7 @@ export default function ClientDashboard() {
       </div>
 
       {patientId && <CheckInCard patientId={patientId} />}
-      {patientId && <WhoopConnectCard patientId={patientId} />}
+      {patientId && <WearablesPanel patientId={patientId} />}
       {patientId && <HealthTrendChart patientId={patientId} />}
 
       {loading ? (

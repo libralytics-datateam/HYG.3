@@ -277,7 +277,7 @@ button {
 }
 
 /* Shared consent checkbox — used by Onboarding's PDPA consent and
-   WhoopConnectCard's wearable-data consent. Same visual treatment,
+   WearablesPanel's per-device data consent. Same visual treatment,
    different purposes, so it lives here rather than being duplicated. */
 .consent-checkbox {
   display: flex;

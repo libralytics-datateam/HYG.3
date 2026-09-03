@@ -363,9 +363,10 @@ test('GET /v1/wearables/status requires patientId', async () => {
   assert.equal(res.status, 400);
 });
 
-test('GET /v1/wearables/status reports whoopConfigured honestly when no WHOOP credentials are set', async () => {
-  // Regression guard: this env has no WHOOP_CLIENT_ID/SECRET set, so the
-  // endpoint must say so rather than pretending the integration is live.
+test('GET /v1/wearables/status reports whoop+fitbit configured honestly when no credentials are set', async () => {
+  // Regression guard: this env has no WHOOP_*/FITBIT_* credentials set, so
+  // the endpoint must say so for both providers rather than pretending
+  // either integration is live.
   const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -379,8 +380,37 @@ test('GET /v1/wearables/status reports whoopConfigured honestly when no WHOOP cr
   const res = await fetch(`${BASE_URL}/v1/wearables/status?patientId=${data.patientId}`);
   assert.equal(res.status, 200);
   const json = await res.json();
-  assert.equal(json.data.whoopConfigured, false);
-  assert.equal(json.data.connected, false);
+  assert.equal(json.data.whoop.configured, false);
+  assert.equal(json.data.whoop.connected, false);
+  assert.equal(json.data.fitbit.configured, false);
+  assert.equal(json.data.fitbit.connected, false);
+});
+
+test('POST /v1/wearables/fitbit/sync 404s cleanly with no connection', async () => {
+  const res = await fetch(`${BASE_URL}/v1/wearables/fitbit/sync`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: 'nonexistent' }),
+  });
+  assert.equal(res.status, 404);
+});
+
+test('GET /v1/wearables/fitbit/connect redirects to not_configured when Fitbit credentials are unset', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Fitbit', lastName: 'Test', email: `fitbittest+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data } = await onboardRes.json();
+
+  const res = await fetch(`${BASE_URL}/v1/wearables/fitbit/connect?patientId=${data.patientId}`, { redirect: 'manual' });
+  assert.equal(res.status, 302);
+  const location = res.headers.get('location') || '';
+  assert.ok(location.includes('status=not_configured'), `expected not_configured redirect, got: ${location}`);
+  assert.ok(location.includes('provider=fitbit'), `expected provider=fitbit in redirect, got: ${location}`);
 });
 
 test('GET /v1/wearables/biometric-summary matches the pharmacist-side biometric-summary for the same patient', async () => {

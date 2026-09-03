@@ -10,7 +10,9 @@
 // returns false and the connect route redirects to a "not configured" state
 // instead of silently failing.
 
-import crypto from 'crypto';
+import { signState, verifyState, WearableAuthError } from './oauthCrypto';
+
+export { signState, verifyState };
 
 const WHOOP_AUTH_URL = 'https://api.prod.whoop.com/oauth/oauth2/auth';
 const WHOOP_TOKEN_URL = 'https://api.prod.whoop.com/oauth/oauth2/token';
@@ -39,29 +41,6 @@ export function isWhoopConfigured(): boolean {
 
 function getRedirectUri(): string {
   return process.env.WHOOP_REDIRECT_URI || 'http://localhost:3000/v1/wearables/whoop/callback';
-}
-
-// --- OAuth "state" signing ---
-// This app already trusts a client-supplied patientId directly for every
-// other consumer route (no session/auth on the Phase 1 patient flow — see
-// prd.md Phase 3), so using it as the OAuth state param is consistent with
-// that existing trust model, not a new weakness. It IS still worth signing
-// so a caller can't just edit the state query param on the callback URL to
-// attach a stolen WHOOP authorization to an arbitrary other patientId.
-function getStateSecret(): string {
-  return process.env.JWT_SECRET || 'dev-only-insecure-secret';
-}
-
-export function signState(patientId: string): string {
-  const sig = crypto.createHmac('sha256', getStateSecret()).update(patientId).digest('hex').slice(0, 16);
-  return `${patientId}.${sig}`;
-}
-
-export function verifyState(state: string): string | null {
-  const [patientId, sig] = (state || '').split('.');
-  if (!patientId || !sig) return null;
-  const expected = crypto.createHmac('sha256', getStateSecret()).update(patientId).digest('hex').slice(0, 16);
-  return sig === expected ? patientId : null;
 }
 
 export function getAuthorizationUrl(patientId: string): string {
@@ -111,6 +90,13 @@ async function whoopGet(accessToken: string, path: string): Promise<any> {
   const res = await fetch(`${WHOOP_API_BASE}${path}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
+  if (res.status === 401 || res.status === 403) {
+    // Distinct from a transient failure — the token is dead (revoked
+    // externally, or the refresh above didn't actually help) and retrying
+    // the sync will never succeed without the user reconnecting. Route
+    // handlers use this to show "reconnect" instead of "try again".
+    throw new WearableAuthError(res.status, `WHOOP API ${path} rejected the access token (${res.status})`);
+  }
   if (!res.ok) throw new Error(`WHOOP API ${path} failed: ${res.status}`);
   return res.json();
 }
@@ -134,32 +120,7 @@ export async function revokeAccess(accessToken: string): Promise<void> {
   }
 }
 
-// --- Token encryption at rest ---
-// schema.prisma's WearableConnection comment says "encrypted in real
-// scenario" — that scenario is now real, since these are live per-patient
-// OAuth tokens granting access to actual biometric health data, not a
-// shared API key like GEMINI_API_KEY. Derives the encryption key from
-// JWT_SECRET (scrypt) instead of requiring yet another secret to configure.
-let cachedEncryptionKey: Buffer | null = null;
-function getEncryptionKey(): Buffer {
-  if (!cachedEncryptionKey) {
-    cachedEncryptionKey = crypto.scryptSync(getStateSecret(), 'hyg3-whoop-token-v1', 32);
-  }
-  return cachedEncryptionKey;
-}
-
-export function encryptToken(plaintext: string): string {
-  const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', getEncryptionKey(), iv);
-  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
-  const tag = cipher.getAuthTag();
-  return [iv, tag, encrypted].map((b) => b.toString('base64')).join('.');
-}
-
-export function decryptToken(ciphertext: string): string {
-  const [ivB64, tagB64, dataB64] = ciphertext.split('.');
-  if (!ivB64 || !tagB64 || !dataB64) throw new Error('Malformed encrypted token');
-  const decipher = crypto.createDecipheriv('aes-256-gcm', getEncryptionKey(), Buffer.from(ivB64, 'base64'));
-  decipher.setAuthTag(Buffer.from(tagB64, 'base64'));
-  return Buffer.concat([decipher.update(Buffer.from(dataB64, 'base64')), decipher.final()]).toString('utf8');
-}
+// Token encryption re-exported from oauthCrypto.ts (shared across providers
+// now) so existing callers (routes/wearables.ts) don't need to change their
+// import path.
+export { encryptToken, decryptToken } from './oauthCrypto';

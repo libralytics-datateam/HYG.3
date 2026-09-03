@@ -202,3 +202,23 @@ User ask, in two parts across the same conversation: "adding Whoop data to dashb
 4 new regression tests (patient-side summary parity with the pharmacist-side one, both request-review paths, no-duplicate check on the hand-scan path); 20/20 passing. All 4 locales translated.
 
 **Evidence:** `server/services/biometrics.ts`, `server/routes/wearables.ts`, `server/routes/telemedicine.ts`, `server/routes/insights.ts`, `src/components/HealthTrendChart.tsx`, `src/pages/Client/HandScanner.tsx`, `MVP-LAUNCH-CHECKLIST.md` §10.
+
+---
+
+## Fitbit integration + device-connection UX — built 2026-08-28
+
+User ask: "give better experience of adding Whoop/Fitbit or apple watch, make sure it's able to sync." Before building, asked explicitly how far Fitbit/Apple Watch should go — three real options with genuinely different scope/cost (UI polish only; polish + real Fitbit; UI-only for all three) — rather than guessing. **Answered: WHOOP polish + real Fitbit integration.** Apple Watch stays out of scope, unchanged from §8's original finding (no cloud API without a native iOS app or a paid aggregator).
+
+**Built Fitbit exactly like WHOOP was built — real OAuth code, honestly gated behind real credentials, unverified data-endpoint fields flagged as such, not guessed-and-presented-as-fact.** `server/services/fitbitService.ts`. One real difference worth noting: Fitbit's token exchange uses HTTP Basic-Auth with the client credentials, not body params like WHOOP — got this right by checking Fitbit's actual OAuth docs rather than assuming WHOOP's pattern transfers.
+
+**Found and fixed a real WHOOP correctness bug while building Fitbit's sync path alongside it, not something Fitbit's arrival merely prompted a look at.** The old `/whoop/sync` swallowed every per-metric fetch failure into `null` indiscriminately — an expired/revoked WHOOP token produced `{success: true, syncedMetrics: []}`, indistinguishable from "already up to date." New `WearableAuthError` (`server/services/oauthCrypto.ts`) is thrown specifically on 401/403 and surfaces as `needsReauth: true`, which the frontend now renders as a **Reconnect** button. Same fix applied to Fitbit's sync from day one.
+
+**Fitbit's metrics are deliberately separate metricTypes** (`fitbit_sleep_efficiency`, `fitbit_resting_hr`, `fitbit_steps`), not merged into WHOOP's `sleep_score`/`strain` — different measurements/scales, and conflating them would silently corrupt a patient's trend line on a device switch. No threshold applied to any of them on the health chart, same "no fabricated clinical cutoff" rule as Strain/HRV in the entry above — Fitbit publishes no equivalent single guidance number.
+
+**Extracted shared OAuth-state/token-crypto code (`server/services/oauthCrypto.ts`) without changing its behavior.** One real risk caught before shipping: the encryption key is derived via scrypt from a salt string that used to read `'hyg3-whoop-token-v1'`. Renaming it to something provider-generic during the extraction would have derived a *different* key, silently making any already-encrypted WHOOP ciphertext undecryptable in production. Left the salt string as-is (still says "whoop" even though it's shared now) and verified with a direct encrypt→decrypt round-trip script across both providers' re-exports before trusting it, not just by code inspection.
+
+**Apple Watch's UI treatment is deliberately not "Coming Soon."** It gets its own "Not Available" badge, distinct from WHOOP/Fitbit's — those two are finished code waiting on credentials; Apple Watch is still blocked on an unmade decision. Using the same badge for both would have implied a timeline that doesn't exist.
+
+2 new regression tests (Fitbit sync 404, Fitbit connect redirects to `not_configured` honestly); 22/22 passing. Both builds clean. All 4 locales translated.
+
+**Evidence:** `server/services/fitbitService.ts`, `server/services/oauthCrypto.ts`, `server/services/whoopService.ts`, `server/routes/wearables.ts`, `src/components/WearablesPanel.tsx`, `MVP-LAUNCH-CHECKLIST.md` §11.

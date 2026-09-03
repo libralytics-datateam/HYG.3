@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Heart, Moon, Flame, Activity, Hand, RefreshCw, PhoneCall, CheckCircle2 } from 'lucide-react';
+import { Heart, Moon, Flame, Activity, Hand, RefreshCw, PhoneCall, CheckCircle2, Footprints } from 'lucide-react';
 import ErrorBanner from './ErrorBanner';
 import './HealthTrendChart.css';
 
@@ -28,8 +28,19 @@ const METRIC_META: Record<string, { icon: any; unit: string; threshold: number |
   antioxidant_score: { icon: Hand, unit: '', threshold: 34 },
   strain: { icon: Flame, unit: '', threshold: null },
   hrv: { icon: Activity, unit: 'ms', threshold: null },
+  // Fitbit — no WHOOP-equivalent published guidance band exists for any of
+  // these (Fitbit's own "healthy range" varies by metric and isn't a single
+  // published number the way WHOOP's recovery/sleep bands are), so no
+  // threshold for any of them — same honesty rule as strain/hrv above,
+  // not an oversight. See server/services/fitbitService.ts.
+  fitbit_sleep_efficiency: { icon: Moon, unit: '%', threshold: null },
+  fitbit_resting_hr: { icon: Heart, unit: ' bpm', threshold: null },
+  fitbit_steps: { icon: Footprints, unit: '', threshold: null },
 };
-const METRIC_ORDER = ['recovery_score', 'sleep_score', 'antioxidant_score', 'strain', 'hrv'];
+const METRIC_ORDER = [
+  'recovery_score', 'sleep_score', 'antioxidant_score', 'strain', 'hrv',
+  'fitbit_sleep_efficiency', 'fitbit_resting_hr', 'fitbit_steps',
+];
 
 const VBW = 600;
 const VBH = 160;

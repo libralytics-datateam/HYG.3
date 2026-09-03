@@ -13,6 +13,9 @@ const METRIC_LABELS: Record<string, { label: string; unit: string }> = {
   antioxidant_score: { label: 'Hand-Scan Wellness Score', unit: '' },
   wellness_score: { label: 'Self-Reported Wellness', unit: '/5' },
   adherence_score: { label: 'Plan Adherence', unit: '%' },
+  fitbit_sleep_efficiency: { label: 'Sleep Efficiency (Fitbit)', unit: '%' },
+  fitbit_resting_hr: { label: 'Resting HR (Fitbit)', unit: ' bpm' },
+  fitbit_steps: { label: 'Steps (Fitbit)', unit: '' },
 };
 
 const SYMPTOM_LABELS: Record<string, string> = {
@@ -28,6 +31,7 @@ const SYMPTOM_LABELS: Record<string, string> = {
 
 const SOURCE_ICON: Record<string, any> = {
   whoop: Watch,
+  fitbit: Watch,
   hand_scanner: ScanLine,
   self_report: Calendar,
 };

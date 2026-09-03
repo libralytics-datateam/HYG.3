@@ -24,3 +24,9 @@ services:
         sync: false
       - key: WHOOP_REDIRECT_URI
         sync: false
+      - key: FITBIT_CLIENT_ID
+        sync: false
+      - key: FITBIT_CLIENT_SECRET
+        sync: false
+      - key: FITBIT_REDIRECT_URI
+        sync: false
