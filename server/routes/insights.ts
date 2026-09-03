@@ -4,6 +4,28 @@ import { matchVitaminsToProducts } from '../services/productMatch';
 
 const router = Router();
 
+// Who's actually allowed to approve/reject/schedule clinical-adjacent AI
+// output. requireAuth (applied to this whole router in index.ts) only
+// proves *a* valid org member is calling — MVP-LAUNCH-CHECKLIST.md §1 flagged
+// that as insufficient: any authenticated org member, regardless of role,
+// could approve a hand-scan recommendation or a telemedicine session.
+//
+// The two roles actually seeded/live in production today — confirmed
+// directly via a real login, not assumed — are exactly "Lead Clinician"
+// (sarah@libralytics.com) and "Pharmacist" (marcus@libralytics.com); see
+// server/prisma/seed.ts. (A second, unused seed.js referenced a different
+// role set — 'org_admin'/'analyst' — that was never actually run against
+// this database and had its own bug, a missing passwordHash; deleted rather
+// than left around to mislead the next person who reads it.) Both of today's
+// two real users are clinically-titled and already the ones doing every
+// review in this app's own test suite, so gating to just one of them would
+// have silently locked the other out of work they're already doing — not a
+// real fix, just a differently-broken one. This gate is forward-looking: it
+// stops a role that doesn't exist yet (front-desk, IT admin, a future sales
+// analyst account) from being able to approve clinical content, which is
+// the actual risk the checklist named.
+const REVIEWER_ROLES = ['Lead Clinician', 'Pharmacist'];
+
 // GET /v1/ai/outputs (List all pending and recent AI insights for Admin)
 router.get('/', async (req, res) => {
   try {
@@ -73,6 +95,17 @@ router.get('/', async (req, res) => {
 // session entry.
 router.post('/:id/review', async (req, res) => {
   try {
+    // Kept as an in-handler check rather than a separate requireRole(...)
+    // middleware argument — chaining two independently-typed handlers on
+    // one router.post() call made TypeScript fall back to a looser
+    // Request<Record<string, string|string[]>> overload for this handler,
+    // breaking every req.params.id / Prisma call below it. Same security
+    // property either way: this runs before anything else in the handler.
+    if (!REVIEWER_ROLES.includes(req.user!.role)) {
+      res.status(403).json({ error: 'Insufficient permissions' });
+      return;
+    }
+
     const { id } = req.params;
     const { status, note, scheduledAt } = req.body; // status: 'accepted', 'rejected', 'modified'
 
@@ -206,6 +239,11 @@ router.post('/:id/review', async (req, res) => {
 // embedded in content (see /review above for how scheduling sets it).
 router.post('/:id/session-status', async (req, res) => {
   try {
+    if (!REVIEWER_ROLES.includes(req.user!.role)) {
+      res.status(403).json({ error: 'Insufficient permissions' });
+      return;
+    }
+
     const { id } = req.params;
     const { sessionStatus } = req.body as { sessionStatus?: string };
 

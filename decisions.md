@@ -272,3 +272,21 @@ User said "build it" after the prior turn's assessment named two paths forward: 
 3 new regression tests (missing-columns rejected, upload → GET reflects real parsed price, full scan→approve→match flow with both a real match and an explicit null on an unmatched vitamin); 26/26 passing. Both builds clean.
 
 **Evidence:** `server/routes/products.ts`, `server/services/productMatch.ts`, `server/routes/insights.ts`, `src/pages/App/ProductCatalog.tsx`, `src/pages/Client/ClientDashboard.tsx`, `MVP-LAUNCH-CHECKLIST.md` §14.
+
+---
+
+## requireRole wired — built 2026-09-04
+
+User asked "go lives" twice with nothing having changed in between — asked directly what to do rather than repeat the same readiness report a third time. Answered: wire `requireRole`, the one blocking item on the checklist that's pure code, no lawyer needed.
+
+**Found a real inconsistency before touching any gate logic.** Two seed files, two different role vocabularies: `seed.ts` uses "Lead Clinician"/"Pharmacist"; `seed.js` uses the PRD's fixed enum ("org_admin"/"analyst"). Didn't guess which one matters — logged into the live backend as both `sarah@` and `marcus@libralytics.com` and read the real `role` claim back off a genuine login response. "Lead Clinician" and "Pharmacist" are what's actually live; `seed.js` was never wired into any script and had a real bug of its own (no password hash), so it was deleted rather than left around as a stale, misleading second source of truth.
+
+**Deliberately gated to both real roles, not narrowed to one.** Every review in this app's own test suite is done as `sarah@libralytics.com` ("Lead Clinician") — narrowing the gate to "Pharmacist" alone, which might look like the more textbook-correct choice, would have silently locked her out of work she already does, which isn't a fix. The actual risk the checklist named was a role that doesn't exist yet (front-desk, IT admin) being able to approve clinical content — that's what the gate now stops, without breaking either of today's two real people.
+
+**A real TypeScript footgun, isolated and worked around rather than routed past.** `router.post(path, requireRole(...), handler)` made TS infer a looser `Request` generic for the handler — params typed as `string | string[]`, a `.include` relation no longer recognized. Confirmed it was actually caused by this change (not pre-existing) by `git stash`-ing back to the last clean commit and re-running `tsc` clean. Fixed by moving the role check inline at the top of each handler instead of as a chained middleware argument — identical enforcement, just avoids the multi-handler generic-inference conflict.
+
+**Frontend made consistent, not left to silently 403.** `AiInsightsDetail.tsx` now hides the review/session-management buttons for a non-reviewer role and explains why, mirroring the backend's role list (kept in sync by hand — no shared module across that boundary, same tradeoff as `healthThresholds.ts`).
+
+**One honest limitation:** no live negative-path test exists (no user-provisioning endpoint to create a genuinely different-role account through the API), so the 403 path is verified by code review, not a live test. What is verified: the full 26-test suite still passes unchanged, confirming neither real user lost access to work they're supposed to do.
+
+**Evidence:** `server/routes/insights.ts`, `src/pages/App/AiInsightsDetail.tsx`, `server/prisma/seed.ts`, `MVP-LAUNCH-CHECKLIST.md` §15.

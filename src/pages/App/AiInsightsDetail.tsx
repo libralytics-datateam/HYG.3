@@ -3,6 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Brain, CheckCircle2, XCircle, ArrowLeft, TrendingUp, AlertTriangle, Database, Pencil, PhoneCall, BellRing, Calendar, Ban } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
 import ErrorBanner from '../../components/ErrorBanner';
+import { useAuth } from '../../context/AuthContext';
+
+// Must match server/routes/insights.ts's REVIEWER_ROLES exactly — the
+// backend is the real enforcement (this is just so a non-reviewer isn't
+// shown action buttons that would only ever 403), so keeping these two
+// lists in sync matters more than usual.
+const REVIEWER_ROLES = ['Lead Clinician', 'Pharmacist'];
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   sales_trend: <TrendingUp size={18} className="text-teal" />,
@@ -25,6 +32,8 @@ const TYPE_LABELS: Record<string, string> = {
 export default function AiInsightsDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canReview = !!user && REVIEWER_ROLES.includes(user.role);
   const [insight, setInsight] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -181,22 +190,24 @@ export default function AiInsightsDetail() {
               </p>
               {insight.content.sessionNote && <p className="text-muted text-sm mt-2">{insight.content.sessionNote}</p>}
               {sessionActionError && <div className="mt-3"><ErrorBanner message={sessionActionError} /></div>}
-              <div className="flex gap-3 mt-4">
-                <button
-                  className="btn btn-primary btn-sm flex items-center gap-2"
-                  disabled={sessionSubmitting}
-                  onClick={() => handleSessionStatus('completed')}
-                >
-                  <CheckCircle2 size={14} /> Mark Session Completed
-                </button>
-                <button
-                  className="btn bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30 btn-sm flex items-center gap-2"
-                  disabled={sessionSubmitting}
-                  onClick={() => handleSessionStatus('cancelled')}
-                >
-                  <Ban size={14} /> Cancel Session
-                </button>
-              </div>
+              {canReview && (
+                <div className="flex gap-3 mt-4">
+                  <button
+                    className="btn btn-primary btn-sm flex items-center gap-2"
+                    disabled={sessionSubmitting}
+                    onClick={() => handleSessionStatus('completed')}
+                  >
+                    <CheckCircle2 size={14} /> Mark Session Completed
+                  </button>
+                  <button
+                    className="btn bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30 btn-sm flex items-center gap-2"
+                    disabled={sessionSubmitting}
+                    onClick={() => handleSessionStatus('cancelled')}
+                  >
+                    <Ban size={14} /> Cancel Session
+                  </button>
+                </div>
+              )}
             </>
           )}
           {insight.content.sessionStatus === 'completed' && (
@@ -337,8 +348,16 @@ export default function AiInsightsDetail() {
         </div>
       )}
 
-      {/* Review actions */}
-      {insight.status === 'pending' && (
+      {/* Review actions — gated to reviewer roles (server/routes/insights.ts
+          enforces this for real; this just avoids showing a button that
+          would only ever come back 403). */}
+      {insight.status === 'pending' && !canReview && (
+        <div className="glass-panel p-4 text-sm text-muted flex items-center gap-2">
+          <AlertTriangle size={16} className="text-gold shrink-0" />
+          Only a Lead Clinician or Pharmacist can review this insight. {user ? `Your role (${user.role}) doesn't have review permissions.` : ''}
+        </div>
+      )}
+      {insight.status === 'pending' && canReview && (
         <>
           {reviewError && <ErrorBanner message={reviewError} />}
 
