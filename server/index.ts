@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import pkg from '../package.json';
+import pkg from './package.json';
 import authRoutes from './routes/auth';
 import aiRoutes from './routes/ai';
 import insightsRoutes from './routes/insights';
