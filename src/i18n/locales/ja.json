@@ -272,5 +272,10 @@
     "requestSent": "リクエストを送信しました — 薬剤師が優先的に確認します。",
     "requestFailed": "リクエストの送信に失敗しました。もう一度お試しください。",
     "requestReason": "直近の{{label}}の平均は{{value}}{{unit}}で、目安の{{threshold}}{{unit}}を下回っています。"
+  },
+  "telemedicineAlerts": {
+    "sessionPending": "あなたの薬剤師レビューリクエストは処理中です。",
+    "sessionScheduled": "オンライン診療の予約: {{date}}",
+    "trendAlert": "{{label}}の平均は{{value}}{{unit}}で、目安の{{threshold}}{{unit}}を下回っています。"
   }
 }

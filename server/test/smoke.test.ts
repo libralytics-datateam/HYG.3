@@ -498,6 +498,90 @@ test('POST /v1/telemedicine/request-review (wearable_trend) creates a pending, p
   );
 });
 
+test('Telemedicine session lifecycle: request -> pending alert -> scheduled -> completed', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Session', lastName: 'Lifecycle', email: `sessionlifecycle+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  // Nothing yet.
+  const before = await fetch(`${BASE_URL}/v1/telemedicine/alerts?patientId=${patient.patientId}`).then((r) => r.json());
+  assert.equal(before.data.session, null);
+  assert.ok(Array.isArray(before.data.trendAlerts));
+
+  const reqRes = await fetch(`${BASE_URL}/v1/telemedicine/request-review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, source: 'wearable_trend', reason: 'Test request' }),
+  });
+  const { data: reqData } = await reqRes.json();
+
+  // Pending — patient sees "your request is being processed".
+  const pendingAlerts = await fetch(`${BASE_URL}/v1/telemedicine/alerts?patientId=${patient.patientId}`).then((r) => r.json());
+  assert.equal(pendingAlerts.data.session.status, 'requested');
+  assert.equal(pendingAlerts.data.session.scheduledAt, null);
+
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+  const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` };
+
+  // Accepting without a scheduledAt must be rejected.
+  const missingDate = await fetch(`${BASE_URL}/v1/ai/outputs/${reqData.aiOutputId}/review`, {
+    method: 'POST', headers: authHeaders, body: JSON.stringify({ status: 'accepted' }),
+  });
+  assert.equal(missingDate.status, 400);
+
+  // Accepting with a past date must be rejected.
+  const pastDate = await fetch(`${BASE_URL}/v1/ai/outputs/${reqData.aiOutputId}/review`, {
+    method: 'POST', headers: authHeaders,
+    body: JSON.stringify({ status: 'accepted', scheduledAt: new Date(Date.now() - 3600_000).toISOString() }),
+  });
+  assert.equal(pastDate.status, 400);
+
+  // A valid future date schedules the session.
+  const futureDate = new Date(Date.now() + 3 * 24 * 3600_000).toISOString();
+  const scheduleRes = await fetch(`${BASE_URL}/v1/ai/outputs/${reqData.aiOutputId}/review`, {
+    method: 'POST', headers: authHeaders,
+    body: JSON.stringify({ status: 'accepted', scheduledAt: futureDate, note: 'We will call you.' }),
+  });
+  assert.equal(scheduleRes.status, 200);
+
+  const scheduledAlerts = await fetch(`${BASE_URL}/v1/telemedicine/alerts?patientId=${patient.patientId}`).then((r) => r.json());
+  assert.equal(scheduledAlerts.data.session.status, 'scheduled');
+  assert.equal(scheduledAlerts.data.session.scheduledAt, futureDate);
+  assert.equal(scheduledAlerts.data.session.note, 'We will call you.');
+
+  // session-status only accepts completed/cancelled, and only on a scheduled session.
+  const badStatus = await fetch(`${BASE_URL}/v1/ai/outputs/${reqData.aiOutputId}/session-status`, {
+    method: 'POST', headers: authHeaders, body: JSON.stringify({ sessionStatus: 'bogus' }),
+  });
+  assert.equal(badStatus.status, 400);
+
+  const completeRes = await fetch(`${BASE_URL}/v1/ai/outputs/${reqData.aiOutputId}/session-status`, {
+    method: 'POST', headers: authHeaders, body: JSON.stringify({ sessionStatus: 'completed' }),
+  });
+  assert.equal(completeRes.status, 200);
+
+  // Completed sessions no longer show up as an active alert.
+  const afterComplete = await fetch(`${BASE_URL}/v1/telemedicine/alerts?patientId=${patient.patientId}`).then((r) => r.json());
+  assert.equal(afterComplete.data.session, null);
+
+  // Can't re-complete/cancel an already-completed session.
+  const doubleComplete = await fetch(`${BASE_URL}/v1/ai/outputs/${reqData.aiOutputId}/session-status`, {
+    method: 'POST', headers: authHeaders, body: JSON.stringify({ sessionStatus: 'cancelled' }),
+  });
+  assert.equal(doubleComplete.status, 400);
+});
+
 test('POST /v1/telemedicine/request-review (hand_scan) flags the existing pending insight instead of duplicating it', async () => {
   const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
     method: 'POST',

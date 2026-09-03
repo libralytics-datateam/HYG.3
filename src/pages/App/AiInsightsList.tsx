@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Brain, Filter, RefreshCw, BellRing } from 'lucide-react';
+import { Brain, Filter, RefreshCw, BellRing, Calendar } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
 import ErrorBanner from '../../components/ErrorBanner';
@@ -87,6 +87,11 @@ export default function AiInsightsList() {
                       {insight.patientRequestedAt && (
                         <span title={`Patient requested review ${new Date(insight.patientRequestedAt).toLocaleString()}`} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gold/20 text-gold text-xs font-bold uppercase tracking-wider shrink-0">
                           <BellRing size={11} /> Requested
+                        </span>
+                      )}
+                      {insight.content?.sessionStatus === 'scheduled' && insight.content?.scheduledAt && (
+                        <span title="Telemedicine session scheduled" className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal/20 text-teal text-xs font-bold uppercase tracking-wider shrink-0">
+                          <Calendar size={11} /> {new Date(insight.content.scheduledAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
                         </span>
                       )}
                       <span>{insight.prediction}</span>

@@ -222,3 +222,19 @@ User ask: "give better experience of adding Whoop/Fitbit or apple watch, make su
 2 new regression tests (Fitbit sync 404, Fitbit connect redirects to `not_configured` honestly); 22/22 passing. Both builds clean. All 4 locales translated.
 
 **Evidence:** `server/services/fitbitService.ts`, `server/services/oauthCrypto.ts`, `server/services/whoopService.ts`, `server/routes/wearables.ts`, `src/components/WearablesPanel.tsx`, `MVP-LAUNCH-CHECKLIST.md` §11.
+
+---
+
+## Telemedicine session/schedule/alert — built 2026-09-04
+
+User ask: "adding telemedicine session, schedule and alert. Make sure according to the concept preventive health tracker."
+
+**Scoping call, made without asking first (unlike the WHOOP/Fitbit/Apple Watch split, which genuinely had three different-cost options): the smallest version that's real, not a fabricated two-way calendar.** No pharmacist "availability" concept exists anywhere in this app — building patient-picks-a-slot-from-open-times would need a data model this DB role can't create (same ALTER-TABLE ownership wall as everything else) and no existing UI/data to build it from. Instead, the existing §10 "Request Pharmacist Review" flow becomes a real session with a state machine: requested → scheduled (pharmacist sets the date/time when accepting, mirroring how `modified` already requires a note) → completed/cancelled. Same `AiOutput.content` JSON approach as every other "field" added this session.
+
+**"Alert," checked before building, not assumed:** grepped for nodemailer/twilio/sendgrid/any push infra — none exists in this app. So "alert" is in-app only, surfaced proactively at the top of the dashboard on load (`TelemedicineAlerts.tsx`), not an out-of-band notification. Building real push/SMS/email is a separate, larger integration decision this request didn't ask for.
+
+**The "preventive health tracker" instruction, taken literally:** the alert surface had to be proactive, not something the patient has to go looking for. Session status (pending/scheduled) and trend alerts (reusing the *exact* threshold source the health chart already uses — factored into `server/services/healthThresholds.ts` so the two can't drift apart) now render above everything else on `ClientDashboard`, before check-ins, before the wearables panel, before the chart itself. Renders nothing when there's nothing to say, same "no fabricated urgency" rule as every other empty-state in this app. Trend alerts still cover only Recovery/Sleep/Hand-Scan Wellness — Strain/HRV/every Fitbit metric still get no threshold, same reasoning as the two entries above this one.
+
+New end-to-end regression test covers the full lifecycle (request → pending alert → reject missing/past date → schedule → alert reflects it → complete → alert clears → can't re-complete); 23/23 passing. Both builds clean. All 4 locales translated.
+
+**Evidence:** `server/routes/insights.ts`, `server/routes/telemedicine.ts`, `server/services/healthThresholds.ts`, `src/components/TelemedicineAlerts.tsx`, `src/pages/App/AiInsightsDetail.tsx`, `MVP-LAUNCH-CHECKLIST.md` §12.

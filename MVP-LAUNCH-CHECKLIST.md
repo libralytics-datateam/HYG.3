@@ -1,6 +1,6 @@
 # HYG.3 — MVP Completion & Deployment Checklist
 
-Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added same day). Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
+Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added same day; §12 added 2026-09-04). Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
 
 **Deploy split (decided):** frontend (Vite/React) → Vercel. Backend (Express + Prisma/Postgres + Python ML subprocess + Gemini vision) stays on Render, as `render.yaml` already targets. Nothing here migrates the backend to Vercel serverless.
 
@@ -19,7 +19,7 @@ Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added 
 
 **Resolved since the last sweep:** hand-scan's unreviewed deficiency/vitamin output — now gated behind pharmacist review, confirmed with the user first. See §1.
 
-**Added since the last sweep, doesn't change the blocking list:** health trend chart + telemedicine-style "Request Pharmacist Review" on the patient dashboard (§10) — purely additive, reuses the existing gated review pipeline, no new auth/legal/consent surface.
+**Added since the last sweep, doesn't change the blocking list:** health trend chart + telemedicine-style "Request Pharmacist Review" on the patient dashboard (§10); real Fitbit integration + device-connection UX overhaul (§11); telemedicine session scheduling + preventive dashboard alerts (§12) — all purely additive, all reuse the existing gated review pipeline, no new auth/legal/consent surface.
 
 🟡 **Not blocking, but not fully functional yet:**
 - `GEMINI_API_KEY` unset → hand-scan analysis is 100% simulated in production today (honestly labeled with a visible demo-mode banner, not hidden).
@@ -167,3 +167,16 @@ User ask: "give better experience of adding Whoop/Fitbit or apple watch, make su
 - [x] **Shared OAuth-state/token-encryption code, extracted without changing behavior.** `signState`/`verifyState`/`encryptToken`/`decryptToken` used to be duplicated verbatim in `whoopService.ts`; now live once in `server/services/oauthCrypto.ts`, used by both providers. The AES-256-GCM key's scrypt salt deliberately still reads `'hyg3-whoop-token-v1'`, not renamed to something provider-generic — renaming it would derive a different key and make any already-encrypted WHOOP ciphertext permanently undecryptable. Verified with a direct round-trip script (encrypt → decrypt across both `whoopService`/`fitbitService`'s re-exports) before trusting it, not just by inspection.
 - [x] **All 4 locales translated** (generalized every `wearables.*` key to take a `{{provider}}` param instead of hardcoding "WHOOP" + 5 new keys for Fitbit/Apple Watch naming). 2 new regression tests (`fitbit/sync` 404 with no connection, `fitbit/connect` redirects to `not_configured` honestly); 22/22 passing. Both builds clean.
 - [ ] **Not yet functional in production — needs a real Fitbit developer account,** same as WHOOP. Register a free "Server" type app at https://dev.fitbit.com/apps/new, set `FITBIT_CLIENT_ID`/`FITBIT_CLIENT_SECRET`/`FITBIT_REDIRECT_URI` as real Render secrets (added to `render.yaml`/`.env.example`, `sync: false`). Until then `fitbitConfigured: false` and the UI shows "Coming soon," not a broken button.
+
+---
+
+## 12. Telemedicine session, scheduling, and preventive alerts (2026-09-04)
+
+User ask: "adding telemedicine session, schedule and alert. Make sure according to the concept preventive health tracker." Scoped to the smallest version that's genuinely real rather than a fabricated calendar system — no pharmacist "availability" concept exists anywhere in this app, and building a two-way slot-booking system would need a data model this DB role can't create (see the recurring ALTER-TABLE ownership wall). Instead: the existing "Request Pharmacist Review" flow (§10) becomes a real session with a state machine, using the same JSON-in-`content` approach as everything else this session.
+
+- [x] **Requesting now leads to an actual scheduled session, not just a review.** `POST /v1/ai/outputs/:id/review` — accepting a `telemedicine_request` now *requires* a future `scheduledAt` (400 if missing, 400 if in the past), same "required field" pattern already used for `modified`'s note. Pharmacist UI (`AiInsightsDetail.tsx`) shows a datetime picker + optional note (e.g. a call link) instead of a plain Approve button for this type. Stored in the `AiOutput.content` JSON as `sessionStatus: 'scheduled'` + `scheduledAt` + `sessionNote` — no schema change.
+- [x] **A session's life doesn't end at scheduling.** New `POST /v1/ai/outputs/:id/session-status` (`completed`/`cancelled`) — separate from `/review` because the actual session can happen days after it's scheduled. Only valid on an already-scheduled session (400 otherwise, 400 on double-completing). Pharmacist UI gets "Mark Session Completed"/"Cancel Session" buttons once scheduled.
+- [x] **The "preventive health tracker" part: a real alerts surface at the top of the dashboard, computed from real data.** New `GET /v1/telemedicine/alerts` + `TelemedicineAlerts.tsx`, rendered above everything else on `ClientDashboard` — not buried in a tab. Two kinds, both honest: (1) the patient's current session state (pending/scheduled — completed/cancelled sessions don't nag), and (2) trend alerts using the *same* threshold source the health chart already uses (`server/services/healthThresholds.ts`, factored out so the two can't silently drift) — only Recovery/Sleep/Hand-Scan Wellness, never Strain/HRV/Fitbit (no fabricated cutoff, same rule as §10/§11). Renders nothing at all when there's genuinely nothing to flag.
+- [x] **Pharmacist queue shows the schedule, not just that a session exists.** `AiInsightsList.tsx` gets a small date chip on scheduled telemedicine rows (same badge treatment as the existing "Requested" flag from §10).
+- [x] **No push/SMS/email alerts — checked, none of that infrastructure exists in this app** (grepped for nodemailer/twilio/sendgrid/etc — nothing). "Alert" here means in-app, surfaced proactively on load; building a real out-of-band notification channel is a separate, larger integration decision not implied by this request.
+- [x] **New regression test covers the full session lifecycle** (request → pending alert → reject-missing-date → reject-past-date → schedule → alert reflects it → complete → alert clears → can't re-complete); 23/23 passing. Both builds clean. All 4 locales translated.

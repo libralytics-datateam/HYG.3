@@ -1,0 +1,51 @@
+.telemedicine-alerts {
+  padding: 6px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.alert-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 4px;
+  text-align: left;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: default;
+  font-family: inherit;
+}
+
+.alert-row + .alert-row {
+  border-top: 1px solid var(--border);
+}
+
+.alert-row-clickable {
+  cursor: pointer;
+  align-items: center;
+}
+
+.alert-row-clickable:hover .alert-row-title {
+  color: var(--gold);
+}
+
+.alert-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-row-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.5;
+  transition: color var(--transition-fast);
+}
+
+.alert-row-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}

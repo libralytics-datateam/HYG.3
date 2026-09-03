@@ -272,5 +272,10 @@
     "requestSent": "ส่งคำขอแล้ว — เภสัชกรจะให้ความสำคัญกับการตรวจสอบของคุณก่อน",
     "requestFailed": "ไม่สามารถส่งคำขอได้ กรุณาลองใหม่อีกครั้ง",
     "requestReason": "ค่าเฉลี่ย{{label}}ล่าสุดอยู่ที่ {{value}}{{unit}} ซึ่งต่ำกว่าเกณฑ์แนะนำ {{threshold}}{{unit}}"
+  },
+  "telemedicineAlerts": {
+    "sessionPending": "คำขอตรวจสอบโดยเภสัชกรของคุณกำลังดำเนินการ",
+    "sessionScheduled": "นัดหมายเทเลเมดิซีนของคุณคือ {{date}}",
+    "trendAlert": "ค่าเฉลี่ย{{label}}อยู่ที่ {{value}}{{unit}} — ต่ำกว่าเกณฑ์แนะนำ {{threshold}}{{unit}}"
   }
 }

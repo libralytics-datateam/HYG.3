@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Brain, CheckCircle2, XCircle, ArrowLeft, TrendingUp, AlertTriangle, Database, Pencil, PhoneCall, BellRing } from 'lucide-react';
+import { Brain, CheckCircle2, XCircle, ArrowLeft, TrendingUp, AlertTriangle, Database, Pencil, PhoneCall, BellRing, Calendar, Ban } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
 import ErrorBanner from '../../components/ErrorBanner';
 
@@ -32,6 +32,11 @@ export default function AiInsightsDetail() {
   const [reviewError, setReviewError] = useState('');
   const [showModifyForm, setShowModifyForm] = useState(false);
   const [modifyNote, setModifyNote] = useState('');
+  const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState('');
+  const [sessionNote, setSessionNote] = useState('');
+  const [sessionActionError, setSessionActionError] = useState('');
+  const [sessionSubmitting, setSessionSubmitting] = useState(false);
 
   useEffect(() => {
     fetchInsights();
@@ -57,13 +62,13 @@ export default function AiInsightsDetail() {
     }
   };
 
-  const handleReview = async (status: 'accepted' | 'rejected' | 'modified', note?: string) => {
+  const handleReview = async (status: 'accepted' | 'rejected' | 'modified', note?: string, scheduledAtValue?: string) => {
     try {
       setSubmitting(true);
       setReviewError('');
       const res = await apiFetch(`/v1/ai/outputs/${id}/review`, {
         method: 'POST',
-        body: JSON.stringify({ status, note })
+        body: JSON.stringify({ status, note, scheduledAt: scheduledAtValue })
       });
       if (res.ok) {
         navigate('/app/ai-insights');
@@ -76,6 +81,28 @@ export default function AiInsightsDetail() {
       setReviewError('Failed to submit review. Please try again.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleSessionStatus = async (sessionStatus: 'completed' | 'cancelled') => {
+    try {
+      setSessionSubmitting(true);
+      setSessionActionError('');
+      const res = await apiFetch(`/v1/ai/outputs/${id}/session-status`, {
+        method: 'POST',
+        body: JSON.stringify({ sessionStatus })
+      });
+      if (res.ok) {
+        fetchInsights();
+      } else {
+        const json = await res.json().catch(() => ({}));
+        setSessionActionError(json.error || 'Failed to update the session. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      setSessionActionError('Failed to update the session. Please try again.');
+    } finally {
+      setSessionSubmitting(false);
     }
   };
 
@@ -126,6 +153,52 @@ export default function AiInsightsDetail() {
             <span className="font-bold text-gold">Patient requested this review</span>
             {' — '}{new Date(insight.content.patientRequestedAt).toLocaleString()}
           </p>
+        </div>
+      )}
+
+      {/* Telemedicine session status — shown once a session exists (scheduled,
+          completed, or cancelled). Scheduling itself happens via the Accept
+          flow below (a session is created by accepting with a date/time);
+          this panel is for what happens after that decision. */}
+      {insight.type === 'telemedicine_request' && insight.content?.sessionStatus && insight.content.sessionStatus !== 'requested' && (
+        <div className={`glass-panel p-6 mb-6 border ${
+          insight.content.sessionStatus === 'scheduled' ? 'border-teal/30' :
+          insight.content.sessionStatus === 'completed' ? 'border-border' : 'border-red-500/30'
+        }`}>
+          <h2 className="text-sm font-bold text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+            <Calendar size={14} /> Telemedicine Session
+          </h2>
+          {insight.content.sessionStatus === 'scheduled' && insight.content.scheduledAt && (
+            <>
+              <p className="text-text text-lg font-bold">
+                {new Date(insight.content.scheduledAt).toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' })}
+              </p>
+              {insight.content.sessionNote && <p className="text-muted text-sm mt-2">{insight.content.sessionNote}</p>}
+              {sessionActionError && <div className="mt-3"><ErrorBanner message={sessionActionError} /></div>}
+              <div className="flex gap-3 mt-4">
+                <button
+                  className="btn btn-primary btn-sm flex items-center gap-2"
+                  disabled={sessionSubmitting}
+                  onClick={() => handleSessionStatus('completed')}
+                >
+                  <CheckCircle2 size={14} /> Mark Session Completed
+                </button>
+                <button
+                  className="btn bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30 btn-sm flex items-center gap-2"
+                  disabled={sessionSubmitting}
+                  onClick={() => handleSessionStatus('cancelled')}
+                >
+                  <Ban size={14} /> Cancel Session
+                </button>
+              </div>
+            </>
+          )}
+          {insight.content.sessionStatus === 'completed' && (
+            <p className="text-teal text-sm font-bold flex items-center gap-2"><CheckCircle2 size={16} /> Session completed</p>
+          )}
+          {insight.content.sessionStatus === 'cancelled' && (
+            <p className="text-red-400 text-sm font-bold flex items-center gap-2"><Ban size={16} /> Session cancelled</p>
+          )}
         </div>
       )}
 
@@ -263,6 +336,46 @@ export default function AiInsightsDetail() {
         <>
           {reviewError && <ErrorBanner message={reviewError} />}
 
+          {insight.type === 'telemedicine_request' && showScheduleForm && (
+            <div className="glass-panel p-6 mb-4">
+              <label className="text-sm font-bold text-text block mb-2">
+                When is the session?
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full bg-bg border border-border rounded p-3 text-sm text-text"
+                value={scheduledAt}
+                min={new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16)}
+                onChange={(e) => setScheduledAt(e.target.value)}
+              />
+              <label className="text-sm font-bold text-text block mb-2 mt-4">
+                Note for the patient (optional) — e.g. a call link or instructions
+              </label>
+              <textarea
+                className="w-full bg-bg border border-border rounded p-3 text-sm text-text"
+                rows={2}
+                placeholder="e.g. We'll call the number on file at the scheduled time."
+                value={sessionNote}
+                onChange={(e) => setSessionNote(e.target.value)}
+              />
+              <div className="flex justify-end gap-3 mt-3">
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => { setShowScheduleForm(false); setScheduledAt(''); setSessionNote(''); }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary flex items-center gap-2 btn-sm"
+                  disabled={submitting || !scheduledAt}
+                  onClick={() => handleReview('accepted', sessionNote, new Date(scheduledAt).toISOString())}
+                >
+                  <Calendar size={14} /> Confirm Schedule
+                </button>
+              </div>
+            </div>
+          )}
+
           {showModifyForm && (
             <div className="glass-panel p-6 mb-4">
               <label className="text-sm font-bold text-text block mb-2">
@@ -300,22 +413,34 @@ export default function AiInsightsDetail() {
             disabled={submitting}
             className="btn bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30 flex items-center gap-2"
           >
-            <XCircle size={18} /> Reject Insight
+            <XCircle size={18} /> {insight.type === 'telemedicine_request' ? 'Decline Request' : 'Reject Insight'}
           </button>
-          <button
-            onClick={() => setShowModifyForm(true)}
-            disabled={submitting || showModifyForm}
-            className="btn bg-blue-500/20 text-blue-400 border border-blue-500/50 hover:bg-blue-500/30 flex items-center gap-2"
-          >
-            <Pencil size={18} /> Request Modification
-          </button>
-          <button
-            onClick={() => handleReview('accepted')}
-            disabled={submitting}
-            className="btn btn-primary flex items-center gap-2"
-          >
-            <CheckCircle2 size={18} /> Approve Insight
-          </button>
+          {insight.type !== 'telemedicine_request' && (
+            <button
+              onClick={() => setShowModifyForm(true)}
+              disabled={submitting || showModifyForm}
+              className="btn bg-blue-500/20 text-blue-400 border border-blue-500/50 hover:bg-blue-500/30 flex items-center gap-2"
+            >
+              <Pencil size={18} /> Request Modification
+            </button>
+          )}
+          {insight.type === 'telemedicine_request' ? (
+            <button
+              onClick={() => setShowScheduleForm(true)}
+              disabled={submitting || showScheduleForm}
+              className="btn btn-primary flex items-center gap-2"
+            >
+              <Calendar size={18} /> Schedule Session
+            </button>
+          ) : (
+            <button
+              onClick={() => handleReview('accepted')}
+              disabled={submitting}
+              className="btn btn-primary flex items-center gap-2"
+            >
+              <CheckCircle2 size={18} /> Approve Insight
+            </button>
+          )}
           </div>
         </>
       )}

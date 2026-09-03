@@ -54,7 +54,7 @@ function scoreColor(value: number, threshold: number | null): string {
   return 'var(--teal)';
 }
 
-export default function HealthTrendChart({ patientId }: { patientId: string }) {
+export default function HealthTrendChart({ patientId, onRequestSent }: { patientId: string; onRequestSent?: () => void }) {
   const { t } = useTranslation();
   const [metrics, setMetrics] = useState<MetricSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -152,7 +152,7 @@ export default function HealthTrendChart({ patientId }: { patientId: string }) {
         body: JSON.stringify({ patientId, source: 'wearable_trend', reason }),
       });
       const json = await res.json();
-      if (json.success) setRequested(true);
+      if (json.success) { setRequested(true); onRequestSent?.(); }
       else setRequestError(json.error || t('healthChart.requestFailed'));
     } catch (err) {
       console.error(err);
@@ -178,7 +178,7 @@ export default function HealthTrendChart({ patientId }: { patientId: string }) {
   const trendColor = current.trend === 'up' ? 'var(--teal)' : current.trend === 'down' ? '#f87171' : 'var(--muted)';
 
   return (
-    <div className="glass-panel health-chart-card">
+    <div className="glass-panel health-chart-card" id="health-trends">
       <div className="health-chart-header">
         <h2 className="health-chart-title">{t('healthChart.title')}</h2>
         <p className="text-muted text-sm">{t('healthChart.subtitle')}</p>

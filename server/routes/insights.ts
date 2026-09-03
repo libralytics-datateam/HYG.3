@@ -64,10 +64,16 @@ router.get('/', async (req, res) => {
 });
 
 // POST /v1/ai/outputs/:id/review (Approve, Reject, or request Modification of an AI Insight)
+//
+// For type 'telemedicine_request', "accepted" doubles as scheduling the
+// session — the pharmacist supplies scheduledAt (and optionally a note, e.g.
+// a call link or instructions) in the same request, same pattern as
+// 'modified' already requiring a note. See decisions.md's telemedicine
+// session entry.
 router.post('/:id/review', async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, note } = req.body; // status: 'accepted', 'rejected', 'modified'
+    const { status, note, scheduledAt } = req.body; // status: 'accepted', 'rejected', 'modified'
 
     if (!['accepted', 'rejected', 'modified'].includes(status)) {
       res.status(400).json({ error: 'Invalid status' });
@@ -85,18 +91,41 @@ router.post('/:id/review', async (req, res) => {
       return;
     }
 
+    if (existing.type === 'telemedicine_request' && status === 'accepted') {
+      const parsedDate = scheduledAt ? new Date(scheduledAt) : null;
+      if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+        res.status(400).json({ error: 'A valid scheduledAt date/time is required to accept a telemedicine session' });
+        return;
+      }
+      if (parsedDate.getTime() < Date.now() - 60_000) {
+        res.status(400).json({ error: 'scheduledAt must be in the future' });
+        return;
+      }
+    }
+
     // There's no dedicated review-note column on AiOutput — the DB role this
     // app runs as doesn't have ALTER privileges on tables it doesn't own
     // (confirmed directly: `prisma db push` fails with "must be owner of
     // table AiOutput"), so a new column isn't available without someone with
-    // real DB ownership running that migration by hand. Instead, the note is
-    // embedded into the existing `content` JSON column under a `reviewNote`
-    // key, namespaced separately from whatever the AI itself generated.
+    // real DB ownership running that migration by hand. Instead, the note
+    // (and, for telemedicine_request, the session schedule) is embedded into
+    // the existing `content` JSON column, namespaced separately from
+    // whatever the AI itself generated.
     let content = existing.content;
     if (status === 'modified') {
       const parsed = JSON.parse(existing.content);
       parsed.reviewNote = note.trim();
       parsed.reviewNoteAt = new Date().toISOString();
+      content = JSON.stringify(parsed);
+    } else if (existing.type === 'telemedicine_request') {
+      const parsed = JSON.parse(existing.content);
+      if (status === 'accepted') {
+        parsed.sessionStatus = 'scheduled';
+        parsed.scheduledAt = new Date(scheduledAt).toISOString();
+        if (note?.trim()) parsed.sessionNote = note.trim();
+      } else if (status === 'rejected') {
+        parsed.sessionStatus = 'cancelled';
+      }
       content = JSON.stringify(parsed);
     }
 
@@ -158,6 +187,51 @@ router.post('/:id/review', async (req, res) => {
   } catch (error) {
     console.error('Error reviewing insight:', error);
     res.status(500).json({ error: 'Failed to review insight' });
+  }
+});
+
+// POST /v1/ai/outputs/:id/session-status — mark an already-scheduled
+// telemedicine session completed or cancelled after the fact. Separate from
+// /review because scheduling (accept) and the session actually happening can
+// be days apart — this doesn't touch reviewStatus, only the session state
+// embedded in content (see /review above for how scheduling sets it).
+router.post('/:id/session-status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { sessionStatus } = req.body as { sessionStatus?: string };
+
+    if (!['completed', 'cancelled'].includes(sessionStatus || '')) {
+      res.status(400).json({ error: "sessionStatus must be 'completed' or 'cancelled'" });
+      return;
+    }
+
+    const existing = await prisma.aiOutput.findUnique({ where: { id } });
+    if (!existing || existing.orgId !== req.user!.orgId) {
+      res.status(404).json({ error: 'Insight not found' });
+      return;
+    }
+    if (existing.type !== 'telemedicine_request') {
+      res.status(400).json({ error: 'Only telemedicine_request insights have a session status' });
+      return;
+    }
+
+    const parsed = JSON.parse(existing.content);
+    if (parsed.sessionStatus !== 'scheduled') {
+      res.status(400).json({ error: 'Only a scheduled session can be marked completed or cancelled' });
+      return;
+    }
+    parsed.sessionStatus = sessionStatus;
+    parsed.sessionStatusUpdatedAt = new Date().toISOString();
+
+    const updated = await prisma.aiOutput.update({
+      where: { id },
+      data: { content: JSON.stringify(parsed) },
+    });
+
+    res.json({ success: true, data: { id: updated.id, sessionStatus } });
+  } catch (error) {
+    console.error('Error updating session status:', error);
+    res.status(500).json({ error: 'Failed to update session status' });
   }
 });
 

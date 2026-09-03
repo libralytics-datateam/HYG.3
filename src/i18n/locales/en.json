@@ -272,5 +272,10 @@
     "requestSent": "Request sent — a pharmacist will prioritize your review.",
     "requestFailed": "Couldn't send your request. Please try again.",
     "requestReason": "{{label}} has averaged {{value}}{{unit}} over the last few readings (below the {{threshold}}{{unit}} guidance range)."
+  },
+  "telemedicineAlerts": {
+    "sessionPending": "Your pharmacist review request is being processed.",
+    "sessionScheduled": "Telemedicine session scheduled for {{date}}.",
+    "trendAlert": "{{label}} averaging {{value}}{{unit}} — below the {{threshold}}{{unit}} guidance range."
   }
 }

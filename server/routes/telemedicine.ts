@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../db';
+import { buildBiometricSummary } from '../services/biometrics';
+import { HEALTH_THRESHOLDS, recentAverage } from '../services/healthThresholds';
 
 const router = Router();
 
@@ -104,6 +106,85 @@ router.post('/request-review', async (req, res) => {
   } catch (error) {
     console.error('Telemedicine request-review error:', error);
     res.status(500).json({ error: 'Failed to send review request' });
+  }
+});
+
+// GET /v1/telemedicine/alerts?patientId=xxx
+//
+// The "preventive health tracker" surface, not a reactive one: this is meant
+// to be fetched once at the top of the dashboard so a concerning trend or an
+// upcoming/pending session is visible immediately, before the patient goes
+// looking for it in the health chart or scrolls to find a status card.
+// Two kinds of alert, both built from real stored data — nothing computed
+// here is invented:
+//   - session: the patient's most recent telemedicine_request, if it's still
+//     open (not completed/cancelled) — so "your session is in 2 days" or
+//     "your request is pending review" shows up without opening anything.
+//   - trendAlerts: any metric currently averaging below the same published
+//     guidance band the health chart uses (server/services/healthThresholds.ts
+//     — kept in sync with src/components/HealthTrendChart.tsx by hand, see
+//     that file's comment). Metrics with no real guidance number (strain,
+//     hrv, every Fitbit metric) never appear here, same as the chart.
+router.get('/alerts', async (req, res) => {
+  try {
+    const patientId = req.query.patientId as string;
+    if (!patientId) {
+      res.status(400).json({ error: 'patientId is required' });
+      return;
+    }
+    const patient = await prisma.patient.findUnique({ where: { id: patientId } });
+    if (!patient) {
+      res.status(404).json({ error: 'Patient not found' });
+      return;
+    }
+
+    // Most recent telemedicine_request for this patient, if any.
+    const concepts = await prisma.customVitaminConcept.findMany({
+      where: { patientId, aiOutput: { type: 'telemedicine_request' } },
+      include: { aiOutput: true },
+      orderBy: { generatedAt: 'desc' },
+      take: 1,
+    });
+
+    let session: {
+      status: string;
+      requestedAt: string;
+      scheduledAt: string | null;
+      note: string | null;
+    } | null = null;
+
+    const latest = concepts[0];
+    if (latest?.aiOutput) {
+      const content = JSON.parse(latest.aiOutput.content);
+      const sessionStatus: string = content.sessionStatus || (latest.aiOutput.reviewStatus === 'rejected' ? 'cancelled' : 'requested');
+      // Once a session is completed or cancelled it's history, not an
+      // active alert — the patient can always request a new one.
+      if (sessionStatus !== 'completed' && sessionStatus !== 'cancelled') {
+        session = {
+          status: sessionStatus,
+          requestedAt: latest.aiOutput.createdAt.toISOString(),
+          scheduledAt: content.scheduledAt || null,
+          note: content.sessionNote || null,
+        };
+      }
+    }
+
+    // Trend alerts — same threshold source the health chart uses.
+    const summary = await buildBiometricSummary(patientId);
+    const trendAlerts = Object.entries(HEALTH_THRESHOLDS)
+      .map(([metricType, { threshold, unit }]) => {
+        const metric = summary.metrics.find((m) => m.metricType === metricType);
+        if (!metric) return null;
+        const avg = recentAverage(metric.history.length ? metric.history : [{ value: metric.latestValue }]);
+        if (avg == null || avg >= threshold) return null;
+        return { metricType, value: Math.round(avg), threshold, unit };
+      })
+      .filter((a): a is NonNullable<typeof a> => a != null);
+
+    res.json({ success: true, data: { session, trendAlerts } });
+  } catch (error) {
+    console.error('Error building telemedicine alerts:', error);
+    res.status(500).json({ error: 'Failed to build alerts' });
   }
 });
 

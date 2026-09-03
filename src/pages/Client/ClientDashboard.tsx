@@ -5,6 +5,7 @@ import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Han
 import WearablesPanel from '../../components/WearablesPanel';
 import CheckInCard from '../../components/CheckInCard';
 import HealthTrendChart from '../../components/HealthTrendChart';
+import TelemedicineAlerts from '../../components/TelemedicineAlerts';
 import './ClientDashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
@@ -17,6 +18,7 @@ export default function ClientDashboard() {
 
   const [rec, setRec] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [alertsRefreshKey, setAlertsRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!patientId) {
@@ -66,9 +68,10 @@ export default function ClientDashboard() {
         </div>
       </div>
 
+      {patientId && <TelemedicineAlerts patientId={patientId} refreshKey={alertsRefreshKey} />}
       {patientId && <CheckInCard patientId={patientId} />}
       {patientId && <WearablesPanel patientId={patientId} />}
-      {patientId && <HealthTrendChart patientId={patientId} />}
+      {patientId && <HealthTrendChart patientId={patientId} onRequestSent={() => setAlertsRefreshKey((k) => k + 1)} />}
 
       {loading ? (
         <div className="empty-state glass-panel">

@@ -272,5 +272,10 @@
     "requestSent": "请求已发送 — 药剂师会优先处理您的审核。",
     "requestFailed": "发送请求失败，请重试。",
     "requestReason": "最近的{{label}}平均为 {{value}}{{unit}}，低于建议范围 {{threshold}}{{unit}}。"
+  },
+  "telemedicineAlerts": {
+    "sessionPending": "您的药剂师审核请求正在处理中。",
+    "sessionScheduled": "远程问诊已安排在 {{date}}。",
+    "trendAlert": "{{label}}平均为 {{value}}{{unit}}，低于建议范围 {{threshold}}{{unit}}。"
   }
 }
