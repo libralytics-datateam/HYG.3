@@ -78,7 +78,16 @@ export default function AiInsightsList() {
                 </td>
               </tr>
             ) : (
-              insights.map((insight) => (
+              insights.map((insight) => {
+                // For a telemedicine_request, reviewStatus alone can't tell a
+                // still-pending "accepted" session apart from one that was
+                // later completed or cancelled (session-status is a separate
+                // update, see server/routes/insights.ts) — show the real
+                // session state when one exists instead of a stale "accepted".
+                const displayStatus = insight.type === 'telemedicine_request' && insight.content?.sessionStatus
+                  ? insight.content.sessionStatus
+                  : insight.status;
+                return (
                 <tr key={insight.id} className={`border-b border-border last:border-0 hover:bg-bg/50 transition-colors ${insight.patientRequestedAt ? 'bg-gold/5' : ''}`}>
                   <td className="p-4 text-muted font-mono text-xs" title={insight.id}>{insight.id.substring(0,8)}...</td>
                   <td className="p-4 text-text font-bold">{insight.patientName}</td>
@@ -107,18 +116,20 @@ export default function AiInsightsList() {
                   </td>
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                      insight.status === 'pending' ? 'bg-gold/20 text-gold' :
-                      insight.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                      insight.status === 'modified' ? 'bg-blue-500/20 text-blue-400' : 'bg-teal/20 text-teal'
+                      displayStatus === 'pending' || displayStatus === 'requested' ? 'bg-gold/20 text-gold' :
+                      displayStatus === 'rejected' || displayStatus === 'cancelled' ? 'bg-red-500/20 text-red-400' :
+                      displayStatus === 'modified' ? 'bg-blue-500/20 text-blue-400' :
+                      displayStatus === 'completed' ? 'bg-bg text-muted border border-border' : 'bg-teal/20 text-teal'
                     }`}>
-                      {insight.status}
+                      {displayStatus}
                     </span>
                   </td>
                   <td className="p-4 text-right">
                     <Link to={`/app/ai-insights/${insight.id}`} className="text-teal hover:text-gold transition-colors font-bold text-sm">Review &rarr;</Link>
                   </td>
                 </tr>
-              ))
+                );
+              })
             )}
           </tbody>
         </table>

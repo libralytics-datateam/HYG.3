@@ -57,6 +57,15 @@ function DeviceRow({
   const [error, setError] = useState('');
   const [needsReauth, setNeedsReauth] = useState(false);
 
+  // A stale reauth prompt would otherwise stick around forever: needsReauth
+  // used to only clear inside handleSync, so a user who reconnected via the
+  // OAuth "Reconnect" link (not by clicking Sync) would still see the
+  // reconnect prompt after successfully reconnecting, until they happened to
+  // sync again. Clear it whenever the connection itself changes underneath.
+  useEffect(() => {
+    setNeedsReauth(false);
+  }, [status.connected, status.lastSyncedAt]);
+
   const isPending = !status.configured;
 
   const handleSync = async () => {

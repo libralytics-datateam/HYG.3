@@ -114,10 +114,16 @@ export default function AiInsightsDetail() {
     return <div className="p-8 text-center text-red-400">{error || 'Insight not found.'}</div>;
   }
 
+  // Same reasoning as AiInsightsList.tsx: reviewStatus alone can't
+  // distinguish a scheduled session from a completed or later-cancelled one.
+  const displayStatus = insight.type === 'telemedicine_request' && insight.content?.sessionStatus
+    ? insight.content.sessionStatus
+    : insight.status;
   const statusBadge =
-    insight.status === 'pending' ? 'bg-gold/20 text-gold' :
-    insight.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-    insight.status === 'modified' ? 'bg-blue-500/20 text-blue-400' : 'bg-teal/20 text-teal';
+    displayStatus === 'pending' || displayStatus === 'requested' ? 'bg-gold/20 text-gold' :
+    displayStatus === 'rejected' || displayStatus === 'cancelled' ? 'bg-red-500/20 text-red-400' :
+    displayStatus === 'modified' ? 'bg-blue-500/20 text-blue-400' :
+    displayStatus === 'completed' ? 'bg-bg text-muted border border-border' : 'bg-teal/20 text-teal';
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto">
@@ -139,7 +145,7 @@ export default function AiInsightsDetail() {
           <p className="text-muted text-sm">Patient record: {insight.patientName}</p>
         </div>
         <span className={`px-3 py-1 rounded text-sm font-bold uppercase ${statusBadge}`}>
-          {insight.status}
+          {displayStatus}
         </span>
       </div>
 
