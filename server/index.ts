@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import pkg from '../package.json';
 import authRoutes from './routes/auth';
 import aiRoutes from './routes/ai';
 import insightsRoutes from './routes/insights';
@@ -34,9 +35,11 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.get('/v1/health', (_req, res) => {
   res.json({
     status: 'ok',
+    version: pkg.version,
     timestamp: new Date().toISOString(),
     geminiConfigured: !!process.env.GEMINI_API_KEY,
-    whoopConfigured: !!(process.env.WHOOP_CLIENT_ID && process.env.WHOOP_CLIENT_SECRET)
+    whoopConfigured: !!(process.env.WHOOP_CLIENT_ID && process.env.WHOOP_CLIENT_SECRET),
+    fitbitConfigured: !!(process.env.FITBIT_CLIENT_ID && process.env.FITBIT_CLIENT_SECRET)
   });
 });
 

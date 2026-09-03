@@ -53,6 +53,10 @@ test('GET /v1/health returns ok', async () => {
   assert.equal(res.status, 200);
   const json = await res.json();
   assert.equal(json.status, 'ok');
+  // Real package.json version, not hardcoded — so a deploy-verification
+  // check can confirm the live server actually matches the intended
+  // release rather than trusting the bundle hash alone.
+  assert.match(json.version, /^\d+\.\d+\.\d+$/);
 });
 
 test('POST /v1/ai/predict stays gated (503) — regression guard', async () => {

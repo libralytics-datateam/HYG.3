@@ -217,3 +217,14 @@ User asked "go lives" twice in a row with nothing having changed between the two
 - [x] **Frontend made consistent with the backend, not just left to 403 silently.** `AiInsightsDetail.tsx` now hides the Approve/Reject/Schedule/Modify buttons and the Mark Completed/Cancel Session buttons for a non-reviewer role, showing an explanatory message instead of a button that would only ever fail. Mirrors the same `REVIEWER_ROLES` list — noted in-code that the backend is the real enforcement and the two lists must be kept in sync by hand (no shared module across the frontend/backend boundary here, same tradeoff as `healthThresholds.ts`).
 - [x] **Not independently tested with a live 403 against a real non-reviewer account** — no user-provisioning endpoint exists in this app (staff accounts only ever come from the seed script), so there's no way to create a genuinely different-role account through the API to exercise the negative path live. The existing full test suite (26/26) already covers the regression that matters most: neither real seeded user got locked out of reviews they're actually supposed to do.
 - [x] Both builds clean; 26/26 tests passing (unchanged — confirms the gate didn't break either real user's legitimate access).
+
+---
+
+## 16. First version tag: v1.1.0 (2026-09-04)
+
+Neither `package.json` had ever been bumped from its scaffold default (`0.0.0` root, `1.0.0` server) despite everything shipped this session — no version history existed to point at. `1.1.0` for both (kept in sync deliberately): a `1.0.0` baseline is implied by the server's own untouched default, and everything since — WHOOP/Fitbit, telemedicine sessions, the product catalog, `requireRole` — is real, additive, backward-compatible feature work, not a breaking rewrite, so a minor bump is the honest characterization, not a major or patch one.
+
+- [x] `GET /v1/health` now reports a real `version` (read from `package.json`, not hardcoded) — a deploy can now be verified against a specific intended release, not just a bundle hash. Also added `fitbitConfigured` alongside the existing `whoopConfigured`, which had been missed when Fitbit was built (§11) — a real, if minor, honesty gap: `/v1/health` was answering for WHOOP but staying silent on Fitbit.
+- [x] Annotated git tag `v1.1.0` on the commit that shipped this.
+- [x] 26/26 tests passing (new assertion: `/v1/health`'s version field is a real semver string). Both builds clean.
+- [x] Verified live: fetched `/v1/health` from the deployed Render service after this shipped and confirmed `version` reads back `1.1.0`, not just that the deploy succeeded.

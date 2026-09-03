@@ -290,3 +290,13 @@ User asked "go lives" twice with nothing having changed in between — asked dir
 **One honest limitation:** no live negative-path test exists (no user-provisioning endpoint to create a genuinely different-role account through the API), so the 403 path is verified by code review, not a live test. What is verified: the full 26-test suite still passes unchanged, confirming neither real user lost access to work they're supposed to do.
 
 **Evidence:** `server/routes/insights.ts`, `src/pages/App/AiInsightsDetail.tsx`, `server/prisma/seed.ts`, `MVP-LAUNCH-CHECKLIST.md` §15.
+
+---
+
+## v1.1.0 — first version tag (2026-09-04)
+
+"Update app new version then lives." Neither `package.json` (root or `server/`) had ever been bumped from its scaffold default all session — no version history existed to check a deploy against. Bumped both to `1.1.0` in lockstep: minor, not major, because everything shipped since the implied `1.0.0` baseline (WHOOP/Fitbit, telemedicine sessions, the product catalog, `requireRole`) is additive and backward-compatible, not a breaking change.
+
+Added a real `version` field to `GET /v1/health`, read from `package.json` rather than hardcoded, so "is the new version actually live" is something a deploy check can answer directly instead of only inferring it from a bundle hash. Noticed and fixed a small related honesty gap while touching that endpoint: it reported `whoopConfigured` but had never been updated to also report `fitbitConfigured` when Fitbit was built.
+
+**Evidence:** `package.json`, `server/package.json`, `server/index.ts`, `MVP-LAUNCH-CHECKLIST.md` §16, git tag `v1.1.0`.
