@@ -1,6 +1,6 @@
 # HYG.3 — MVP Completion & Deployment Checklist
 
-Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added same day; §12, §13 added 2026-09-04). Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
+Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added same day; §12, §13, §14 added 2026-09-04). Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
 
 **Deploy split (decided):** frontend (Vite/React) → Vercel. Backend (Express + Prisma/Postgres + Python ML subprocess + Gemini vision) stays on Render, as `render.yaml` already targets. Nothing here migrates the backend to Vercel serverless.
 
@@ -19,12 +19,12 @@ Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added 
 
 **Resolved since the last sweep:** hand-scan's unreviewed deficiency/vitamin output — now gated behind pharmacist review, confirmed with the user first. See §1.
 
-**Added since the last sweep, doesn't change the blocking list:** health trend chart + telemedicine-style "Request Pharmacist Review" on the patient dashboard (§10); real Fitbit integration + device-connection UX overhaul (§11); telemedicine session scheduling + preventive dashboard alerts (§12); patient-experience audit fixing a "looks like nothing happened" dashboard gap and surfacing hand-scan Facts to the patient (§13) — all purely additive, all reuse the existing gated review pipeline, no new auth/legal/consent surface.
+**Added since the last sweep, doesn't change the blocking list:** health trend chart + telemedicine-style "Request Pharmacist Review" on the patient dashboard (§10); real Fitbit integration + device-connection UX overhaul (§11); telemedicine session scheduling + preventive dashboard alerts (§12); patient-experience audit fixing a "looks like nothing happened" dashboard gap and surfacing hand-scan Facts to the patient (§13); real product-catalog upload + SKU matching infrastructure (§14) — all purely additive, all reuse the existing gated review pipeline, no new auth/legal/consent surface.
 
 🟡 **Not blocking, but not fully functional yet:**
 - `GEMINI_API_KEY` unset → hand-scan analysis is 100% simulated in production today (honestly labeled with a visible demo-mode banner, not hidden).
 - WHOOP and Fitbit both unconfigured (§11) → device panel shows "Coming soon" on both cards; the health chart (§10) is real but only plots Hand-Scan Wellness until real credentials exist for either — no fabricated data for any metric.
-- `Product` catalog is empty (0 rows) → blocks any real SKU-specific recommendation regardless of the above.
+- `Product` catalog is still empty (0 rows) → the upload + SKU-matching pipeline is real and built (§14), but there's still nothing to match against until a real partner catalog or licensed dataset is uploaded through it.
 - Full walkthrough with a real Gemini key never actually run (§3).
 - Custom Vercel domain — optional (§5).
 
@@ -191,3 +191,17 @@ Asked to think from the patient's actual day-to-day perspective and find where t
 - [x] **The patient never saw the "Fact" behind their own recommendation.** The API already returned `signals` (the raw hand-scan observations) on every `NutritionRecommendation` — `ClientDashboard.tsx` just never rendered them, so the patient only ever saw the end conclusion ("Iron, 65mg"), never the observation it came from ("pale nail beds"). New "What We Observed" section, shown first — Fact ahead of Inference/Recommendation, same order the pharmacist already sees per prd.md §6.4.
 - [x] **Deduplicated a `timeAgo` helper into `src/lib/timeAgo.ts`** while adding the second place that needed it (`WearablesPanel.tsx` had its own copy already).
 - [x] 3 new regression tests (pending-before-approval, cleared-after-approval, reflects sent-back-for-changes); 24/24 passing. Both builds clean. All 4 locales translated.
+
+---
+
+## 14. Product catalog + real SKU matching (2026-09-04)
+
+The biggest lever identified in §13's audit — closing the loop from "Iron, 65mg" to something the patient can actually get — but genuinely blocked on where real catalog data comes from (Product had 0 rows, no schema, nothing to build against). Built the part that's real and finishable without fabricating any product or price: the catalog *infrastructure*, so it does something real the moment a partner's actual inventory shows up, without inventing that inventory now.
+
+- [x] **Real CSV catalog upload — `POST /v1/products/upload`, same pattern as the sales-dataset ingestion in §3.** Required columns `sku, name, category, dosageForm`; optional `ingredients` (semicolon-separated), `price`, `currency`, `purchaseUrl` — all three genuinely optional, since a partner's catalog may have no public pricing yet. Rejects a file missing required columns (400); per-row validation skips (not silently drops — reports a `skipped` count) rows missing required fields. No seeding, no synthetic rows anywhere — the catalog stays honestly empty (as documented since §8) until a real file is uploaded.
+- [x] **New admin page `ProductCatalog.tsx`** (`/app/products`, nav link added) — upload modal + table, mirrors `Datasets.tsx`'s established UI pattern rather than inventing a new one.
+- [x] **Real SKU matching at approval time, not scan time.** `server/services/productMatch.ts` — when a pharmacist approves a hand-scan recommendation, each suggested vitamin is matched against the org's *current* Product catalog (case-insensitive name overlap, no invented confidence score for the match itself). Approval time, not scan time, so a product added to the catalog after the scan but before review still gets picked up. Every vitamin gets an explicit `product` field — the real match, or `null` — never silently omitted, so "not available" is a real, visible state rather than an absence a UI has to guess at.
+- [x] **Patient-facing badge on `ClientDashboard.tsx`'s Supplement Protocol card** — "Available: {product name} — 250 THB" (a real link if `purchaseUrl` exists) when matched, "Not in your pharmacy's catalog yet" when not. Today, with 0 real catalog rows, every vitamin honestly shows the latter — this is infrastructure ahead of data, not a feature that looks finished before it is.
+- [x] **Extended `Product.ingredients`'s existing JSON-string column to also carry `price`/`currency`/`purchaseUrl`** (namespaced fields inside the same string column, same no-ALTER-TABLE workaround as every other "new field" this session) rather than a plain ingredient-list array — back-compatible parsing (`parseIngredients()`) still accepts the old plain-array shape.
+- [x] 3 new regression tests (missing-columns rejected, upload → real GET reflects it with parsed price, full scan→approve→match flow confirming both a matched vitamin *and* an explicit `product: null` on an unmatched one); 26/26 passing. Both builds clean.
+- [ ] **Still open, deliberately not built:** an actual checkout/purchase flow. `purchaseUrl` is stored and rendered as a real link when present, but there's no in-app cart/payment — that's a materially bigger, separate build (payment provider, order records — another new table this DB role can't create) and wasn't implied by "build it" here. What's shipped is the prerequisite: real products can now flow all the way to the patient's screen the moment they exist.

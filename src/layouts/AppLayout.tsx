@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Activity, LayoutDashboard, Database, Brain, FileBarChart, ShieldAlert, Layers, LogOut, UserRound, Menu, X } from 'lucide-react';
+import { Activity, LayoutDashboard, Database, Brain, FileBarChart, ShieldAlert, Layers, LogOut, UserRound, Menu, X, Pill } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './AppLayout.css';
 
@@ -48,6 +48,10 @@ export default function AppLayout() {
           <Link to="/app/datasets" className={isParentActive('/app/datasets')}>
             <Database size={20} />
             Datasets
+          </Link>
+          <Link to="/app/products" className={isParentActive('/app/products')}>
+            <Pill size={20} />
+            Product Catalog
           </Link>
           <Link to="/app/ai-insights" className={isParentActive('/app/ai-insights')}>
             <Brain size={20} />

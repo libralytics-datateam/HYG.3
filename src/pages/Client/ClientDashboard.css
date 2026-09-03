@@ -214,6 +214,32 @@
 .vitamin-dose { font-size: 11px; font-family: monospace; color: var(--teal); font-weight: 600; }
 .vitamin-reason { font-size: 12px; color: var(--muted); line-height: 1.4; }
 
+.vitamin-product-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-decoration: none;
+  width: fit-content;
+}
+.vitamin-product-badge:not(.is-unavailable) {
+  background: rgba(0, 206, 201, 0.12);
+  color: var(--teal);
+  border: 1px solid rgba(0, 206, 201, 0.25);
+}
+.vitamin-product-badge.is-link { cursor: pointer; }
+.vitamin-product-badge.is-link:hover { background: rgba(0, 206, 201, 0.2); }
+.vitamin-product-badge.is-unavailable {
+  background: var(--bg);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
 /* Meal grid */
 .meal-grid {
   display: grid;

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { prisma } from '../db';
+import { matchVitaminsToProducts } from '../services/productMatch';
 
 const router = Router();
 
@@ -165,6 +166,14 @@ router.post('/:id/review', async (req, res) => {
           where: { handScanId: raw.handScanId },
         });
         if (!alreadyExists) {
+          // Matched against the org's real Product catalog at approval time
+          // (not scan time) so a product added to the catalog after the scan
+          // but before review still gets picked up. `product` is null on
+          // every vitamin unless a real catalog match exists — today that's
+          // every vitamin, every time, since Product has 0 rows until a real
+          // partner/CSV upload provides one (see server/routes/products.ts).
+          const vitaminsWithProducts = await matchVitaminsToProducts(updatedOutput.orgId, raw.vitamins || []);
+
           await prisma.nutritionRecommendation.create({
             data: {
               patientId: concept.patientId,
@@ -174,7 +183,7 @@ router.post('/:id/review', async (req, res) => {
               deficiencies: JSON.stringify(raw.deficiencies || []),
               foods: JSON.stringify(raw.foods || []),
               fruits: JSON.stringify(raw.fruits || []),
-              vitamins: JSON.stringify(raw.vitamins || []),
+              vitamins: JSON.stringify(vitaminsWithProducts),
               mealPlan: JSON.stringify(raw.mealPlan || {}),
               disclaimer: raw.disclaimer || 'INFERENCE only — consult a healthcare professional.',
             }

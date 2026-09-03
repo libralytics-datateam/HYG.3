@@ -199,6 +199,96 @@ test('hand scan writes a BiometricReading, and biometric-summary reflects it', a
   assert.equal(antioxidant.latestSource, 'hand_scanner');
 });
 
+test('POST /v1/products/upload rejects a CSV missing required columns', async () => {
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+
+  const body = new FormData();
+  body.append('file', new Blob(['name,category\nFoo,vitamin\n'], { type: 'text/csv' }), 'bad.csv');
+
+  const res = await fetch(`${BASE_URL}/v1/products/upload`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${session.token}` },
+    body,
+  });
+  assert.equal(res.status, 400);
+});
+
+test('Product catalog upload -> real SKU match on approval (no product left unmatched-but-silent)', async () => {
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+  const authHeaders = { Authorization: `Bearer ${session.token}` };
+
+  // A real CSV upload — matches one of the simulated hand-scan's suggested
+  // vitamins ("Iron Bisglycinate...", see geminiService.ts) by name overlap.
+  const uniqueSku = `TEST-IRON-${Date.now()}`;
+  const csv = `sku,name,category,dosageForm,ingredients,price,currency\n${uniqueSku},Iron Bisglycinate 25mg,mineral,capsule,Iron Bisglycinate,250,THB\n`;
+  const body = new FormData();
+  body.append('file', new Blob([csv], { type: 'text/csv' }), 'catalog.csv');
+
+  const uploadRes = await fetch(`${BASE_URL}/v1/products/upload`, { method: 'POST', headers: authHeaders, body });
+  assert.equal(uploadRes.status, 201);
+  const uploadJson = await uploadRes.json();
+  assert.equal(uploadJson.data.inserted, 1);
+  assert.equal(uploadJson.data.skipped, 0);
+
+  const productsRes = await fetch(`${BASE_URL}/v1/products`, { headers: authHeaders });
+  const { data: products } = await productsRes.json();
+  const uploaded = products.find((p: any) => p.sku === uniqueSku);
+  assert.ok(uploaded, 'expected the uploaded product in GET /v1/products');
+  assert.equal(uploaded.price, 250);
+  assert.equal(uploaded.currency, 'THB');
+  assert.deepEqual(uploaded.ingredients, ['Iron Bisglycinate']);
+
+  // Now run a real scan -> approve -> the resulting recommendation's Iron
+  // vitamin should carry this exact product; the others (no catalog match)
+  // should explicitly say so (product: null), not silently omit the field.
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Catalog', lastName: 'Match', email: `catalogmatch+${Date.now()}@example.com`,
+      age: 30, gender: 'other', heightCm: 170, weightKg: 65, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  await fetch(`${BASE_URL}/v1/analysis/hand-scan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId }),
+  });
+
+  const { data: outputs } = await fetch(`${BASE_URL}/v1/ai/outputs`, { headers: authHeaders }).then((r) => r.json());
+  const pendingOutput = outputs.find((o: any) => o.patientId === patient.patientId && o.type === 'hand_scan_vitamin_concept');
+  assert.ok(pendingOutput);
+
+  await fetch(`${BASE_URL}/v1/ai/outputs/${pendingOutput.id}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders },
+    body: JSON.stringify({ status: 'accepted' }),
+  });
+
+  const rec = await fetch(`${BASE_URL}/v1/recommendations/${patient.patientId}/latest`).then((r) => r.json());
+  const ironVitamin = rec.data.vitamins.find((v: any) => v.name.includes('Iron'));
+  assert.ok(ironVitamin, 'expected an Iron vitamin suggestion from the simulated analysis');
+  assert.ok(ironVitamin.product, 'expected the Iron vitamin to match the uploaded catalog product');
+  assert.equal(ironVitamin.product.sku, uniqueSku);
+  assert.equal(ironVitamin.product.price, 250);
+
+  const unmatched = rec.data.vitamins.find((v: any) => !v.name.includes('Iron'));
+  assert.ok(unmatched, 'expected at least one other vitamin with no catalog match');
+  assert.equal(unmatched.product, null);
+});
+
 test('hand-scan output is gated — no recommendation until a pharmacist approves it', async () => {
   // Regression guard for the 2026-08-28 gating change: hand-scan used to
   // create a patient-visible NutritionRecommendation directly, with no

@@ -168,7 +168,9 @@
     "whatWeObserved": "我们观察到的内容",
     "pendingReviewTitle": "扫描已提交 — 等待审核",
     "pendingReviewBody": "提交于 {{time}}。药剂师正在审核您的扫描结果，营养缺口、食物和补充剂建议将在审核通过后显示在此处。",
-    "pendingReviewBodyModified": "您的扫描已退回给药剂师做进一步确认，尚未最终确定。"
+    "pendingReviewBodyModified": "您的扫描已退回给药剂师做进一步确认，尚未最终确定。",
+    "availableAt": "有货：{{name}}",
+    "notInCatalog": "尚未收录在药房的产品目录中"
   },
   "checkIn": {
     "title": "每周签到",

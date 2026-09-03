@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon, Search, Hourglass } from 'lucide-react';
+import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon, Search, Hourglass, Check } from 'lucide-react';
 import WearablesPanel from '../../components/WearablesPanel';
 import CheckInCard from '../../components/CheckInCard';
 import HealthTrendChart from '../../components/HealthTrendChart';
@@ -247,6 +247,20 @@ export default function ClientDashboard() {
                         <span className="vitamin-dose">{v.dosage}</span>
                       </div>
                       <p className="vitamin-reason">{v.reason}</p>
+                      {v.product ? (
+                        <a
+                          href={v.product.purchaseUrl || undefined}
+                          target={v.product.purchaseUrl ? '_blank' : undefined}
+                          rel={v.product.purchaseUrl ? 'noreferrer' : undefined}
+                          className={`vitamin-product-badge${v.product.purchaseUrl ? ' is-link' : ''}`}
+                        >
+                          <Check size={11} />
+                          {t('clientDashboard.availableAt', { name: v.product.name })}
+                          {v.product.price != null && ` — ${v.product.price.toLocaleString()} ${v.product.currency || ''}`.trim()}
+                        </a>
+                      ) : (
+                        <span className="vitamin-product-badge is-unavailable">{t('clientDashboard.notInCatalog')}</span>
+                      )}
                     </div>
                   </div>
                 ))}

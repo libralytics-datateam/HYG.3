@@ -168,7 +168,9 @@
     "whatWeObserved": "観察された内容",
     "pendingReviewTitle": "スキャン送信済み — レビュー待ち",
     "pendingReviewBody": "{{time}}に送信されました。薬剤師がスキャンを確認中です。承認され次第、栄養ギャップ・食品・サプリメントの提案がここに表示されます。",
-    "pendingReviewBodyModified": "あなたのスキャンは確定前に薬剤師による再確認に戻されています。"
+    "pendingReviewBodyModified": "あなたのスキャンは確定前に薬剤師による再確認に戻されています。",
+    "availableAt": "取扱いあり: {{name}}",
+    "notInCatalog": "まだ薬局のカタログにありません"
   },
   "checkIn": {
     "title": "週間チェックイン",

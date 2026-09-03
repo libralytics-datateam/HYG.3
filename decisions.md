@@ -254,3 +254,21 @@ Both are small, additive, no schema change, no new external dependency — the h
 3 new regression tests; 24/24 passing. Both builds clean. All 4 locales translated.
 
 **Evidence:** `server/routes/recommendations.ts`, `src/pages/Client/ClientDashboard.tsx`, `src/lib/timeAgo.ts`, `MVP-LAUNCH-CHECKLIST.md` §13.
+
+---
+
+## Product catalog + real SKU matching — built 2026-09-04
+
+User said "build it" after the prior turn's assessment named two paths forward: get real WHOOP/Fitbit/Gemini credentials (needs the user's own action, not code), or close the loop from recommendation to something purchasable (needs a decision on where catalog data comes from, which wasn't answered). Built the one that's actually finishable: the catalog **infrastructure**, not the catalog data itself.
+
+**Explicitly did not fabricate a product catalog to make this look done.** `Product` has been 0 rows all session (§8's original finding), and there's no legitimate way for this session to source real, rights-cleared Thai vitamin/supplement pricing data on its own. Inventing plausible-looking products/prices to demo the feature would be exactly the kind of "looks real, isn't" the entire session's `data/DATA_PROVENANCE.md` thread exists to prevent. So: build real upload + matching + display, ship it with zero rows (same honest-empty state as before), and it does something real the instant a partner's actual inventory arrives.
+
+**Real CSV upload** (`POST /v1/products/upload`), same shape as the sales-dataset ingestion already built in §3 — required columns, per-row validation with a real skipped-row count, no seeding. **Real matching at approval time** (`server/services/productMatch.ts`) — a pharmacist approving a hand-scan recommendation gets each suggested vitamin checked against the org's *current* catalog (name overlap, no invented match-confidence score), attached as an explicit `product: {...} | null` — never a silently-missing field, so "not in the catalog" is a real, visible state on the patient's screen rather than something the UI has to infer from absence.
+
+**One schema workaround worth flagging:** `Product.ingredients` was a plain JSON string array; extended it (same column, same no-ALTER-TABLE constraint as everything else) to also carry `price`/`currency`/`purchaseUrl` as an object instead, with back-compatible parsing for the old plain-array shape in case anything already relied on it (nothing did — checked first).
+
+**Explicitly not built:** an actual checkout/payment flow. `purchaseUrl` renders as a real link when a product has one, but there's no cart or order record — that's a materially bigger, separate build (a payment provider, another new table this DB role can't create) and "build it" didn't imply going that far without discussing it first.
+
+3 new regression tests (missing-columns rejected, upload → GET reflects real parsed price, full scan→approve→match flow with both a real match and an explicit null on an unmatched vitamin); 26/26 passing. Both builds clean.
+
+**Evidence:** `server/routes/products.ts`, `server/services/productMatch.ts`, `server/routes/insights.ts`, `src/pages/App/ProductCatalog.tsx`, `src/pages/Client/ClientDashboard.tsx`, `MVP-LAUNCH-CHECKLIST.md` §14.

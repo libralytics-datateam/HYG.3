@@ -25,6 +25,7 @@ const Terms = lazy(() => import('./pages/Marketing/Terms'));
 const DashboardOverview = lazy(() => import('./pages/App/DashboardOverview'));
 const AiInsightsList = lazy(() => import('./pages/App/AiInsightsList'));
 const Datasets = lazy(() => import('./pages/App/Datasets'));
+const ProductCatalog = lazy(() => import('./pages/App/ProductCatalog'));
 const Reports = lazy(() => import('./pages/App/Reports'));
 const AuditLogs = lazy(() => import('./pages/App/AuditLogs'));
 const Models = lazy(() => import('./pages/App/Models'));
@@ -79,6 +80,7 @@ function App() {
           >
             <Route index element={<DashboardOverview />} />
             <Route path="datasets" element={<Datasets />} />
+            <Route path="products" element={<ProductCatalog />} />
             <Route path="ai-insights">
               <Route index element={<AiInsightsList />} />
               <Route path=":id" element={<AiInsightsDetail />} />

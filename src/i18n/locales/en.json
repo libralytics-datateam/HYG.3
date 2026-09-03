@@ -168,7 +168,9 @@
     "whatWeObserved": "What We Observed",
     "pendingReviewTitle": "Scan Submitted — Awaiting Review",
     "pendingReviewBody": "Submitted {{time}}. A pharmacist is reviewing your scan; your gaps, food, and supplement suggestions will appear here once approved.",
-    "pendingReviewBodyModified": "Your scan is back with the pharmacist for a closer look before it's finalized."
+    "pendingReviewBodyModified": "Your scan is back with the pharmacist for a closer look before it's finalized.",
+    "availableAt": "Available: {{name}}",
+    "notInCatalog": "Not in your pharmacy's catalog yet"
   },
   "checkIn": {
     "title": "Weekly Check-in",
