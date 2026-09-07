@@ -1,0 +1,131 @@
+.wellness-overview {
+  padding: 20px 20px 18px;
+  margin-bottom: 24px;
+}
+
+.wellness-overview-title {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.wellness-overview-subtitle {
+  margin-top: 2px;
+  margin-bottom: 16px;
+}
+
+/* Unique-to-one-source hero cards */
+.wellness-highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.wellness-highlight-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(4, 120, 87, 0.06);
+  border: 1px solid rgba(4, 120, 87, 0.2);
+}
+
+.wellness-highlight-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.wellness-highlight-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+}
+
+.wellness-highlight-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+.wellness-highlight-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Common-themed rows — metrics that measure roughly the same thing from
+   different sources, shown side by side, never merged into one number. */
+.wellness-theme-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.wellness-theme-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+
+.wellness-theme-row:first-child { border-top: none; }
+
+.wellness-theme-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 90px;
+}
+
+.wellness-theme-values {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.wellness-theme-value-chip {
+  display: flex;
+  flex-direction: column;
+}
+
+.wellness-theme-value-number {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.wellness-theme-value-name {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.wellness-overview-nudge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.wellness-overview-nudge:hover {
+  border-color: var(--teal);
+  color: var(--text);
+}

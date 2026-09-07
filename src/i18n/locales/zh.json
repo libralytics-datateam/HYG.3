@@ -283,5 +283,14 @@
     "sessionPending": "您的药剂师审核请求正在处理中。",
     "sessionScheduled": "远程问诊已安排在 {{date}}。",
     "trendAlert": "{{label}}平均为 {{value}}{{unit}}，低于建议范围 {{threshold}}{{unit}}。"
+  },
+  "wellnessOverview": {
+    "title": "健康概览",
+    "subtitle": "您已连接的数据源之间的共同点，以及只有单一来源才能提供的信息。",
+    "themeSleep": "睡眠",
+    "themeCardio": "心率与恢复信号",
+    "themeActivity": "活动与压力值",
+    "onlyFrom": "仅来自 {{source}}",
+    "connectMore": "连接 {{source}} 以查看更多对比"
   }
 }

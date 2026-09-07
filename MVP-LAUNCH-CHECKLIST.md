@@ -1,6 +1,6 @@
 # HYG.3 — MVP Completion & Deployment Checklist
 
-Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added same day; §12, §13, §14, §15, §16, §17 added 2026-09-04). Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
+Snapshot date: 2026-08-22, last swept for accuracy 2026-08-28 (§10, §11 added same day; §12–§18 added 2026-09-04). Based on reading the current codebase (not the roadmap docs alone) — items reference actual files/lines so they're actionable.
 
 **Deploy split (decided):** frontend (Vite/React) → Vercel. Backend (Express + Prisma/Postgres + Python ML subprocess + Claude vision, §17) stays on Render, as `render.yaml` already targets. Nothing here migrates the backend to Vercel serverless.
 
@@ -241,3 +241,14 @@ User: "make sure we using claude as our main Ai and agentic source." Hand-scan v
 - [x] `analysisMode` value renamed `'gemini-vision'` → `'claude-vision'`; `modelVersion` now records `'claude-opus-5'` on a real analysis. Checked the frontend doesn't branch on the old string anywhere (`HandScanner.tsx` only ever compares against `'simulated'`) — no frontend change needed.
 - [x] 2 new regression assertions lock the migration in: `/v1/health`'s `claudeConfigured` reports `false` honestly with no key set (same pattern as `whoopConfigured`/`fitbitConfigured`), and a real hand-scan's `analysisMode` reads back `'simulated'`, not a stale `'gemini-vision'`. 26/26 passing. Both builds clean.
 - [ ] **Not yet functional in production — needs a real Anthropic API key,** same shape as every other integration this session. Set `ANTHROPIC_API_KEY` as a real Render secret (get one at https://console.anthropic.com). Until then, `claudeConfigured: false` and hand-scan stays honestly simulated — unchanged behavior from before this migration, just a different unset key.
+
+---
+
+## 18. Wellness Overview — common vs. unique data across sources (2026-09-04)
+
+User asked for a high-engagement wellness dashboard via `/gauntlet-loop`, then, when offered named visual bars (WHOOP/Oura/Apple Health) to build against, redirected: find what data is common across the connected wearables first, then find each source's unique "edge" and build the dashboard around that data architecture instead of a visual-comparison loop. Followed that redirect rather than forcing the original bar-picking flow — this is a data-modeling task, not a "beat a competitor's screenshot" one, so `/gauntlet-loop`'s builder/critic model doesn't fit it and wasn't used.
+
+- [x] **The actual data map, read from the real schema, not assumed.** WHOOP and Fitbit never measure the same thing the same way — different scales, different formulas — so nothing is merged into one fabricated number anywhere in this feature. Three real thematic overlaps exist: Sleep (WHOOP `sleep_score` + Fitbit `fitbit_sleep_efficiency`), Heart/Recovery (WHOOP `hrv` + Fitbit `fitbit_resting_hr`), Activity (WHOOP `strain` + Fitbit `fitbit_steps`) — shown side by side per theme, always labeled by source. Two metrics have no counterpart anywhere else and are called out as such: WHOOP `recovery_score` and hand-scan `antioxidant_score`.
+- [x] **New `WellnessOverview.tsx`** on `ClientDashboard`, between the device panel and the detailed trend chart — an at-a-glance summary (hero cards for the two unique metrics, grouped rows for the three thematic overlaps), reusing the same `/v1/wearables/biometric-summary` and `/v1/wearables/status` endpoints already built and tested (§10, §11) — no new backend endpoint needed. Renders nothing when there's no data yet, same "no fabricated urgency" rule as every other empty-state in this app.
+- [x] **Retention nudge, honest, not manipulative.** If a patient hasn't connected one of the two wearable sources, a line invites them to connect it "to see more of this comparison" — grounded in a real gap in *their own* data (computed from `wearables/status`), not a generic engagement dark pattern. Clicking it scrolls to the real Connect button, not a fake CTA.
+- [x] All 4 locales translated. Both builds clean; existing 26/26 tests still passing (pure frontend addition over already-tested endpoints, no new backend surface to test).

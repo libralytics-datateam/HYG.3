@@ -210,7 +210,7 @@ export default function WearablesPanel({ patientId }: { patientId: string }) {
   if (!status) return null;
 
   return (
-    <div className="glass-panel wearables-panel">
+    <div className="glass-panel wearables-panel" id="wearables-panel">
       <h2 className="wearables-panel-title">{t('wearables.title')}</h2>
       <p className="text-muted text-sm wearables-panel-subtitle">{t('wearables.subtitle')}</p>
 

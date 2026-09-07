@@ -283,5 +283,14 @@
     "sessionPending": "あなたの薬剤師レビューリクエストは処理中です。",
     "sessionScheduled": "オンライン診療の予約: {{date}}",
     "trendAlert": "{{label}}の平均は{{value}}{{unit}}で、目安の{{threshold}}{{unit}}を下回っています。"
+  },
+  "wellnessOverview": {
+    "title": "ウェルネス概要",
+    "subtitle": "接続中のソース同士で一致する点と、1つのソースだけがわかる点。",
+    "themeSleep": "睡眠",
+    "themeCardio": "心拍と回復シグナル",
+    "themeActivity": "活動量とストレイン",
+    "onlyFrom": "{{source}}のみ",
+    "connectMore": "{{source}}を接続すると、この比較をさらに見られます"
   }
 }

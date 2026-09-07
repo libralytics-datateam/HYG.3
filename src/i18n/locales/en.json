@@ -283,5 +283,14 @@
     "sessionPending": "Your pharmacist review request is being processed.",
     "sessionScheduled": "Telemedicine session scheduled for {{date}}.",
     "trendAlert": "{{label}} averaging {{value}}{{unit}} — below the {{threshold}}{{unit}} guidance range."
+  },
+  "wellnessOverview": {
+    "title": "Wellness Overview",
+    "subtitle": "What your connected sources agree on, and what only one of them can tell you.",
+    "themeSleep": "Sleep",
+    "themeCardio": "Heart & Recovery Signal",
+    "themeActivity": "Activity & Exertion",
+    "onlyFrom": "Only from {{source}}",
+    "connectMore": "Connect {{source}} to see more of this comparison"
   }
 }

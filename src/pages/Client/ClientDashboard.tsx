@@ -6,6 +6,7 @@ import WearablesPanel from '../../components/WearablesPanel';
 import CheckInCard from '../../components/CheckInCard';
 import HealthTrendChart from '../../components/HealthTrendChart';
 import TelemedicineAlerts from '../../components/TelemedicineAlerts';
+import WellnessOverview from '../../components/WellnessOverview';
 import { timeAgo } from '../../lib/timeAgo';
 import './ClientDashboard.css';
 
@@ -78,6 +79,7 @@ export default function ClientDashboard() {
       {patientId && <TelemedicineAlerts patientId={patientId} refreshKey={alertsRefreshKey} />}
       {patientId && <CheckInCard patientId={patientId} />}
       {patientId && <WearablesPanel patientId={patientId} />}
+      {patientId && <WellnessOverview patientId={patientId} />}
       {patientId && <HealthTrendChart patientId={patientId} onRequestSent={() => setAlertsRefreshKey((k) => k + 1)} />}
 
       {loading ? (

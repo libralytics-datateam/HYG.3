@@ -316,3 +316,17 @@ Loaded the `claude-api` skill before writing any Anthropic code, per its own tri
 Same honest gating as everything else in this app: no `ANTHROPIC_API_KEY` set yet, so `claudeConfigured: false` and hand-scan stays on the clearly-labeled simulated path — unchanged behavior from before the migration, just a different unset key. 2 new regression assertions lock this in (health check reports the new field honestly; a real scan's `analysisMode` reads back `'simulated'`, not a stale Gemini value). 26/26 passing. Both builds clean.
 
 **Evidence:** `server/services/claudeService.ts`, `server/routes/handscan.ts`, `server/index.ts`, `server/.env.example`, `render.yaml`, `MVP-LAUNCH-CHECKLIST.md` §17.
+
+---
+
+## Wellness Overview — built 2026-09-04, redirected away from `/gauntlet-loop`'s default flow
+
+Asked for a high-engagement wellness dashboard via `/gauntlet-loop`. That skill's model is: pick a real, named, screenshot-fetchable competitor, then grind a builder against a harsh critic until it wins blind. Offered three real bars (WHOOP's own dashboard, Oura's Readiness view, Apple Health's Trends) and stopped to wait, per the skill's own step 2.
+
+The user didn't pick one — they redirected: find what's common across the connected wearable sources first, then find each source's data edge, and build the dashboard around *that*. Followed the redirect rather than pushing the original flow. This is a data-modeling task — what does WHOOP measure that Fitbit doesn't, what do they both claim to measure even if not identically — not a "does ours look better than theirs" comparison, so the builder/critic-vs-screenshot model doesn't actually fit it. Recognizing that and switching approaches mattered more than executing the skill's script unchanged.
+
+**The map, read from the real schema:** WHOOP and Fitbit's metrics were deliberately kept as separate metricTypes when Fitbit was built (§11) — different scales, different formulas, no true numeric overlap. But three of them cover the same *theme*: Sleep, Heart/Recovery, Activity. Grouped those three side by side, always labeled by source, never merged into a fabricated combined number. Two metrics have no thematic counterpart anywhere — WHOOP's `recovery_score` and hand-scan's `antioxidant_score` — called out as hero highlights instead of buried in a themed row they don't belong in.
+
+Built as a new frontend-only component (`WellnessOverview.tsx`) reusing the two endpoints already built and tested for the wearables panel and the health chart — no new backend surface, no new data collection, just a different honest read of data that already exists. Includes one retention nudge, deliberately grounded in the *patient's own* actual connection gap (computed from real `/status` data) rather than a generic "connect more!" prompt — inviting them to connect whichever specific source they're missing to unlock a specific comparison they don't have yet.
+
+**Evidence:** `src/components/WellnessOverview.tsx`, `src/pages/Client/ClientDashboard.tsx`, `MVP-LAUNCH-CHECKLIST.md` §18.
