@@ -1,4 +1,15 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+// Real hand-scan vision analysis via Claude (Anthropic), replacing the
+// earlier Gemini-based implementation — Claude is now this app's primary
+// AI/agentic provider. Built against @anthropic-ai/sdk's TypeScript
+// reference (Messages API, vision content blocks); see decisions.md for
+// why the swap happened and what was checked before making it.
+//
+// Needs a real Anthropic API key to do anything: set ANTHROPIC_API_KEY as
+// a real secret. Until it's set, isClaudeConfigured() returns false and
+// the hand-scan route falls back to getSimulatedAnalysis() — same honest
+// "not configured, not silently broken" pattern as every other integration
+// in this app (WHOOP, Fitbit, the old Gemini key).
+import Anthropic from '@anthropic-ai/sdk';
 
 const HAND_ANALYSIS_PROMPT = `You are a nutritional health analyst AI. Analyze this photograph of a human hand taken in natural light.
 
@@ -30,29 +41,57 @@ Return ONLY valid JSON with no markdown, no code blocks, no explanation text:
   "disclaimer": "INFERENCE only — not a medical diagnosis. Consult a qualified healthcare professional before making any health decisions."
 }`;
 
-export async function analyzeHandImage(imageBase64: string, mimeType: string = 'image/jpeg') {
-  const apiKey = process.env.GEMINI_API_KEY;
+export function isClaudeConfigured(): boolean {
+  return !!process.env.ANTHROPIC_API_KEY;
+}
 
-  if (!apiKey) {
-    // Fallback: return a simulated response when no API key is set
+const CLAUDE_MODEL = 'claude-opus-5';
+
+// Claude's vision content blocks only accept a fixed set of media types —
+// narrow whatever the client sent rather than passing an arbitrary string
+// through, so a bad Content-Type fails fast with a clear error instead of
+// a confusing 400 from the API.
+type ClaudeImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+function toClaudeMediaType(mimeType: string): ClaudeImageMediaType {
+  if (mimeType === 'image/jpeg' || mimeType === 'image/png' || mimeType === 'image/gif' || mimeType === 'image/webp') {
+    return mimeType;
+  }
+  return 'image/jpeg'; // hand-scan captures are always JPEG in practice (HandScanner.tsx encodes canvas -> image/jpeg)
+}
+
+export async function analyzeHandImage(imageBase64: string, mimeType: string = 'image/jpeg') {
+  if (!isClaudeConfigured()) {
     return getSimulatedAnalysis();
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const client = new Anthropic();
 
-  const imagePart = {
-    inlineData: {
-      data: imageBase64,
-      mimeType,
-    },
-  };
+  const response = await client.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 4096,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: toClaudeMediaType(mimeType), data: imageBase64 },
+          },
+          { type: 'text', text: HAND_ANALYSIS_PROMPT },
+        ],
+      },
+    ],
+  });
 
-  const result = await model.generateContent([HAND_ANALYSIS_PROMPT, imagePart]);
-  const text = result.response.text().trim();
+  const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text');
+  if (!textBlock) {
+    throw new Error(`Claude returned no text block (stop_reason: ${response.stop_reason})`);
+  }
 
-  // Strip any markdown code blocks if present
-  const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+  // Strip any markdown code fences if present, same defensive cleanup the
+  // Gemini implementation used — models sometimes wrap JSON in ```json
+  // despite an explicit "no markdown" instruction.
+  const cleaned = textBlock.text.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
   return JSON.parse(cleaned);
 }

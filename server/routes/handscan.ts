@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { prisma } from '../db';
-import { analyzeHandImage, getSimulatedAnalysis } from '../services/geminiService';
+import { analyzeHandImage, getSimulatedAnalysis, isClaudeConfigured } from '../services/claudeService';
 
 const router = Router();
 
@@ -32,7 +32,7 @@ router.post('/hand-scan', async (req, res) => {
       return;
     }
 
-    if (!imageBase64 && !process.env.GEMINI_API_KEY) {
+    if (!imageBase64 && !isClaudeConfigured()) {
       // Allow demo mode with no image — use simulated analysis
     } else if (!imageBase64) {
       res.status(400).json({ error: 'imageBase64 is required' });
@@ -54,12 +54,12 @@ router.post('/hand-scan', async (req, res) => {
       }
     });
 
-    // Run Gemini Vision analysis (or simulated fallback)
+    // Run Claude Vision analysis (or simulated fallback)
     let analysis;
     try {
       analysis = await analyzeHandImage(imageBase64 || '', mimeType);
     } catch (aiErr) {
-      console.error('Gemini analysis failed, using simulated fallback:', aiErr);
+      console.error('Claude analysis failed, using simulated fallback:', aiErr);
       analysis = getSimulatedAnalysis();
     }
 
@@ -70,7 +70,7 @@ router.post('/hand-scan', async (req, res) => {
     const vitamins = analysis.recommendedVitamins || [];
     const mealPlan = analysis.mealPlan || {};
     const disclaimer = analysis.disclaimer || 'INFERENCE only — consult a healthcare professional.';
-    const analysisMode = process.env.GEMINI_API_KEY ? 'gemini-vision' : 'simulated';
+    const analysisMode = isClaudeConfigured() ? 'claude-vision' : 'simulated';
 
     // Update scan status — the raw analysis is kept here regardless of
     // review outcome, as the actual record of what the model produced.
@@ -132,7 +132,7 @@ router.post('/hand-scan', async (req, res) => {
         type: 'hand_scan_vitamin_concept',
         content: JSON.stringify(content),
         confidenceScore: avgConfidence,
-        modelVersion: analysisMode === 'gemini-vision' ? 'gemini-1.5-flash' : 'simulated',
+        modelVersion: analysisMode === 'claude-vision' ? 'claude-opus-5' : 'simulated',
         reviewStatus: 'pending',
       }
     });

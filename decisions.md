@@ -300,3 +300,19 @@ User asked "go lives" twice with nothing having changed in between — asked dir
 Added a real `version` field to `GET /v1/health`, read from `package.json` rather than hardcoded, so "is the new version actually live" is something a deploy check can answer directly instead of only inferring it from a bundle hash. Noticed and fixed a small related honesty gap while touching that endpoint: it reported `whoopConfigured` but had never been updated to also report `fitbitConfigured` when Fitbit was built.
 
 **Evidence:** `package.json`, `server/package.json`, `server/index.ts`, `MVP-LAUNCH-CHECKLIST.md` §16, git tag `v1.1.0`.
+
+---
+
+## Claude replaces Gemini as the main AI provider — built 2026-09-04
+
+User: "make sure we using claude as our main Ai and agentic source." Checked scope before touching anything — hand-scan vision analysis is the *only* real LLM integration anywhere in this app. The old "prediction engine" is gated (503, `data/DATA_PROVENANCE.md`), sales-trend insights are pure computed data analysis, telemedicine scheduling is rule-based. One real integration point, one clean swap — not a partial migration living alongside a second provider.
+
+Loaded the `claude-api` skill before writing any Anthropic code, per its own trigger rule (any prompt naming Claude/Anthropic). Followed its defaults exactly: `@anthropic-ai/sdk` (never raw HTTP — an SDK exists for this project's language), model `claude-opus-5` (the skill's mandated default, not downgraded for cost on my own judgment — "never downgrade for cost, that's the user's decision"), vision via base64 image content blocks per the documented Messages API shape.
+
+**Same feature, same contract, different provider.** `claudeService.ts` keeps the identical prompt, the identical "return ONLY valid JSON" contract, and the identical markdown-fence-stripping defensiveness the Gemini version had — a like-for-like swap so nothing about the hand-scan feature itself changed, only what powers it. `getSimulatedAnalysis()` (the honest fallback when no key is set) is untouched.
+
+**Full sweep, not just the service file.** `GEMINI_API_KEY` → `ANTHROPIC_API_KEY` in `.env.example`, `render.yaml`, the health check (`claudeConfigured`, was `geminiConfigured`) and boot log; `'gemini-vision'` → `'claude-vision'` as the `analysisMode` value; `modelVersion` now records `'claude-opus-5'`; all 4 locales' demo-mode banner text; `@google/generative-ai` uninstalled rather than left as dead weight. Checked the frontend for any hardcoded dependency on the old string values before assuming the rename was safe (`HandScanner.tsx` only ever compares `analysisMode` against `'simulated'` — nothing else needed to change).
+
+Same honest gating as everything else in this app: no `ANTHROPIC_API_KEY` set yet, so `claudeConfigured: false` and hand-scan stays on the clearly-labeled simulated path — unchanged behavior from before the migration, just a different unset key. 2 new regression assertions lock this in (health check reports the new field honestly; a real scan's `analysisMode` reads back `'simulated'`, not a stale Gemini value). 26/26 passing. Both builds clean.
+
+**Evidence:** `server/services/claudeService.ts`, `server/routes/handscan.ts`, `server/index.ts`, `server/.env.example`, `render.yaml`, `MVP-LAUNCH-CHECKLIST.md` §17.

@@ -37,7 +37,7 @@ app.get('/v1/health', (_req, res) => {
     status: 'ok',
     version: pkg.version,
     timestamp: new Date().toISOString(),
-    geminiConfigured: !!process.env.GEMINI_API_KEY,
+    claudeConfigured: !!process.env.ANTHROPIC_API_KEY,
     whoopConfigured: !!(process.env.WHOOP_CLIENT_ID && process.env.WHOOP_CLIENT_SECRET),
     fitbitConfigured: !!(process.env.FITBIT_CLIENT_ID && process.env.FITBIT_CLIENT_SECRET)
   });
@@ -64,7 +64,7 @@ app.use('/v1/checkins', checkinsRoutes);
 app.use('/v1/telemedicine', telemedicineRoutes);
 
 app.listen(port, () => {
-  const geminiStatus = process.env.GEMINI_API_KEY ? '✅ Gemini Vision active' : '⚠️  No GEMINI_API_KEY — using simulated analysis';
+  const claudeStatus = process.env.ANTHROPIC_API_KEY ? '✅ Claude Vision active' : '⚠️  No ANTHROPIC_API_KEY — using simulated analysis';
   console.log(`Server listening on port ${port}`);
-  console.log(geminiStatus);
+  console.log(claudeStatus);
 });

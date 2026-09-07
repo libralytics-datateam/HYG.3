@@ -57,6 +57,11 @@ test('GET /v1/health returns ok', async () => {
   // check can confirm the live server actually matches the intended
   // release rather than trusting the bundle hash alone.
   assert.match(json.version, /^\d+\.\d+\.\d+$/);
+  // No ANTHROPIC_API_KEY in this env — must say so honestly, same pattern
+  // as whoopConfigured/fitbitConfigured (regression guard for the
+  // Gemini -> Claude migration: claudeConfigured must exist and be real,
+  // not a stale geminiConfigured field left behind).
+  assert.equal(json.claudeConfigured, false);
 });
 
 test('POST /v1/ai/predict stays gated (503) — regression guard', async () => {
@@ -183,9 +188,9 @@ test('hand scan writes a BiometricReading, and biometric-summary reflects it', a
   }).then((r) => r.json());
   const readingsBefore = before.data.totalReadings;
 
-  // No imageBase64 + no GEMINI_API_KEY in this env → simulated analysis path
-  // (overallScore: 72, per geminiService.ts's getSimulatedAnalysis), which
-  // still exercises the real BiometricReading write in handscan.ts.
+  // No imageBase64 + no ANTHROPIC_API_KEY in this env → simulated analysis
+  // path (overallScore: 72, per claudeService.ts's getSimulatedAnalysis),
+  // which still exercises the real BiometricReading write in handscan.ts.
   const scanRes = await fetch(`${BASE_URL}/v1/analysis/hand-scan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -232,7 +237,7 @@ test('Product catalog upload -> real SKU match on approval (no product left unma
   const authHeaders = { Authorization: `Bearer ${session.token}` };
 
   // A real CSV upload — matches one of the simulated hand-scan's suggested
-  // vitamins ("Iron Bisglycinate...", see geminiService.ts) by name overlap.
+  // vitamins ("Iron Bisglycinate...", see claudeService.ts) by name overlap.
   const uniqueSku = `TEST-IRON-${Date.now()}`;
   const csv = `sku,name,category,dosageForm,ingredients,price,currency\n${uniqueSku},Iron Bisglycinate 25mg,mineral,capsule,Iron Bisglycinate,250,THB\n`;
   const body = new FormData();
@@ -322,6 +327,9 @@ test('hand-scan output is gated — no recommendation until a pharmacist approve
   const scanJson = await scanRes.json();
   assert.equal(scanRes.status, 200);
   assert.equal(scanJson.data.reviewStatus, 'pending');
+  // No ANTHROPIC_API_KEY in this env -> must honestly report simulated,
+  // not a stale 'gemini-vision' value from before the Claude migration.
+  assert.equal(scanJson.data.analysisMode, 'simulated');
   // The gate: deficiencies/vitamins/foods/mealPlan must NOT come back in
   // this response — that's the whole point of the change.
   assert.equal(scanJson.data.deficiencies, undefined);
