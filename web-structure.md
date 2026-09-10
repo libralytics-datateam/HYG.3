@@ -1,14 +1,17 @@
 # HYG.3 — Web Structure
 
-**Covers:** public marketing site + authenticated web app (dashboard). MVP-scoped — no patient-facing pages, per PRD §6/§13.
+**Covers:** public marketing site + authenticated staff web app (dashboard) + the patient-facing consumer app (`/client`).
+
+> **v0.3 note (2026-09-10):** this doc previously said "no patient-facing pages, per PRD §6/§13." That is no longer true — a full patient portal exists (see PRD **§6A**). §4 below is rewritten to the real route tree; §1 and §3.3 are corrected. The staff app (§3) is unchanged.
 
 ---
 
 ## 1. Structure Principles
 
-- Marketing site and app are **separate concerns**: marketing sells the vision (Wellness Before Illness), the app delivers only what MVP actually does (sales/operational intelligence on supplement & vitamin data). Marketing copy must not promise features the app doesn't have yet (e.g. no "AI predicts your vitamin deficiency" messaging — conflicts with PRD §13).
-- App navigation is **role-aware**: what a nav item shows depends on the user's role/permissions (org_admin, analyst, it_admin), not one fixed menu for everyone.
-- Every authenticated page maps to an endpoint group already defined in `api-architecture.md` — no page should exist that has no backing API.
+- Three surfaces, **separate concerns**: (1) marketing sells the vision (Wellness Before Illness); (2) the staff app delivers operational/commercial intelligence + the pharmacist review queue; (3) the patient consumer app (`/client`, PRD §6A) is preventive wellness tracking, pharmacist-gated. Marketing copy must not promise features the product doesn't have (e.g. no "AI predicts your vitamin deficiency" — conflicts with PRD §13).
+- Staff app navigation is **role-aware**: the two roles live in production are **Lead Clinician** and **Pharmacist** (`REVIEWER_ROLES`, `server/routes/insights.ts`); the earlier `org_admin / analyst / it_admin` set was never seeded. Review actions (Accept / Modify / Reject, telemedicine scheduling) are gated to those roles.
+- The patient app has **no login/MFA** — the Phase 1 consumer flow carries `patientId` in `localStorage` and passes it explicitly on every request (`server/routes/wearables.ts` header comment; PRD Phase 3 would add real patient auth).
+- Every authenticated staff page maps to an endpoint group in `api-architecture.md`; every `/client` page maps to a `/v1` route that takes `patientId` explicitly.
 
 ---
 
@@ -39,7 +42,9 @@
 
 ---
 
-## 3. Authenticated App (app.hyg3.[domain])
+## 3. Authenticated Staff App (hyg-3.vercel.app/app)
+
+> **Path note:** staff routes are mounted under `/app/*` (`src/App.tsx`), e.g. `/app/ai-insights`, `/app/patients` — the bare `/dashboard`, `/ai-insights` paths in §3.2 below predate that and read as `/app/dashboard` etc. Roles: **Lead Clinician** / **Pharmacist** (see §1), not the `org_admin / analyst / it_admin` set shown here. This section is otherwise as originally written; only the consumer app (§4) was rewritten in v0.3.
 
 ### 3.1 Global shell
 
@@ -98,26 +103,50 @@ Left nav (role-aware):
    /models/:modelId                 -- name, version, intended use, risk classification, validation status
 ```
 
-### 3.3 Patient Management
+### 3.3 Patient Management (staff side — the pharmacist/clinician view of patients)
 
 ```
-/patients                           -- List of enrolled clients
-   /patients/:id                    -- Client detail view, showing WHOOP/Scanner data
-   /patients/:id/concepts/pending   -- Pharmacist review queue for AI recommendations
+/app/patients                       -- List of enrolled patients
+   /app/patients/:id                -- Patient detail: WHOOP/Fitbit + hand-scan biometric summary, trend sparklines
+/app/ai-insights                    -- The review queue (hand-scan concepts, telemedicine requests) —
+   /app/ai-insights/:id                Accept / Modify / Reject, and schedule telemedicine sessions.
+                                        Non-actionable audit rows (disclaimer_acknowledgement,
+                                        data_source_consent) are filtered out of this queue.
 ```
 
 ---
 
-## 4. Patient Portal (app.hyg3.[domain]/client)
+## 4. Patient Consumer App (hyg-3.vercel.app/client — PRD §6A)
 
-The patient portal allows end-users to connect their wearable devices and view their pharmacist-approved custom vitamin concepts.
+A preventive wellness tracker for the end user. No login/MFA (Phase 1 — `patientId` in `localStorage`). Every risk-bearing AI output is pharmacist-gated before it appears here. Routes are defined in `src/App.tsx`; each is a lazy-loaded page under `ClientLayout`.
 
 ```
-/client/login
-/client/mfa
-/client/dashboard                   -- View current vitamin concept and adherence
-/client/integrations                -- Connect WHOOP or other wearable devices
+/client                             -- redirects to /client/onboard
+/client/onboard                     -- sign-up + PDPA consent (Onboarding)
+/client/dashboard                   -- home: telemedicine alerts, check-in card, wearables panel,
+                                       Wellness Overview, health trend chart, and — once a pharmacist
+                                       has approved a hand scan — the "Today" plan card + the labelled
+                                       report (FACT / INFERENCE / RECOMMENDATION / UNCERTAIN, each with
+                                       a "why this label?" explainer). First-view disclaimer modal
+                                       gates the first Tier B+ report.
+/client/scan                        -- hand-scan capture (HandScanner)
+/client/checkin                     -- one-question wellness + optional adherence check-in
+/client/plan                        -- "Today's Plan" detail: Morning / Evening tabs, numbered steps
+                                       from real data (meal slots + pharmacist-reviewed supplements).
+                                       No paywall.
+/client/care                        -- Care Actions: "Talk to a Pharmacist" (async) +
+                                       "Book a Telemedicine Consult" (external hand-off). Every request
+                                       is audit-logged via /v1/telemedicine/request-review.
+/client/sources                     -- Connected Data Sources: WHOOP / Fitbit / InBody behind one
+                                       ProviderConnector registry. Full consent scope shown + an
+                                       explicit per-source consent checkbox before Connect. Disconnect
+                                       withdraws consent for that source only.
+/client/wearables/callback          -- OAuth return landing (WHOOP / Fitbit)
 ```
+
+**Backing endpoints:** `/v1/onboard`, `/v1/analysis/hand-scan`, `/v1/recommendations/:patientId/{latest,pending}`, `/v1/checkins`, `/v1/wearables/{status,sources,biometric-summary,:provider/*,connectors/:provider/*}`, `/v1/telemedicine/{request-review,alerts,disclaimer-status,disclaimer-ack}`.
+
+**Deferred (PRD §6A.3):** an Insights category-tile hub and a goal-chip Products browse tab — both would render as empty shells against current data, so neither has a route yet.
 
 ---
 
@@ -145,4 +174,4 @@ If any field is `not_available` from the API, the page shows that explicitly rat
 
 ---
 
-*See also: PRD.md, database-schema.md, api-architecture.md, ai-agent-architecture.md, mvp-roadmap.md*
+*See also: prd.md (§6A for the consumer app), database-schema.md, api-architecture.md, ai-agent-architecture.md, mvp-roadmap.md, decisions.md, MVP-LAUNCH-CHECKLIST.md*
