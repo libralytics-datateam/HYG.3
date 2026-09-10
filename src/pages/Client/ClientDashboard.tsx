@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon, Search, Hourglass, Check } from 'lucide-react';
+import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon, Search, Hourglass, Check, ShieldCheck } from 'lucide-react';
 import WearablesPanel from '../../components/WearablesPanel';
 import CheckInCard from '../../components/CheckInCard';
 import HealthTrendChart from '../../components/HealthTrendChart';
@@ -282,6 +282,15 @@ export default function ClientDashboard() {
                 {t('clientDashboard.supplementProtocol')}
                 <InsightLabel kind="recommendation" />
               </h2>
+              {/* Hard gate (b): a supplement suggestion is Tier B — it reached
+                  you only after a pharmacist reviewed this whole report, and a
+                  catalog link is a name-match convenience, never a clinical
+                  endorsement or a "% match". Talk-to-a-pharmacist is one tap
+                  away from every item. */}
+              <div className="supplement-gate">
+                <span className="supplement-gate-tag"><ShieldCheck size={13} /> {t('clientDashboard.aiSuggestedReviewed')}</span>
+                <p className="supplement-gate-note">{t('clientDashboard.supplementGateNote')}</p>
+              </div>
               <div className="vitamin-list">
                 {rec.vitamins.map((v: any, i: number) => (
                   <div key={i} className="vitamin-row">
@@ -293,16 +302,19 @@ export default function ClientDashboard() {
                       </div>
                       <p className="vitamin-reason">{v.reason}</p>
                       {v.product ? (
-                        <a
-                          href={v.product.purchaseUrl || undefined}
-                          target={v.product.purchaseUrl ? '_blank' : undefined}
-                          rel={v.product.purchaseUrl ? 'noreferrer' : undefined}
-                          className={`vitamin-product-badge${v.product.purchaseUrl ? ' is-link' : ''}`}
-                        >
-                          <Check size={11} />
-                          {t('clientDashboard.availableAt', { name: v.product.name })}
-                          {v.product.price != null && ` — ${v.product.price.toLocaleString()} ${v.product.currency || ''}`.trim()}
-                        </a>
+                        <>
+                          <a
+                            href={v.product.purchaseUrl || undefined}
+                            target={v.product.purchaseUrl ? '_blank' : undefined}
+                            rel={v.product.purchaseUrl ? 'noreferrer' : undefined}
+                            className={`vitamin-product-badge${v.product.purchaseUrl ? ' is-link' : ''}`}
+                          >
+                            <Check size={11} />
+                            {t('clientDashboard.availableAt', { name: v.product.name })}
+                            {v.product.price != null && ` — ${v.product.price.toLocaleString()} ${v.product.currency || ''}`.trim()}
+                          </a>
+                          <span className="vitamin-match-caption">{t('clientDashboard.catalogMatchCaption')}</span>
+                        </>
                       ) : (
                         <span className="vitamin-product-badge is-unavailable">{t('clientDashboard.notInCatalog')}</span>
                       )}
@@ -310,6 +322,9 @@ export default function ClientDashboard() {
                   </div>
                 ))}
               </div>
+              <Link to="/client/care?from=nutrition" className="supplement-talk-link">
+                <Stethoscope size={14} /> {t('clientDashboard.talkBeforeStarting')}
+              </Link>
             </section>
           )}
 

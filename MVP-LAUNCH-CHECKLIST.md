@@ -283,3 +283,12 @@ Spec feature 3 (the labelling half) + hard gate (c): every AI-generated insight 
 - [x] **Applied to the recommendation report** on `ClientDashboard`: "What We Observed" → FACT, "Detected Gaps" → INFERENCE, "Supplement Protocol" → RECOMMENDATION, disclaimer → UNCERTAIN (restructured so the caveat sits on the same scale, not as a footnote). Plus a plain-language summary paragraph above the cards, assembled from the report's own counts — nothing fabricated.
 - [x] **Insights category-tile hub deliberately deferred** (decisions.md): it needs a second real report type to not be mostly-empty tiles, which would break this codebase's honest-empty-state rule. The hard-gate requirement (labelling + explainability) ships now where the real data is.
 - [x] All 4 locales translated (`insightLabel.*`, `clientDashboard.reportSummary`). Frontend build clean. No backend change → smoke tests unaffected (31/31).
+
+## 22. Consumer-app UX adaptation — increment 4: supplement-commerce framing / hard gate (b) (2026-09-10)
+
+Spec feature 6 (the gate behaviour) + hard gate (b): supplement suggestions are Tier B, route through a pharmacist touchpoint, never a bare add-to-cart, and carry no un-captioned "% match".
+
+- [x] **Two properties already held, verified and kept:** the report the patient sees is post-pharmacist-approval (`NutritionRecommendation` only exists after `/v1/ai/outputs/:id/review` accepts the hand-scan output); `productMatch.ts` invents no score — the catalog match is a loose name substring, no percentage anywhere in the pipeline.
+- [x] **Supplement-protocol card reframed** (`ClientDashboard`): "AI-suggested · pharmacist-reviewed" section tag; a not-a-prescription note; a per-item caption that the catalog link is a name-match convenience, not a clinical endorsement or fit score; a persistent "Talk to a pharmacist before starting" link → `/client/care?from=nutrition`. The purchase link stays (post-review) but is secondary.
+- [x] **Goal-chip Products browse tab deferred** (decisions.md): `Product` has 0 rows in prod and there's no patient catalog endpoint — a browse tab would be an empty page. Ships with a real catalogue.
+- [x] All 4 locales translated. Frontend build clean. No backend change → smoke tests unaffected (31/31). **All 4 hard gates now enforced in shipped code.**

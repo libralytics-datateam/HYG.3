@@ -378,4 +378,14 @@ Hard gate (c): every AI-generated insight must be labelable on this four-way epi
 
 **Not built as a separate "Insights hub" with category tiles yet:** the spec's category-tile hub (Nutrition, Sleep, Stress, Immunity…) needs more than one real report type to not be mostly empty tiles, which would violate this codebase's "no fabricated content / honest empty states" rule. The labelling + explainability — the actual hard-gate requirement — ships now on the one report that has real data; the hub follows when a second report type exists.
 
-**Evidence:** `decisions.md` (these entries), `MVP-LAUNCH-CHECKLIST.md` §19–§21, progress page (artifact).
+### Decision: supplement-commerce framing on the report (for feature 6 / hard gate b, increment 4)
+
+Hard gate (b): a supplement-specific recommendation must be Tier B/C and route through a pharmacist touchpoint before checkout — never a direct add-to-cart; any "% match" must be captioned goal-based, not clinical.
+
+Two things were already true and are kept: (1) the recommendation the patient sees is post-pharmacist-approval — the `NutritionRecommendation` only exists after `/v1/ai/outputs/:id/review` accepts it (routes/handscan.ts stopped writing it directly for this reason), so every supplement line is already pharmacist-reviewed; (2) `productMatch.ts` invents no score — the catalog match is a loose name substring, no percentage anywhere. So there is no bare "% match" to reframe.
+
+What increment 4 adds on the supplement-protocol card in `ClientDashboard`: an **"AI-suggested · pharmacist-reviewed"** section tag (truthful), a note that these are not a prescription and to talk to a pharmacist before starting/stopping/changing, a per-item caption that the catalog link is a **name-match convenience, not a clinical endorsement or a fit score**, and a persistent **"Talk to a pharmacist before starting"** link to `/client/care?from=nutrition`. The purchase link stays (it is post-review) but is now clearly secondary and captioned.
+
+**Products browse tab deferred**, same reasoning as the Insights hub: `Product` has 0 rows in production and there is no patient-facing catalog endpoint, so a browse tab would be an empty page. The gate-(b) behaviour ships now on the surface where supplement commerce actually reaches the patient; the goal-chip browse tab follows a real catalog.
+
+**Evidence:** `decisions.md` (these entries), `MVP-LAUNCH-CHECKLIST.md` §19–§22, progress page (artifact).

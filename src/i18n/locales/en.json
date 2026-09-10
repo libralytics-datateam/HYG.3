@@ -173,7 +173,11 @@
     "notInCatalog": "Not in your pharmacy's catalog yet",
     "disclaimerGateTitle": "One thing to read first",
     "disclaimerGateBody": "Before your supplement suggestions are shown, there's a short note about what this report is — and isn't.",
-    "reportSummary": "This report covers {{signals}} things we could see and {{gaps}} nutrients that may be worth attention. Every section below is tagged with how sure we are — tap the \"?\" on any tag to see why."
+    "reportSummary": "This report covers {{signals}} things we could see and {{gaps}} nutrients that may be worth attention. Every section below is tagged with how sure we are — tap the \"?\" on any tag to see why.",
+    "aiSuggestedReviewed": "AI-suggested · pharmacist-reviewed",
+    "supplementGateNote": "These suggestions reached you only after a pharmacist reviewed this report. They are not a prescription — talk to a pharmacist before you start, stop, or change anything.",
+    "catalogMatchCaption": "Matched to your catalogue by name — a convenience link, not a clinical endorsement or a fit score.",
+    "talkBeforeStarting": "Talk to a pharmacist before starting"
   },
   "checkIn": {
     "title": "Weekly Check-in",

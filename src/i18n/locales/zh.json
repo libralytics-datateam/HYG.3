@@ -173,7 +173,11 @@
     "notInCatalog": "尚未收录在药房的产品目录中",
     "disclaimerGateTitle": "请先阅读一件事",
     "disclaimerGateBody": "在显示您的补充剂建议之前,有一段简短说明,介绍这份报告是什么、不是什么。",
-    "reportSummary": "本报告涵盖我们能看到的 {{signals}} 项内容,以及 {{gaps}} 种可能值得关注的营养素。下方每个部分都标注了我们的确信程度 — 点按任意标签上的\"?\"即可查看原因。"
+    "reportSummary": "本报告涵盖我们能看到的 {{signals}} 项内容,以及 {{gaps}} 种可能值得关注的营养素。下方每个部分都标注了我们的确信程度 — 点按任意标签上的\"?\"即可查看原因。",
+    "aiSuggestedReviewed": "AI 建议 · 药剂师已审核",
+    "supplementGateNote": "这些建议是在药剂师审核本报告之后才呈现给您的。它们不是处方 — 在开始、停止或更改任何内容之前请咨询药剂师。",
+    "catalogMatchCaption": "按名称匹配到您的目录 — 这是便捷链接,并非临床认可或匹配评分。",
+    "talkBeforeStarting": "开始前请咨询药剂师"
   },
   "checkIn": {
     "title": "每周签到",
