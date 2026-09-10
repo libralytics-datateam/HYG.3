@@ -245,7 +245,8 @@
     "scanHand": "手をスキャン",
     "checkIn": "チェックイン",
     "signOut": "サインアウト",
-    "care": "ケア"
+    "care": "ケア",
+    "sources": "データソース"
   },
   "common": {
     "loading": "読み込み中…",
@@ -327,5 +328,38 @@
     "sending": "送信中…",
     "requestFailed": "リクエストを送信できませんでした。もう一度お試しください。",
     "auditNote": "ここでのすべてのリクエストは記録されます — 何が推奨され、誰がレビューし、どう判断し、結果はどうだったか。"
+  },
+  "dataSources": {
+    "back": "ダッシュボードに戻る",
+    "title": "連携データソース",
+    "subtitle": "デバイスや検査結果を連携すると、HYG.3 が傾向を表示できます。各ソースには個別の同意があり、1つを連携しても他のデータは共有されません。",
+    "loadFailed": "データソースを読み込めませんでした。",
+    "connectFailed": "そのソースに接続できませんでした。",
+    "syncFailed": "そのソースを同期できませんでした。",
+    "disconnectFailed": "そのソースの接続を解除できませんでした。",
+    "connected": "接続済み",
+    "notConnected": "未接続",
+    "unavailable": "まだ利用できません",
+    "consentGranted": "{{date}} に同意",
+    "lastSynced": "{{time}} に同期",
+    "reviewAndConnect": "確認して接続",
+    "consentHeading": "{{name}} を接続する前に",
+    "whatData": "どのデータ",
+    "whatFor": "利用目的",
+    "howLong": "保持期間",
+    "apiKeyLabel": "{{name}} APIキー",
+    "apiKeyPlaceholder": "キーを貼り付け",
+    "consentCheckbox": "上記の目的で HYG.3 がこの {{name}} データにアクセスすることに同意します。いつでも接続解除して同意を撤回できます。",
+    "cancel": "キャンセル",
+    "connect": "接続",
+    "connecting": "接続中…",
+    "syncNow": "今すぐ同期",
+    "disconnect": "接続解除",
+    "footNote": "ソースの接続を解除すると新しい同期が停止し、そのソースのみ同意が撤回されます。既存の記録は要望に応じて削除できます。",
+    "mode": {
+      "cloud": "クラウド同期",
+      "direct": "直接",
+      "manual-import": "手動インポート"
+    }
   }
 }

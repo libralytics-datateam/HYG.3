@@ -900,3 +900,77 @@ test('POST /v1/telemedicine/request-review (care_actions) creates a pending tele
   const alerts = await fetch(`${BASE_URL}/v1/telemedicine/alerts?patientId=${patient.patientId}`).then((r) => r.json());
   assert.ok(alerts.data.session, 'expected an active session alert after a care_actions request');
 });
+
+// --- Consumer-app UX adaptation, increment 2: ProviderConnector registry + per-source consent ---
+
+test('GET /v1/wearables/sources is registry-driven — whoop, fitbit, inbody, each with a consent scope and honest configured flag', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Source', lastName: 'List', email: `sourcelist+${Date.now()}@example.com`,
+      age: 31, gender: 'other', heightCm: 174, weightKg: 71, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  const missingPid = await fetch(`${BASE_URL}/v1/wearables/sources`);
+  assert.equal(missingPid.status, 400);
+
+  const res = await fetch(`${BASE_URL}/v1/wearables/sources?patientId=${patient.patientId}`);
+  assert.equal(res.status, 200);
+  const { data } = await res.json();
+  const ids = data.sources.map((s: any) => s.id).sort();
+  assert.deepEqual(ids, ['fitbit', 'inbody', 'whoop']);
+
+  for (const s of data.sources) {
+    assert.equal(s.connected, false, `${s.id} should be unconnected for a fresh patient`);
+    assert.equal(s.consent, null, `${s.id} should have no consent record yet`);
+    assert.ok(Array.isArray(s.consentScope.dataTypes) && s.consentScope.dataTypes.length > 0, `${s.id} declares data types`);
+    assert.ok(s.consentScope.purpose && s.consentScope.retention, `${s.id} declares purpose + retention`);
+    assert.equal(typeof s.configured, 'boolean');
+  }
+
+  const inbody = data.sources.find((s: any) => s.id === 'inbody');
+  assert.equal(inbody.bespokeAuth, false);
+  assert.equal(inbody.syncMode, 'cloud');
+});
+
+test('generic connector connect 503s when the provider is not configured, and 404s for a bespoke-OAuth provider', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Inbody', lastName: 'Gate', email: `inbodygate+${Date.now()}@example.com`,
+      age: 35, gender: 'other', heightCm: 169, weightKg: 66, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  // InBody has no INBODY_API_KEY in the test env -> 503 notConfigured, no connection, no consent written.
+  const inbodyRes = await fetch(`${BASE_URL}/v1/wearables/connectors/inbody/connect`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, credential: 'whatever' }),
+  });
+  assert.equal(inbodyRes.status, 503);
+  assert.equal((await inbodyRes.json()).notConfigured, true);
+
+  // WHOOP is bespoke-OAuth — it must NOT be reachable through the generic route.
+  const whoopViaGeneric = await fetch(`${BASE_URL}/v1/wearables/connectors/whoop/connect`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, credential: 'x' }),
+  });
+  assert.equal(whoopViaGeneric.status, 404);
+
+  // No consent leaked into the pharmacist queue from any of the above.
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+  const outputs = await fetch(`${BASE_URL}/v1/ai/outputs`, { headers: { Authorization: `Bearer ${session.token}` } }).then((r) => r.json());
+  assert.equal(outputs.data.filter((o: any) => o.type === 'data_source_consent').length, 0);
+
+  // And the sources list still shows inbody as unconnected with no consent.
+  const sources = await fetch(`${BASE_URL}/v1/wearables/sources?patientId=${patient.patientId}`).then((r) => r.json());
+  assert.equal(sources.data.sources.find((s: any) => s.id === 'inbody').connected, false);
+  assert.equal(sources.data.sources.find((s: any) => s.id === 'inbody').consent, null);
+});

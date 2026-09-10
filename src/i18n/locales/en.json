@@ -245,7 +245,8 @@
     "scanHand": "Scan Hand",
     "checkIn": "Check-in",
     "signOut": "Sign Out",
-    "care": "Care"
+    "care": "Care",
+    "sources": "Sources"
   },
   "common": {
     "loading": "Loading…",
@@ -327,5 +328,38 @@
     "sending": "Sending…",
     "requestFailed": "Couldn't send that request. Please try again.",
     "auditNote": "Every request here is recorded — what was recommended, who reviewed it, what they decided, and the outcome."
+  },
+  "dataSources": {
+    "back": "Back to dashboard",
+    "title": "Connected Data Sources",
+    "subtitle": "Connect a device or lab so HYG.3 can show your trends. Each source has its own consent — connecting one never shares anything from another.",
+    "loadFailed": "Couldn't load your data sources.",
+    "connectFailed": "Couldn't connect that source.",
+    "syncFailed": "Couldn't sync that source.",
+    "disconnectFailed": "Couldn't disconnect that source.",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "unavailable": "Not available yet",
+    "consentGranted": "Consent given {{date}}",
+    "lastSynced": "synced {{time}}",
+    "reviewAndConnect": "Review & connect",
+    "consentHeading": "Before connecting {{name}}",
+    "whatData": "What data",
+    "whatFor": "What it’s used for",
+    "howLong": "How long it’s kept",
+    "apiKeyLabel": "{{name}} API key",
+    "apiKeyPlaceholder": "Paste your key",
+    "consentCheckbox": "I consent to HYG.3 accessing this {{name}} data for the purpose above. I can disconnect and withdraw consent at any time.",
+    "cancel": "Cancel",
+    "connect": "Connect",
+    "connecting": "Connecting…",
+    "syncNow": "Sync now",
+    "disconnect": "Disconnect",
+    "footNote": "Disconnecting a source stops new syncs and withdraws consent for that source only. Existing readings can be removed on request.",
+    "mode": {
+      "cloud": "Cloud sync",
+      "direct": "Direct",
+      "manual-import": "Manual import"
+    }
   }
 }

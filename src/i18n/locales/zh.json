@@ -245,7 +245,8 @@
     "scanHand": "扫描手部",
     "checkIn": "签到",
     "signOut": "退出登录",
-    "care": "关怀"
+    "care": "关怀",
+    "sources": "数据源"
   },
   "common": {
     "loading": "加载中…",
@@ -327,5 +328,38 @@
     "sending": "发送中…",
     "requestFailed": "无法发送该请求。请重试。",
     "auditNote": "此处的每个请求都会被记录 — 推荐了什么、谁审核的、如何决定的以及结果如何。"
+  },
+  "dataSources": {
+    "back": "返回仪表板",
+    "title": "已连接的数据源",
+    "subtitle": "连接设备或化验结果,让 HYG.3 显示您的趋势。每个数据源都有独立的授权 — 连接其中一个绝不会共享另一个的任何数据。",
+    "loadFailed": "无法加载您的数据源。",
+    "connectFailed": "无法连接该数据源。",
+    "syncFailed": "无法同步该数据源。",
+    "disconnectFailed": "无法断开该数据源。",
+    "connected": "已连接",
+    "notConnected": "未连接",
+    "unavailable": "尚不可用",
+    "consentGranted": "{{date}} 已授权",
+    "lastSynced": "{{time}} 已同步",
+    "reviewAndConnect": "查看并连接",
+    "consentHeading": "连接 {{name}} 之前",
+    "whatData": "哪些数据",
+    "whatFor": "用途",
+    "howLong": "保留多久",
+    "apiKeyLabel": "{{name}} API 密钥",
+    "apiKeyPlaceholder": "粘贴您的密钥",
+    "consentCheckbox": "我同意 HYG.3 出于上述目的访问此 {{name}} 数据。我可以随时断开连接并撤回授权。",
+    "cancel": "取消",
+    "connect": "连接",
+    "connecting": "连接中…",
+    "syncNow": "立即同步",
+    "disconnect": "断开连接",
+    "footNote": "断开某个数据源会停止新的同步,并仅撤回该数据源的授权。现有读数可应要求删除。",
+    "mode": {
+      "cloud": "云同步",
+      "direct": "直连",
+      "manual-import": "手动导入"
+    }
   }
 }

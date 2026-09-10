@@ -2,8 +2,10 @@ import { Router } from 'express';
 import { prisma } from '../db';
 import * as whoop from '../services/whoopService';
 import * as fitbit from '../services/fitbitService';
-import { WearableAuthError } from '../services/oauthCrypto';
+import { WearableAuthError, encryptToken, decryptToken } from '../services/oauthCrypto';
 import { buildBiometricSummary } from '../services/biometrics';
+import { listConnectors, getConnector } from '../services/providerConnector';
+import { recordConsent, revokeConsent, listConsents } from '../services/dataSourceConsent';
 
 const router = Router();
 
@@ -170,6 +172,12 @@ router.get('/whoop/callback', async (req, res) => {
       await prisma.wearableConnection.create({ data: { patientId, provider: 'whoop', ...data } });
     }
 
+    // Record consent for WHOOP specifically — the exact scope the registry
+    // declares for it (hard gate d). No-op if already granted; never touches
+    // any other provider's consent.
+    const whoopScope = getConnector('whoop')?.consentScope;
+    if (whoopScope) await recordConsent(patientId, 'whoop', whoopScope);
+
     res.redirect(`${frontendBase()}/client/wearables/callback?status=success&provider=whoop`);
   } catch (err) {
     console.error('WHOOP callback error:', err);
@@ -303,6 +311,7 @@ router.delete('/whoop', async (req, res) => {
     }
 
     await prisma.wearableConnection.deleteMany({ where: { patientId, provider: 'whoop' } });
+    await revokeConsent(patientId, 'whoop');
     res.json({ success: true });
   } catch (error) {
     console.error('WHOOP disconnect error:', error);
@@ -367,6 +376,9 @@ router.get('/fitbit/callback', async (req, res) => {
     } else {
       await prisma.wearableConnection.create({ data: { patientId, provider: 'fitbit', ...data } });
     }
+
+    const fitbitScope = getConnector('fitbit')?.consentScope;
+    if (fitbitScope) await recordConsent(patientId, 'fitbit', fitbitScope);
 
     res.redirect(`${frontendBase()}/client/wearables/callback?status=success&provider=fitbit`);
   } catch (err) {
@@ -475,10 +487,198 @@ router.delete('/fitbit', async (req, res) => {
     }
 
     await prisma.wearableConnection.deleteMany({ where: { patientId, provider: 'fitbit' } });
+    await revokeConsent(patientId, 'fitbit');
     res.json({ success: true });
   } catch (error) {
     console.error('Fitbit disconnect error:', error);
     res.status(500).json({ error: 'Failed to disconnect Fitbit' });
+  }
+});
+
+// ============================================================================
+// ProviderConnector registry — the generic surface (decisions.md).
+//   GET  /v1/wearables/sources                  — every source + its state, for the UI
+//   POST /v1/wearables/connectors/:provider/connect  — cloud/direct providers (InBody)
+//   POST /v1/wearables/connectors/:provider/sync
+//   DELETE /v1/wearables/connectors/:provider
+// WHOOP and Fitbit keep their own bespoke-OAuth routes above; they appear in
+// GET /sources but their connect flow is /whoop/connect, /fitbit/connect.
+// ============================================================================
+
+// GET /v1/wearables/sources?patientId=xxx — registry-driven. One row per
+// connector: identity, consent scope, whether it's configured on the server,
+// whether this patient has connected it, their consent state, and last sync.
+router.get('/sources', async (req, res) => {
+  try {
+    const patientId = req.query.patientId as string;
+    if (!patientId) {
+      res.status(400).json({ error: 'patientId is required' });
+      return;
+    }
+
+    const connectors = listConnectors();
+    const [connections, consents] = await Promise.all([
+      prisma.wearableConnection.findMany({ where: { patientId, provider: { in: connectors.map((c) => c.id) } } }),
+      listConsents(patientId),
+    ]);
+
+    const sources = await Promise.all(
+      connectors.map(async (c) => {
+        const conn = connections.find((x) => x.provider === c.id);
+        const last = conn
+          ? await prisma.biometricReading.findFirst({ where: { patientId, source: c.id }, orderBy: { recordedAt: 'desc' } })
+          : null;
+        return {
+          id: c.id,
+          displayName: c.displayName,
+          dataTypes: c.dataTypes,
+          syncMode: c.syncMode,
+          bespokeAuth: c.bespokeAuth,
+          consentScope: c.consentScope,
+          configured: c.isConfigured(),
+          connected: !!conn,
+          consent: consents[c.id] ?? null,
+          lastSyncedAt: last?.recordedAt ?? null,
+        };
+      }),
+    );
+
+    res.json({ success: true, data: { sources } });
+  } catch (error) {
+    console.error('Error listing data sources:', error);
+    res.status(500).json({ error: 'Failed to list data sources' });
+  }
+});
+
+function genericConnector(providerId: string) {
+  const c = getConnector(providerId);
+  if (!c || c.bespokeAuth) return null; // bespoke-OAuth providers don't use these routes
+  return c;
+}
+
+// POST /v1/wearables/connectors/:provider/connect — body { patientId, credential }
+router.post('/connectors/:provider/connect', async (req, res) => {
+  try {
+    const connector = genericConnector(req.params.provider);
+    if (!connector || !connector.connect) {
+      res.status(404).json({ error: 'Unknown or non-generic provider' });
+      return;
+    }
+    const { patientId, credential } = req.body as { patientId?: string; credential?: string };
+    if (!patientId) {
+      res.status(400).json({ error: 'patientId is required' });
+      return;
+    }
+    if (!connector.isConfigured()) {
+      res.status(503).json({ error: `${connector.displayName} is not configured on this server`, notConfigured: true });
+      return;
+    }
+    const patient = await prisma.patient.findUnique({ where: { id: patientId } });
+    if (!patient) {
+      res.status(404).json({ error: 'Patient not found' });
+      return;
+    }
+
+    let tokens;
+    try {
+      tokens = await connector.connect(patientId, credential || '');
+    } catch (err) {
+      if (err instanceof WearableAuthError) {
+        res.status(401).json({ error: `${connector.displayName} rejected that credential. Check it and try again.` });
+        return;
+      }
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Could not connect that source' });
+      return;
+    }
+
+    const data = {
+      accessToken: encryptToken(tokens.accessToken),
+      refreshToken: encryptToken(tokens.refreshToken || ''),
+      expiresAt: tokens.expiresAt,
+    };
+    const existing = await prisma.wearableConnection.findFirst({ where: { patientId, provider: connector.id } });
+    if (existing) {
+      await prisma.wearableConnection.update({ where: { id: existing.id }, data });
+    } else {
+      await prisma.wearableConnection.create({ data: { patientId, provider: connector.id, ...data } });
+    }
+
+    // Consent recorded with the exact scope the registry declares for THIS
+    // provider — never an implicit grant for any other (hard gate d).
+    await recordConsent(patientId, connector.id, connector.consentScope);
+
+    res.json({ success: true, data: { connected: true, provider: connector.id } });
+  } catch (error) {
+    console.error('Generic connector connect error:', error);
+    res.status(500).json({ error: 'Failed to connect data source' });
+  }
+});
+
+// POST /v1/wearables/connectors/:provider/sync — body { patientId }
+router.post('/connectors/:provider/sync', async (req, res) => {
+  try {
+    const connector = genericConnector(req.params.provider);
+    if (!connector || !connector.fetchLatest) {
+      res.status(404).json({ error: 'Unknown or non-generic provider' });
+      return;
+    }
+    const { patientId } = req.body as { patientId?: string };
+    if (!patientId) {
+      res.status(400).json({ error: 'patientId is required' });
+      return;
+    }
+    const conn = await prisma.wearableConnection.findFirst({ where: { patientId, provider: connector.id } });
+    if (!conn) {
+      res.status(404).json({ error: `No ${connector.displayName} connection for this patient` });
+      return;
+    }
+
+    let readings;
+    try {
+      readings = await connector.fetchLatest(decryptToken(conn.accessToken));
+    } catch (err) {
+      if (err instanceof WearableAuthError) {
+        res.status(401).json({ error: `Your ${connector.displayName} credential is no longer valid. Please reconnect.`, needsReauth: true });
+        return;
+      }
+      throw err;
+    }
+
+    const savedCount = await saveNewReadings(patientId, connector.id, readings);
+    res.json({ success: true, data: { syncedMetrics: readings.map((r) => r.metricType), newReadings: savedCount } });
+  } catch (error) {
+    console.error('Generic connector sync error:', error);
+    res.status(502).json({ error: 'Failed to sync data. Please try again in a moment.' });
+  }
+});
+
+// DELETE /v1/wearables/connectors/:provider?patientId=xxx
+router.delete('/connectors/:provider', async (req, res) => {
+  try {
+    const connector = genericConnector(req.params.provider);
+    if (!connector) {
+      res.status(404).json({ error: 'Unknown or non-generic provider' });
+      return;
+    }
+    const patientId = req.query.patientId as string;
+    if (!patientId) {
+      res.status(400).json({ error: 'patientId is required' });
+      return;
+    }
+    const conn = await prisma.wearableConnection.findFirst({ where: { patientId, provider: connector.id } });
+    if (conn && connector.revoke) {
+      try {
+        await connector.revoke(decryptToken(conn.accessToken));
+      } catch (revokeErr) {
+        console.error(`${connector.id} revoke-on-disconnect failed:`, revokeErr);
+      }
+    }
+    await prisma.wearableConnection.deleteMany({ where: { patientId, provider: connector.id } });
+    await revokeConsent(patientId, connector.id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Generic connector disconnect error:', error);
+    res.status(500).json({ error: 'Failed to disconnect data source' });
   }
 });
 

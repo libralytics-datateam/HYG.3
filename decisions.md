@@ -354,7 +354,17 @@ ProviderConnector
  └─ fetchLatest(accessToken) → NormalizedReading[]   // { source, metricType, value, recordedAt }
 ```
 
-WHOOP and Fitbit become the first two implementations of this interface rather than special cases; InBody (body composition, cloud-sync path first) becomes the third. The routes in `wearables.ts` collapse from per-provider handlers to one set parameterized by `:provider`, looking the connector up from a registry. This is the Data Engine abstraction the master doc already calls for, applied to data intake. Same no-schema-change constraint: `WearableConnection.provider` already stores a free-text string, so a third provider needs no migration. Consent stays per-connection (`consentScope` is declared by each connector, surfaced at connect time, revoked independently) — connecting one provider must never implicitly consent to another. **Not yet built — this decision is the prerequisite record; the interface + WHOOP/Fitbit migration + InBody is a later increment.**
+WHOOP and Fitbit become the first two entries of a connector **registry** exposing this interface; InBody (body composition, cloud-sync path first) becomes the third.
+
+**Refined at build time (increment 2, 2026-09-10):** the earlier draft said "the routes in `wearables.ts` collapse to one `:provider`-parameterized set." That was walked back — `wearables.ts` already carries a deliberate, documented decision *not* to deduplicate the WHOOP and Fitbit OAuth routes, because their token-exchange and field-mapping differences are real and worth keeping visible (see the Fitbit section header comment in that file). Collapsing them would trade a genuine clarity win for a cosmetic one. Instead:
+
+- `ProviderConnector` is the shared **descriptor + capability** shape. Each entry declares `id / displayName / dataTypes / syncMode / consentScope / isConfigured()`, and cloud/direct connectors also implement `fetchLatest()` and the token lifecycle.
+- **WHOOP and Fitbit** get registry descriptors that delegate `isConfigured()` to their existing services; their OAuth routes stay exactly as they are. "Migrated onto it" means the registry is now the single source of truth for *what sources exist* and *what each one consents to* — not that their transport code was rewritten.
+- **InBody** is a full `ProviderConnector` implementation (cloud-sync, API-key, no OAuth dance) served by new generic `/v1/wearables/connectors/:provider/...` routes that look the connector up from the registry. New providers of the same shape (direct/cloud, no bespoke OAuth) go through these routes; bespoke-OAuth providers keep their own.
+- **Consent per source** (hard gate d): recorded as a `data_source_consent` `AiOutput` row (patient-linked via `CustomVitaminConcept`, same pattern as `disclaimer_acknowledgement` §increment-1 and `telemedicine_request` §12), `content` = `{ provider, consentScope, grantedAt, revokedAt? }`. Written at connect time with the exact scope shown to the patient; `revokedAt` stamped on disconnect. Connecting one provider writes only that provider's row — never an implicit grant for another. Filtered out of `GET /v1/ai/outputs` like the other non-actionable audit rows. Zero schema change (`WearableConnection` has no spare column; `provider` is already free-text).
+- `GET /v1/wearables/sources` iterates the registry and joins connection + consent state, so the Connected Data Sources UI is provider-agnostic.
+
+**Built in increment 2** — interface + registry + WHOOP/Fitbit descriptors + InBody connector + consent mechanism + Connected Data Sources UI.
 
 ### Decision: disclaimer-acknowledgement storage (for feature 4)
 
