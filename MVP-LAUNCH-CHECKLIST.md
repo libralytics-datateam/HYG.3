@@ -303,3 +303,17 @@ Spec features 1, 2, 7. No hard gates involved. Paywall omitted by the user's cho
 - [x] All 4 locales translated (`todayCard.*`, `todaysPlan.*`). Frontend build clean. No backend change → smoke tests unaffected (31/31).
 
 **Gauntlet run status: 8/8 spec items addressed (6 built, 2 deferred with rationale — Insights category-tile hub §21, goal-chip Products browse tab §22 — both waiting on real data to not be empty shells). All 4 hard gates enforced in shipped code.**
+
+## 24. Face-scan / Skin Beauty analysis (2026-09-10) — v1.3.0
+
+Started in Antigravity (Gemini), hit model limits, finished here. A skin/beauty facial scan — the reference app's core mechanic, deliberately kept distinct from the excluded "face-zone-photo pattern applied to internal body systems". Same hard gates as the rest of the consumer app.
+
+- [x] **`server/routes/facescan.ts`** — `POST /v1/analysis/face-scan` + `GET /v1/analysis/face-scan/latest`. Twin of the hand-scan gate: scores + facial observations + AM/PM skincare routine immediate; inferred deficiencies + recommended foods/fruits/supplements withheld as `AiOutput` `face_scan_skin_concept` + `CustomVitaminConcept` (`pending_pharmacist_review`).
+- [x] **Hard gate (b) enforced on the read path** — `/face-scan/latest` returns the gated fields only when `concept.status === 'approved'` (`pharmacistReviewed` flag). Approval rides the generic concept-status update in `insights.ts`.
+- [x] **`analyzeFaceImage` + `getSimulatedFaceAnalysis`** in `claudeService.ts` — Claude vision with the same honest simulated fallback as hand-scan (`analysisMode: 'simulated'` when no key).
+- [x] **Four `BiometricReading` metricTypes** (`skin_beauty_score` / `skin_hydration_score` / `skin_radiance_score` / `skin_vitality_score`, source `face_scanner`) → picked up by the existing trend chart + Wellness Overview; thresholds in `healthThresholds.ts`.
+- [x] **`POST /v1/telemedicine/request-review` accepts `source: 'face_scan'`** — flags the pending skin concept by row id, "flag not duplicate".
+- [x] **UI** — `/client/face-scan` (`FaceScanner.tsx`), `SkinBeautyCard` on the dashboard, nav link + dashboard button. All 4 locales at full parity (431 keys each).
+- [x] **Zero schema change.** `tsc` clean, both builds clean.
+- [x] **2 new smoke tests** (gate holds → reveals on approval; `request-review (face_scan)` flags not duplicates). **33/33 passing.**
+- [x] PRD §6A updated (capability 7 + reworded §6A.4 exclusion); `web-structure.md`, `mvp-roadmap.md`, `decisions.md` updated.

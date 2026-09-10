@@ -11,6 +11,10 @@ export const HEALTH_THRESHOLDS: Record<string, { threshold: number; unit: string
   recovery_score: { threshold: 34, unit: '%' },
   sleep_score: { threshold: 50, unit: '%' },
   antioxidant_score: { threshold: 34, unit: '' },
+  skin_beauty_score: { threshold: 60, unit: '%' },
+  skin_hydration_score: { threshold: 50, unit: '%' },
+  skin_radiance_score: { threshold: 50, unit: '%' },
+  skin_vitality_score: { threshold: 50, unit: '%' },
 };
 
 export function recentAverage(history: { value: number }[], n = 3): number | null {

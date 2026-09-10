@@ -974,3 +974,109 @@ test('generic connector connect 503s when the provider is not configured, and 40
   assert.equal(sources.data.sources.find((s: any) => s.id === 'inbody').connected, false);
   assert.equal(sources.data.sources.find((s: any) => s.id === 'inbody').consent, null);
 });
+
+// --- Face-scan / Skin Beauty (v1.3.0) ---
+
+test('POST /v1/analysis/face-scan gates inferred deficiencies + supplements until a pharmacist approves', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Face', lastName: 'Gate', email: `facegate+${Date.now()}@example.com`,
+      age: 29, gender: 'other', heightCm: 168, weightKg: 60, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  const scanRes = await fetch(`${BASE_URL}/v1/analysis/face-scan`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId }),
+  });
+  assert.equal(scanRes.status, 200);
+  const scanJson = await scanRes.json();
+  assert.equal(scanJson.data.reviewStatus, 'pending');
+  assert.equal(scanJson.data.analysisMode, 'simulated');
+  // Immediate: scores + observations + general skincare routine.
+  assert.equal(typeof scanJson.data.overallScore, 'number');
+  assert.ok(Array.isArray(scanJson.data.signals));
+  assert.ok(scanJson.data.skincareRituals && Array.isArray(scanJson.data.skincareRituals.morning));
+  // Gated: the POST response never carries the inferred deficiencies or the
+  // recommended supplements — same rule as the hand-scan gate.
+  assert.equal(scanJson.data.deficiencies, undefined);
+  assert.equal(scanJson.data.recommendedVitamins, undefined);
+
+  // Real biometric readings written, one per skin metric, source face_scanner.
+  const summary = await fetch(`${BASE_URL}/v1/wearables/biometric-summary?patientId=${patient.patientId}`).then((r) => r.json());
+  const beauty = summary.data.metrics.find((m: any) => m.metricType === 'skin_beauty_score');
+  assert.ok(beauty, 'expected a skin_beauty_score reading after a face scan');
+  assert.equal(beauty.latestSource, 'face_scanner');
+  for (const mt of ['skin_hydration_score', 'skin_radiance_score', 'skin_vitality_score']) {
+    assert.ok(summary.data.metrics.some((m: any) => m.metricType === mt), `expected a ${mt} reading`);
+  }
+
+  // /latest before approval: scores yes, deficiencies/supplements withheld.
+  const before = await fetch(`${BASE_URL}/v1/analysis/face-scan/latest?patientId=${patient.patientId}`).then((r) => r.json());
+  assert.equal(typeof before.data.overallScore, 'number');
+  assert.equal(before.data.pharmacistReviewed, false);
+  assert.deepEqual(before.data.deficiencies, []);
+  assert.deepEqual(before.data.recommendedVitamins, []);
+  assert.deepEqual(before.data.recommendedFoods, []);
+
+  // Pharmacist approves the pending face_scan_skin_concept.
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+  const outputs = await fetch(`${BASE_URL}/v1/ai/outputs`, { headers: { Authorization: `Bearer ${session.token}` } }).then((r) => r.json());
+  const pending = outputs.data.find((o: any) => o.patientId === patient.patientId && o.type === 'face_scan_skin_concept');
+  assert.ok(pending, 'expected a pending face_scan_skin_concept in the pharmacist queue');
+  const reviewRes = await fetch(`${BASE_URL}/v1/ai/outputs/${pending.id}/review`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` },
+    body: JSON.stringify({ status: 'accepted' }),
+  });
+  assert.equal(reviewRes.status, 200);
+
+  // /latest after approval: the gated fields are now populated.
+  const after = await fetch(`${BASE_URL}/v1/analysis/face-scan/latest?patientId=${patient.patientId}`).then((r) => r.json());
+  assert.equal(after.data.pharmacistReviewed, true);
+  assert.ok(after.data.recommendedVitamins.length > 0, 'expected supplements to be revealed after approval');
+  assert.ok(after.data.deficiencies.length > 0, 'expected deficiencies to be revealed after approval');
+});
+
+test('POST /v1/telemedicine/request-review (face_scan) flags the pending skin concept instead of duplicating it', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Face', lastName: 'Req', email: `facereq+${Date.now()}@example.com`,
+      age: 34, gender: 'other', heightCm: 176, weightKg: 72, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  const scanRes = await fetch(`${BASE_URL}/v1/analysis/face-scan`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId }),
+  });
+  const { data: scan } = await scanRes.json();
+
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+
+  const before = await fetch(`${BASE_URL}/v1/ai/outputs`, { headers: { Authorization: `Bearer ${session.token}` } }).then((r) => r.json());
+  assert.equal(before.data.filter((o: any) => o.patientId === patient.patientId).length, 1);
+
+  const reqRes = await fetch(`${BASE_URL}/v1/telemedicine/request-review`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, source: 'face_scan', scanId: scan.scanId }),
+  });
+  assert.equal(reqRes.status, 200);
+  assert.equal((await reqRes.json()).data.flagged, true);
+
+  const after = await fetch(`${BASE_URL}/v1/ai/outputs`, { headers: { Authorization: `Bearer ${session.token}` } }).then((r) => r.json());
+  const mine = after.data.filter((o: any) => o.patientId === patient.patientId);
+  assert.equal(mine.length, 1, 'expected the existing skin concept to be flagged, not duplicated');
+  assert.ok(mine[0].patientRequestedAt, 'expected patientRequestedAt to be set');
+});

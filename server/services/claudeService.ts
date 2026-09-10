@@ -140,3 +140,141 @@ export function getSimulatedAnalysis() {
     disclaimer: 'INFERENCE only — not a medical diagnosis. Consult a qualified healthcare professional before making any health decisions.'
   };
 }
+
+const FACE_ANALYSIS_PROMPT = `You are an expert dermatological wellness and nutritional skin health AI analyst. Analyze this photograph of a human face taken in natural light.
+
+Examine carefully:
+1. FOREHEAD: hydration, texture, fine expression lines, oil-moisture balance
+2. EYE CONTOUR: under-eye dark circles, puffiness, signs of fatigue or microcirculation slowdown
+3. CHEEKS & T-ZONE: radiance, oil/moisture balance, pore appearance, redness or sensitivity
+4. SKIN BARRIER: overall hydration level, smoothness, luminosity vs dullness, elasticity indicators
+
+Based ONLY on visible physical indicators, determine skin beauty and wellness metrics with actionable nutritional and skincare lifestyle support.
+
+Return ONLY valid JSON with no markdown, no code blocks, no explanation text:
+{
+  "overallScore": 0-100,
+  "hydrationScore": 0-100,
+  "radianceScore": 0-100,
+  "textureScore": 0-100,
+  "vitalityScore": 0-100,
+  "skinTypeDetected": "normal",
+  "eyeContour": {
+    "darkCircles": "low",
+    "puffiness": "low",
+    "observation": "description of under-eye vitality"
+  },
+  "signals": [
+    {"area": "Forehead", "observation": "detailed observation"}
+  ],
+  "likelyDeficiencies": [
+    {"nutrient": "name", "confidence": 0.0-1.0, "reason": "why based on visible skin signs"}
+  ],
+  "recommendedFoods": [
+    {"name": "food name", "benefit": "skin beauty benefit"}
+  ],
+  "recommendedFruits": [
+    {"name": "fruit name", "benefit": "skin beauty benefit"}
+  ],
+  "recommendedVitamins": [
+    {"name": "supplement name", "dosage": "suggested dosage", "reason": "skin beauty & collagen support reason"}
+  ],
+  "skincareRituals": {
+    "morning": ["Gentle hydrating cleanser", "Antioxidant Vitamin C Serum", "Broad spectrum SPF 50"],
+    "evening": ["Double cleanse", "Hyaluronic acid barrier support", "Nourishing peptide night cream"],
+    "wellnessNudge": "Aim for 2.5L water daily and prioritize 7.5+ hours of restorative sleep."
+  },
+  "disclaimer": "INFERENCE only — not a medical diagnosis. Consult a qualified healthcare professional before making any health decisions."
+}`;
+
+export async function analyzeFaceImage(imageBase64: string, mimeType: string = 'image/jpeg') {
+  if (!isClaudeConfigured()) {
+    return getSimulatedFaceAnalysis();
+  }
+
+  const client = new Anthropic();
+
+  const response = await client.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 4096,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: toClaudeMediaType(mimeType), data: imageBase64 },
+          },
+          { type: 'text', text: FACE_ANALYSIS_PROMPT },
+        ],
+      },
+    ],
+  });
+
+  const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text');
+  if (!textBlock) {
+    throw new Error(`Claude returned no text block (stop_reason: ${response.stop_reason})`);
+  }
+
+  const cleaned = textBlock.text.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+  return JSON.parse(cleaned);
+}
+
+export function getSimulatedFaceAnalysis() {
+  return {
+    overallScore: 78,
+    hydrationScore: 74,
+    radianceScore: 82,
+    textureScore: 79,
+    vitalityScore: 76,
+    skinTypeDetected: 'combination',
+    eyeContour: {
+      darkCircles: 'mild',
+      puffiness: 'low',
+      observation: 'Mild vascular undertone in tear trough; well-hydrated periorbital area with good skin elasticity.'
+    },
+    signals: [
+      { area: 'Cheeks', observation: 'Healthy pink microcirculation with high natural luminosity and strong moisture barrier.' },
+      { area: 'T-Zone', observation: 'Mild sebum activity on forehead and nasal bridge with smooth, refined pores.' },
+      { area: 'Eye Contour', observation: 'Slight fatigue signs visible under eyes; minimal fine dehydration lines.' },
+      { area: 'Skin Barrier', observation: 'Resilient skin barrier with smooth surface texture and even light reflection.' }
+    ],
+    likelyDeficiencies: [
+      { nutrient: 'Hyaluronic Acid & Hydration', confidence: 0.68, reason: 'Subtle periorbital dehydration lines indicate intracellular moisture needs.' },
+      { nutrient: 'Vitamin C & Antioxidants', confidence: 0.58, reason: 'Maintaining radiant skin tone benefits from sustained bioflavonoid support.' },
+      { nutrient: 'Zinc & Collagen Peptides', confidence: 0.52, reason: 'Supports continuous dermal matrix firmness and cellular turnover.' }
+    ],
+    recommendedFoods: [
+      { name: 'Wild Alaskan Salmon', benefit: 'Rich in Omega-3 EPA/DHA to maintain the lipid moisture barrier.' },
+      { name: 'Avocado', benefit: 'Monounsaturated fats and Vitamin E protect against oxidative stress.' },
+      { name: 'Walnuts', benefit: 'Essential fatty acids and zinc promote cellular repair.' },
+      { name: 'Bone Broth or Miso', benefit: 'Bioavailable amino acids and collagen building blocks.' }
+    ],
+    recommendedFruits: [
+      { name: 'Blueberries', benefit: 'Potent anthocyanins fight photo-aging and brighten complexion.' },
+      { name: 'Papaya', benefit: 'Enzyme papain and Vitamin A support gentle skin renewal.' },
+      { name: 'Kiwi', benefit: 'High Vitamin C concentration stimulates natural collagen synthesis.' },
+      { name: 'Pomegranate', benefit: 'Ellagic acid enhances skin elasticity and microcirculation.' }
+    ],
+    recommendedVitamins: [
+      { name: 'Marine Collagen Peptides', dosage: '5000mg daily in water or tea', reason: 'Clinically shown to improve skin hydration and dermal density within 8 weeks.' },
+      { name: 'Hyaluronic Acid + Vitamin C', dosage: '120mg HA + 500mg Vit C daily', reason: 'Locks moisture into skin layers while catalyzing collagen fibril assembly.' },
+      { name: 'Astaxanthin', dosage: '4–6mg daily with healthy fats', reason: 'Potent natural carotenoid that protects skin from UV-induced free radicals.' }
+    ],
+    skincareRituals: {
+      morning: [
+        'Gentle pH-balanced hydrating cleanser (lukewarm water)',
+        '10% Vitamin C + Ferulic Acid antioxidant serum',
+        'Lightweight peptide moisturizer followed by broad-spectrum SPF 50+'
+      ],
+      evening: [
+        'Double cleanse to dissolve daily sunscreen and pollutants',
+        'Multi-molecular Hyaluronic Acid serum on damp skin',
+        'Nourishing ceramide barrier repair cream'
+      ],
+      wellnessNudge: 'Target 2.5 liters of clean water daily, and get 7.5 hours of sleep to optimize overnight dermal cellular repair.'
+    },
+    disclaimer: 'INFERENCE only — not a medical diagnosis. Consult a qualified healthcare professional before making any health decisions.'
+  };
+}
+

@@ -130,6 +130,10 @@ A preventive wellness tracker for the end user. No login/MFA (Phase 1 — `patie
                                        a "why this label?" explainer). First-view disclaimer modal
                                        gates the first Tier B+ report.
 /client/scan                        -- hand-scan capture (HandScanner)
+/client/face-scan                   -- face-scan skin & beauty capture (FaceScanner). Skin scores +
+                                       observations + AM/PM routine shown immediately; inferred
+                                       deficiencies + supplements withheld until a pharmacist approves.
+                                       SkinBeautyCard on the dashboard is the summary/teaser.
 /client/checkin                     -- one-question wellness + optional adherence check-in
 /client/plan                        -- "Today's Plan" detail: Morning / Evening tabs, numbered steps
                                        from real data (meal slots + pharmacist-reviewed supplements).
@@ -144,7 +148,7 @@ A preventive wellness tracker for the end user. No login/MFA (Phase 1 — `patie
 /client/wearables/callback          -- OAuth return landing (WHOOP / Fitbit)
 ```
 
-**Backing endpoints:** `/v1/onboard`, `/v1/analysis/hand-scan`, `/v1/recommendations/:patientId/{latest,pending}`, `/v1/checkins`, `/v1/wearables/{status,sources,biometric-summary,:provider/*,connectors/:provider/*}`, `/v1/telemedicine/{request-review,alerts,disclaimer-status,disclaimer-ack}`.
+**Backing endpoints:** `/v1/onboard`, `/v1/analysis/hand-scan`, `/v1/analysis/face-scan{,/latest}`, `/v1/recommendations/:patientId/{latest,pending}`, `/v1/checkins`, `/v1/wearables/{status,sources,biometric-summary,:provider/*,connectors/:provider/*}`, `/v1/telemedicine/{request-review,alerts,disclaimer-status,disclaimer-ack}`.
 
 **Deferred (PRD §6A.3):** an Insights category-tile hub and a goal-chip Products browse tab — both would render as empty shells against current data, so neither has a route yet.
 

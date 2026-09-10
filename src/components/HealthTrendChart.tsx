@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Heart, Moon, Flame, Activity, Hand, RefreshCw, PhoneCall, CheckCircle2, Footprints } from 'lucide-react';
+import { Heart, Moon, Flame, Activity, Hand, RefreshCw, PhoneCall, CheckCircle2, Footprints, Sparkles, Droplets, Sun } from 'lucide-react';
 import ErrorBanner from './ErrorBanner';
 import './HealthTrendChart.css';
 
@@ -23,6 +23,10 @@ interface MetricSummary {
 // them (same honesty-over-completeness call as elsewhere in this app; see
 // decisions.md / data/DATA_PROVENANCE.md).
 const METRIC_META: Record<string, { icon: any; unit: string; threshold: number | null }> = {
+  skin_beauty_score: { icon: Sparkles, unit: '%', threshold: 60 },
+  skin_hydration_score: { icon: Droplets, unit: '%', threshold: 50 },
+  skin_radiance_score: { icon: Sun, unit: '%', threshold: 50 },
+  skin_vitality_score: { icon: Activity, unit: '%', threshold: 50 },
   recovery_score: { icon: Heart, unit: '%', threshold: 34 },
   sleep_score: { icon: Moon, unit: '%', threshold: 50 },
   antioxidant_score: { icon: Hand, unit: '', threshold: 34 },
@@ -38,6 +42,7 @@ const METRIC_META: Record<string, { icon: any; unit: string; threshold: number |
   fitbit_steps: { icon: Footprints, unit: '', threshold: null },
 };
 const METRIC_ORDER = [
+  'skin_beauty_score', 'skin_hydration_score', 'skin_radiance_score', 'skin_vitality_score',
   'recovery_score', 'sleep_score', 'antioxidant_score', 'strain', 'hrv',
   'fitbit_sleep_efficiency', 'fitbit_resting_hr', 'fitbit_steps',
 ];

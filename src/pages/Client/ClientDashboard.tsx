@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon, Search, Hourglass, Check, ShieldCheck } from 'lucide-react';
+import { Camera, RefreshCw, Activity, TrendingUp, Apple, Pill, Salad, Clock, Hand, Stethoscope, ScanLine, Watch, Layers, Sunrise, CloudSun, Moon, Search, Hourglass, Check, ShieldCheck, Sparkles } from 'lucide-react';
 import WearablesPanel from '../../components/WearablesPanel';
 import CheckInCard from '../../components/CheckInCard';
 import HealthTrendChart from '../../components/HealthTrendChart';
 import TelemedicineAlerts from '../../components/TelemedicineAlerts';
 import WellnessOverview from '../../components/WellnessOverview';
+import SkinBeautyCard from '../../components/SkinBeautyCard';
 import DisclaimerModal from '../../components/DisclaimerModal';
 import InsightLabel from '../../components/InsightLabel';
 import TodayPlanCard from '../../components/TodayPlanCard';
@@ -83,7 +84,11 @@ export default function ClientDashboard() {
           </h1>
           <p className="text-muted text-sm mt-1">{t('clientDashboard.subtitle')}</p>
         </div>
-        <div className="dashboard-header-actions">
+        <div className="dashboard-header-actions flex items-center gap-2">
+          <Link to="/client/face-scan" className="btn btn-secondary flex items-center gap-2">
+            <Sparkles size={17} className="text-gold" />
+            {t('clientDashboard.scanFace', 'Scan Face')}
+          </Link>
           <Link to="/client/scan" className="btn btn-primary flex items-center gap-2">
             <Camera size={18} />
             {t('clientDashboard.scanHand')}
@@ -94,6 +99,7 @@ export default function ClientDashboard() {
       {patientId && <TelemedicineAlerts patientId={patientId} refreshKey={alertsRefreshKey} />}
       {patientId && <CheckInCard patientId={patientId} />}
       {patientId && <WearablesPanel patientId={patientId} />}
+      {patientId && <SkinBeautyCard patientId={patientId} />}
       {patientId && <WellnessOverview patientId={patientId} />}
       {patientId && <HealthTrendChart patientId={patientId} onRequestSent={() => setAlertsRefreshKey((k) => k + 1)} />}
 

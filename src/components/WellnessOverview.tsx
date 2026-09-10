@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Heart, Moon, Flame, Watch, Activity, Hand, ChevronRight } from 'lucide-react';
+import { Heart, Moon, Flame, Watch, Activity, Hand, ChevronRight, Sparkles } from 'lucide-react';
 import './WellnessOverview.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
@@ -19,17 +19,21 @@ interface MetricSummary {
 // *theme* sit side by side, and metrics no other source has at all are
 // called out as what's actually unique to that source.
 const THEME_GROUPS: { key: string; labelKey: string; icon: any; metrics: string[] }[] = [
+  { key: 'skinBeauty', labelKey: 'wellnessOverview.themeSkinBeauty', icon: Sparkles, metrics: ['skin_beauty_score', 'skin_hydration_score', 'skin_radiance_score', 'skin_vitality_score'] },
   { key: 'sleep', labelKey: 'wellnessOverview.themeSleep', icon: Moon, metrics: ['sleep_score', 'fitbit_sleep_efficiency'] },
   { key: 'cardio', labelKey: 'wellnessOverview.themeCardio', icon: Heart, metrics: ['hrv', 'fitbit_resting_hr'] },
   { key: 'activity', labelKey: 'wellnessOverview.themeActivity', icon: Flame, metrics: ['strain', 'fitbit_steps'] },
 ];
 
 const UNIQUE_HIGHLIGHTS: { metricType: string; sourceKey: string; icon: any }[] = [
+  { metricType: 'skin_beauty_score', sourceKey: 'wellnessOverview.sourceFaceScan', icon: Sparkles },
   { metricType: 'recovery_score', sourceKey: 'wearables.whoopName', icon: Watch },
   { metricType: 'antioxidant_score', sourceKey: 'clientDashboard.sourceHandScan', icon: Hand },
 ];
 
 const METRIC_UNIT: Record<string, string> = {
+  skin_beauty_score: '%', skin_hydration_score: '%',
+  skin_radiance_score: '%', skin_vitality_score: '%',
   sleep_score: '%', fitbit_sleep_efficiency: '%',
   hrv: ' ms', fitbit_resting_hr: ' bpm',
   strain: '', fitbit_steps: '',

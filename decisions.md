@@ -400,3 +400,25 @@ The spec draws these screens with a free-tier paywall ("blurred until unlocked",
 Feature 7 asks to keep the calendar/streak strip and replace any photo / before-after mechanic with metric trend charts (weight, sleep, recovery/HRV, energy, adherence). HYG.3 already has exactly this: `HealthTrendChart` (`id="health-trends"`) plots those metrics, `WellnessOverview` groups them by theme, `CheckInCard` shows a check-in sparkline/streak. There is **no photo or before-after mechanic anywhere** — the hand scan is diagnostic input, never a progress photo (the face-zone-photo pattern was on the explicit-exclusion list). So this item needs no build; it's marked done by verification, not change.
 
 **Evidence:** `decisions.md` (these entries), `MVP-LAUNCH-CHECKLIST.md` §19–§23, progress page (artifact).
+
+## Face-scan / Skin Beauty analysis (2026-09-10 — started in Antigravity/Gemini, completed here)
+
+**What & why:** a facial skin-wellness scan — the reference face-care app's core mechanic, which the consumer-UX gauntlet had deliberately set aside. The user built a first pass in a separate tool (Antigravity, Gemini model), it hit model limits mid-way, and it was finished in this session. It is a **skin & beauty** analysis — hydration / radiance / texture / elasticity scores, eye-contour vitality, beauty-nutrition and AM/PM skincare rituals — **not** the excluded "face-zone-photo pattern applied to internal body systems": no facial region is used to stand in for an organ or internal system. This is a deliberate, user-initiated scope addition; the four hard gates still apply.
+
+**Shape — deliberately a twin of the hand-scan gate, not a new mechanism:**
+- `POST /v1/analysis/face-scan` (`server/routes/facescan.ts`) → Claude vision (`analyzeFaceImage` in `claudeService.ts`) with an honest simulated fallback, same pattern as hand-scan.
+- **Immediate to the patient:** the four skin scores, direct facial observations, the eye-contour note, and a general AM/PM skincare routine (non-clinical lifestyle nudges).
+- **Withheld pending pharmacist review (hard gate b):** inferred nutrient deficiencies + recommended foods/fruits/supplements → `AiOutput` type `face_scan_skin_concept` + `CustomVitaminConcept` (`pending_pharmacist_review`), reusing the exact Accept/Modify/Reject pipeline.
+- `GET /v1/analysis/face-scan/latest` returns scores/observations/rituals always; `deficiencies` + `recommended*` only once `concept.status === 'approved'` (surfaced as a `pharmacistReviewed` flag). Approval flows through the **generic** concept-status update in `insights.ts` — no face-specific branch needed there.
+- Four real `BiometricReading` rows per scan (`skin_beauty_score` / `skin_hydration_score` / `skin_radiance_score` / `skin_vitality_score`, source `face_scanner`), so the existing `HealthTrendChart` + `WellnessOverview` pick them up with no new endpoint. Thresholds added to `healthThresholds.ts`.
+- `POST /v1/telemedicine/request-review` accepts `source: 'face_scan'` and flags the pending skin concept **by row id** (its `content` doesn't embed a separate scan id, unlike hand-scan's `handScanId`), same "flag, don't duplicate" behaviour.
+
+**UI:** `/client/face-scan` (`FaceScanner.tsx` — guide → camera/upload → analyzing → results), `SkinBeautyCard` on the dashboard (teaser when no scan; summary gauge + 3 bars after). Nav link + a dashboard "Scan Face" button. All 4 locales at full key parity (431 each).
+
+**Zero schema change** (same DB-ownership wall): the new metricTypes are just string values; the concept rides the existing `AiOutput` / `CustomVitaminConcept` tables.
+
+**Tests:** 2 new smoke tests — the gate holds until approval then reveals; `request-review (face_scan)` flags rather than duplicates. 33/33 passing. `tsc` + both builds clean.
+
+**PRD:** §6A updated — face scan added as capability 7; the §6A.4 exclusion reworded to "…applied to internal body systems" (its original intent) so a genuine skin analysis isn't misread as excluded.
+
+**Shipped in:** v1.3.0.

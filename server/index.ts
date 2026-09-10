@@ -10,6 +10,7 @@ import statsRoutes from './routes/stats';
 import productsRoutes from './routes/products';
 import onboardingRoutes from './routes/onboarding';
 import handscanRoutes from './routes/handscan';
+import facescanRoutes from './routes/facescan';
 import recommendationsRoutes from './routes/recommendations';
 import contactRoutes from './routes/contact';
 import wearablesRoutes from './routes/wearables';
@@ -57,6 +58,7 @@ app.use('/v1/products', requireAuth, productsRoutes);
 // Consumer / Phase 1 routes
 app.use('/v1/onboard', onboardingRoutes);
 app.use('/v1/analysis', handscanRoutes);
+app.use('/v1/analysis', facescanRoutes);
 app.use('/v1/recommendations', recommendationsRoutes);
 app.use('/v1/contact', contactRoutes);
 app.use('/v1/wearables', wearablesRoutes);

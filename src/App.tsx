@@ -36,6 +36,7 @@ const PatientDetail = lazy(() => import('./pages/App/PatientDetail'));
 const ClientDashboard = lazy(() => import('./pages/Client/ClientDashboard'));
 const Onboarding = lazy(() => import('./pages/Client/Onboarding'));
 const HandScanner = lazy(() => import('./pages/Client/HandScanner'));
+const FaceScanner = lazy(() => import('./pages/Client/FaceScanner'));
 const WearableCallback = lazy(() => import('./pages/Client/WearableCallback'));
 const CheckIn = lazy(() => import('./pages/Client/CheckIn'));
 const CareActions = lazy(() => import('./pages/Client/CareActions'));
@@ -103,6 +104,7 @@ function App() {
             <Route path="onboard" element={<Onboarding />} />
             <Route path="dashboard" element={<ClientDashboard />} />
             <Route path="scan" element={<HandScanner />} />
+            <Route path="face-scan" element={<FaceScanner />} />
             <Route path="wearables/callback" element={<WearableCallback />} />
             <Route path="checkin" element={<CheckIn />} />
             <Route path="care" element={<CareActions />} />

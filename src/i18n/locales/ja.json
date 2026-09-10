@@ -177,7 +177,8 @@
     "aiSuggestedReviewed": "AI提案 · 薬剤師確認済み",
     "supplementGateNote": "これらの提案は、薬剤師がこのレポートを確認した後にのみ表示されています。処方ではありません — 何かを始める・やめる・変更する前に薬剤師に相談してください。",
     "catalogMatchCaption": "名前でカタログに照合した便宜的なリンクです。臨床的な推奨や適合スコアではありません。",
-    "talkBeforeStarting": "始める前に薬剤師に相談"
+    "talkBeforeStarting": "始める前に薬剤師に相談",
+    "scanFace": "顔スキャン"
   },
   "checkIn": {
     "title": "週間チェックイン",
@@ -251,7 +252,8 @@
     "checkIn": "チェックイン",
     "signOut": "サインアウト",
     "care": "ケア",
-    "sources": "データソース"
+    "sources": "データソース",
+    "scanFace": "顔スキャン"
   },
   "common": {
     "loading": "読み込み中…",
@@ -273,7 +275,11 @@
       "hrv": "HRV",
       "fitbit_sleep_efficiency": "Fitbit 睡眠効率",
       "fitbit_resting_hr": "Fitbit 安静時心拍数",
-      "fitbit_steps": "Fitbit 歩数"
+      "fitbit_steps": "Fitbit 歩数",
+      "skin_beauty_score": "肌の美しさ指数",
+      "skin_hydration_score": "うるおいバリア",
+      "skin_radiance_score": "ツヤと輝き",
+      "skin_vitality_score": "ハリと弾力"
     },
     "trend": {
       "up": "改善傾向",
@@ -300,7 +306,9 @@
     "themeCardio": "心拍と回復シグナル",
     "themeActivity": "活動量とストレイン",
     "onlyFrom": "{{source}}のみ",
-    "connectMore": "{{source}}を接続すると、この比較をさらに見られます"
+    "connectMore": "{{source}}を接続すると、この比較をさらに見られます",
+    "themeSkinBeauty": "肌と美容の活力",
+    "sourceFaceScan": "顔スキャン"
   },
   "disclaimerModal": {
     "step1Title": "このレポートが何であり、何でないか",
@@ -419,5 +427,71 @@
     "nothingThisSlot": "この時間帯に予定はありません。",
     "supplementReviewNote": "これらのサプリメントのステップは、レポートの一部として薬剤師が確認しました。開始・中止・変更する前に薬剤師に相談してください。",
     "talkToPharmacist": "薬剤師に相談する"
+  },
+  "faceScanner": {
+    "back": "ダッシュボードに戻る",
+    "guideTitle": "顔の肌・美容ウェルネススキャン",
+    "guideSubtitle": "AIが肌のうるおい、ツヤ、キメの明瞭さ、目もとの活力を評価し、あなた専用の美容ウェルネスプランを作成します。",
+    "tipLightTitle": "やわらかな自然光",
+    "tipLightBody": "窓際や日中のやわらかな光の方を向いてください。強い影や逆光は避けます。",
+    "tipExpressionTitle": "自然な表情",
+    "tipExpressionBody": "正確な色調とキメの分析のため、リラックスした自然な表情でまっすぐ前を見てください。",
+    "tipClearTitle": "顔をはっきり写す",
+    "tipClearBody": "髪を耳にかけ、可能ならメガネや濃いメイクを外すと、より深く分析できます。",
+    "openCamera": "カメラを開く",
+    "uploadPhoto": "写真をアップロード",
+    "cameraDenied": "カメラへのアクセスが拒否されたか利用できません。下から写真をアップロードすることもできます。",
+    "cameraHint": "顔を楕円の中に合わせてください · 自然光で",
+    "analyzingTitle": "顔の肌・美容指標を分析中",
+    "analyzingSubtitle": "肌バリア、うるおい、ツヤ、目もとの活力を調べています…",
+    "step1": "肌バリアとうるおいレベルを評価中",
+    "step2": "ツヤと明るさのバランスを測定中",
+    "step3": "目もとの活力と疲れのサインを評価中",
+    "step4": "美容栄養とスキンケア習慣をまとめています",
+    "analysisFailed": "顔の分析に失敗しました。",
+    "analysisFailedRetry": "分析に失敗しました。もう一度お試しください。",
+    "viewDashboard": "ダッシュボードに戻る",
+    "scanAgain": "もう一度スキャン",
+    "demoModeBanner": "デモモードで動作中 — ライブ画像推論には Anthropic API キーを設定してください",
+    "beautyIndex": "肌の美しさ・ウェルネス指数",
+    "statusRadiant": "輝きとバランス",
+    "statusHealthy": "健やかなツヤ · うるおいの余地あり",
+    "statusNourish": "栄養とバリアケアが必要",
+    "skinTypeLabel": "検出された傾向",
+    "metricHydration": "うるおいバリア",
+    "hydrationHint": "細胞レベルの水分保持",
+    "metricRadiance": "ツヤと輝き",
+    "radianceHint": "色調の明瞭さと光の反射",
+    "metricTexture": "キメと透明感",
+    "textureHint": "毛穴の引き締まりと表面のなめらかさ",
+    "metricVitality": "ハリと弾力",
+    "vitalityHint": "コラーゲンによるハリと回復力",
+    "eyeContourTitle": "目もとと疲れの活力",
+    "darkCircles": "くま",
+    "puffiness": "むくみ",
+    "whatWeObserved": "顔の観察結果",
+    "ritualsTitle": "あなた専用の毎日の美容習慣",
+    "amRitual": "朝：ツヤ出しと保護",
+    "pmRitual": "夜：バリア修復",
+    "reviewGatedTitle": "パーソナライズされた美容サプリと確認",
+    "reviewGatedBody": "マリンコラーゲン、ヒアルロン酸、ビタミンC複合体などの肌栄養コンセプトは、臨床レビューキューに送られます。薬剤師の確認後、あなた専用のサプリメントプランに表示されます。",
+    "reviewRequestSent": "臨床チームが優先的に確認します。",
+    "requestingReview": "リクエストを送信中…",
+    "requestReviewCta": "薬剤師への相談をリクエスト",
+    "requestReviewFailed": "リクエストを送信できませんでした。もう一度お試しください。"
+  },
+  "skinBeauty": {
+    "title": "肌の美しさとツヤ",
+    "lastAnalyzed": "前回のスキャン",
+    "newScan": "新しい顔スキャン",
+    "beautyIndex": "美しさ指数",
+    "hydration": "うるおいバリア",
+    "radiance": "ツヤと輝き",
+    "vitality": "ハリと弾力",
+    "dailyFocus": "毎日の習慣のポイント",
+    "viewFullDetails": "詳細",
+    "teaserTitle": "肌の美しさと顔の活力スキャン",
+    "teaserDesc": "AI顔スキャンで、肌のうるおいバリア、ツヤスコア、あなた専用の美容栄養がわかります。",
+    "startFaceScan": "顔スキャン"
   }
 }

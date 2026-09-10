@@ -177,7 +177,8 @@
     "aiSuggestedReviewed": "AI 建议 · 药剂师已审核",
     "supplementGateNote": "这些建议是在药剂师审核本报告之后才呈现给您的。它们不是处方 — 在开始、停止或更改任何内容之前请咨询药剂师。",
     "catalogMatchCaption": "按名称匹配到您的目录 — 这是便捷链接,并非临床认可或匹配评分。",
-    "talkBeforeStarting": "开始前请咨询药剂师"
+    "talkBeforeStarting": "开始前请咨询药剂师",
+    "scanFace": "面部扫描"
   },
   "checkIn": {
     "title": "每周签到",
@@ -251,7 +252,8 @@
     "checkIn": "签到",
     "signOut": "退出登录",
     "care": "关怀",
-    "sources": "数据源"
+    "sources": "数据源",
+    "scanFace": "面部扫描"
   },
   "common": {
     "loading": "加载中…",
@@ -273,7 +275,11 @@
       "hrv": "HRV",
       "fitbit_sleep_efficiency": "Fitbit 睡眠效率",
       "fitbit_resting_hr": "Fitbit 静息心率",
-      "fitbit_steps": "Fitbit 步数"
+      "fitbit_steps": "Fitbit 步数",
+      "skin_beauty_score": "肌肤美丽指数",
+      "skin_hydration_score": "水润屏障",
+      "skin_radiance_score": "光泽与亮采",
+      "skin_vitality_score": "弹性与活力"
     },
     "trend": {
       "up": "正在改善",
@@ -300,7 +306,9 @@
     "themeCardio": "心率与恢复信号",
     "themeActivity": "活动与压力值",
     "onlyFrom": "仅来自 {{source}}",
-    "connectMore": "连接 {{source}} 以查看更多对比"
+    "connectMore": "连接 {{source}} 以查看更多对比",
+    "themeSkinBeauty": "肌肤与美丽活力",
+    "sourceFaceScan": "面部扫描"
   },
   "disclaimerModal": {
     "step1Title": "这份报告是什么,不是什么",
@@ -419,5 +427,71 @@
     "nothingThisSlot": "这一时段没有安排。",
     "supplementReviewNote": "这些补充剂步骤已作为报告的一部分由药剂师审核。在开始、停止或更改任何一项之前请咨询药剂师。",
     "talkToPharmacist": "咨询药剂师"
+  },
+  "faceScanner": {
+    "back": "返回仪表板",
+    "guideTitle": "面部肌肤与美丽健康扫描",
+    "guideSubtitle": "我们的 AI 评估肌肤水润度、光泽、纹理清晰度和眼周活力，为你定制专属的美丽健康方案。",
+    "tipLightTitle": "柔和自然光",
+    "tipLightBody": "面向窗户或柔和的日光。避免强烈阴影或强逆光。",
+    "tipExpressionTitle": "自然表情",
+    "tipExpressionBody": "放松面部、保持自然表情并直视前方，以便准确分析肤色和纹理。",
+    "tipClearTitle": "清晰的面部取景",
+    "tipClearBody": "将头发别到耳后，如方便请摘下眼镜或卸除浓妆，以获得最深入的分析。",
+    "openCamera": "打开相机",
+    "uploadPhoto": "上传照片",
+    "cameraDenied": "相机访问被拒绝或不可用。你也可以在下方上传照片。",
+    "cameraHint": "将面部置于椭圆框内 · 自然光",
+    "analyzingTitle": "正在分析面部肌肤与美丽指标",
+    "analyzingSubtitle": "正在检查肌肤屏障、水润度、光泽和眼周活力……",
+    "step1": "评估肌肤屏障与水润度",
+    "step2": "测量光泽与亮度平衡",
+    "step3": "评估眼周活力与疲劳迹象",
+    "step4": "整合美丽营养与护肤仪式",
+    "analysisFailed": "面部分析失败。",
+    "analysisFailedRetry": "分析失败，请重试。",
+    "viewDashboard": "返回仪表板",
+    "scanAgain": "重新扫描",
+    "demoModeBanner": "正在演示模式下运行 — 设置 Anthropic API 密钥以启用实时视觉推理",
+    "beautyIndex": "肌肤美丽与健康指数",
+    "statusRadiant": "亮采且均衡",
+    "statusHealthy": "健康光泽 · 水润提升空间",
+    "statusNourish": "建议加强营养与屏障护理",
+    "skinTypeLabel": "检测到的倾向",
+    "metricHydration": "水润屏障",
+    "hydrationHint": "细胞级水分保持",
+    "metricRadiance": "光泽与亮采",
+    "radianceHint": "肤色清晰度与光线反射",
+    "metricTexture": "纹理与透亮",
+    "textureHint": "毛孔细致与表面平滑",
+    "metricVitality": "弹性与活力",
+    "vitalityHint": "胶原紧致与恢复力",
+    "eyeContourTitle": "眼周与疲劳活力",
+    "darkCircles": "黑眼圈",
+    "puffiness": "浮肿",
+    "whatWeObserved": "面部观察",
+    "ritualsTitle": "定制每日美丽仪式",
+    "amRitual": "晨间焕采与防护",
+    "pmRitual": "夜间屏障修护",
+    "reviewGatedTitle": "个性化美丽补充剂与审核",
+    "reviewGatedBody": "皮肤营养方案（如海洋胶原蛋白、透明质酸和维生素 C 复合物）会进入临床审核队列。经持牌药剂师审核后，将显示在你的定制补充剂计划中。",
+    "reviewRequestSent": "临床团队已优先处理。",
+    "requestingReview": "正在发送请求……",
+    "requestReviewCta": "申请药剂师咨询",
+    "requestReviewFailed": "无法发送请求，请重试。"
+  },
+  "skinBeauty": {
+    "title": "肌肤美丽与光泽",
+    "lastAnalyzed": "上次扫描",
+    "newScan": "新面部扫描",
+    "beautyIndex": "美丽指数",
+    "hydration": "水润屏障",
+    "radiance": "光泽与亮采",
+    "vitality": "弹性与活力",
+    "dailyFocus": "每日仪式重点",
+    "viewFullDetails": "详情",
+    "teaserTitle": "肌肤美丽与面部活力扫描",
+    "teaserDesc": "通过 AI 面部扫描，了解你的肌肤水润屏障、光泽评分和定制美丽营养。",
+    "startFaceScan": "面部扫描"
   }
 }

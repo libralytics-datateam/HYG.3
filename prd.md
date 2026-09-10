@@ -91,13 +91,14 @@ For every proposed feature, this PRD answers, in order: what problem → what da
 4. **First-view disclaimer.** A two-step modal shown once per report category before the first Tier B+ report — what this is / isn't, do not start-stop-change treatment without a professional, then "share with a pharmacist" routing to Care Actions. Dismissal logged per user per category as an auditable event; re-surfaces on a material report-version change.
 5. **Care Actions.** A persistent screen reachable from any Tier B+ surface: "Talk to a Pharmacist" (async in-app consult) and "Book a Telemedicine Consult" (external licensed-provider hand-off). Every request writes an audit record through the same review pipeline: recommendation → reviewer → decision → outcome.
 6. **Self-report check-in.** A one-question wellness check-in plus an optional adherence question (shown only when a plan exists), feeding the trend history.
+7. **Face-scan skin & beauty analysis.** A photo-based facial scan (`claudeService.ts`, same Claude-vision + simulated-fallback pattern as the hand scan) returns skin hydration / radiance / texture / elasticity scores, direct facial observations, an eye-contour note, and a general AM/PM skincare routine — all shown immediately. Inferred nutrient deficiencies and recommended foods/supplements are **withheld** until a pharmacist Accepts, through the same `face_scan_skin_concept` → `CustomVitaminConcept` review pipeline (hard gate b). Four `skin_*` metrics feed the trend charts. This is a skin/beauty analysis, distinct from the excluded face-zone-photo-to-internal-systems pattern (§6A.4). See `decisions.md`, "Face-scan / Skin Beauty analysis".
 
 ### 6A.2 The four hard gates (enforced in shipped code, not just stated)
 
 | Gate | How it is enforced |
 |---|---|
 | **(a)** No diagnosis or "medical grade" language anywhere in UI copy | last user-facing "medical-grade" string removed 2026-09-10; hand-scan output is framed as "wellness", never diagnostic |
-| **(b)** Every supplement-specific / deficiency-adjacent recommendation is Tier B/C and passes a pharmacist-review touchpoint before checkout or action — never a direct add-to-cart | `NutritionRecommendation` is created only *after* a pharmacist Accepts; `productMatch.ts` invents no "% match"; the report carries an "AI-suggested · pharmacist-reviewed" tag and a persistent "talk to a pharmacist" link on every supplement step |
+| **(b)** Every supplement-specific / deficiency-adjacent recommendation is Tier B/C and passes a pharmacist-review touchpoint before checkout or action — never a direct add-to-cart | `NutritionRecommendation` is created only *after* a pharmacist Accepts; the face-scan `/latest` endpoint withholds its deficiency + supplement fields until `concept.status === 'approved'`; `productMatch.ts` invents no "% match"; the report carries an "AI-suggested · pharmacist-reviewed" tag and a persistent "talk to a pharmacist" link on every supplement step |
 | **(c)** Every AI-generated insight labelled FACT / INFERENCE / RECOMMENDATION / UNCERTAIN, with an explainability affordance | `InsightLabel` component — colour-coded tag + a "why this label?" explainer — on every section of the patient report; this extends the §6.4 reviewer-side labelling discipline to the patient's own view (reviewer side uses "UNCERTAINTY", patient side "UNCERTAIN" — same category) |
 | **(d)** Consent is per data source, at connection time, and revocable independently | a `data_source_consent` audit row per provider; connecting one source never implies consent for another; disconnecting withdraws consent for that source only |
 
@@ -109,7 +110,9 @@ For every proposed feature, this PRD answers, in order: what problem → what da
 
 ### 6A.4 Excluded, and staying excluded
 
-No video-lesson / course library, no points/coins gamification, no face-zone-photo interaction pattern applied to internal body systems, no free-form clinical chatbot, no diagnosis, no deficiency/disease prediction served as an output (the WHOOP-based prediction model stays code-gated — §13), no genomics.
+No video-lesson / course library, no points/coins gamification, no free-form clinical chatbot, no diagnosis, no deficiency/disease prediction served as an output (the WHOOP-based prediction model stays code-gated — §13), no genomics.
+
+**Reworded 2026-09-10:** the earlier "no face-zone-photo interaction pattern" exclusion meant *no repurposing the reference app's tap-a-facial-zone UI to represent internal organs / body systems* — that stays excluded. It did **not** rule out a genuine skin-surface analysis: the face-scan skin & beauty capability (§6A.1 item 7) analyses visible skin only, carries the same hard gates, and is a deliberate user-initiated addition.
 
 ---
 

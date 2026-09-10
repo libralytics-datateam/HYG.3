@@ -30,8 +30,8 @@ router.post('/request-review', async (req, res) => {
       res.status(400).json({ error: 'patientId is required' });
       return;
     }
-    if (source !== 'hand_scan' && source !== 'wearable_trend' && source !== 'care_actions') {
-      res.status(400).json({ error: "source must be 'hand_scan', 'wearable_trend', or 'care_actions'" });
+    if (source !== 'hand_scan' && source !== 'face_scan' && source !== 'wearable_trend' && source !== 'care_actions') {
+      res.status(400).json({ error: "source must be 'hand_scan', 'face_scan', 'wearable_trend', or 'care_actions'" });
       return;
     }
 
@@ -70,6 +70,32 @@ router.post('/request-review', async (req, res) => {
       // No matching pending output (already reviewed, or this scan produced
       // none) — fall through and raise a standalone request instead so the
       // patient's ask is never silently dropped.
+    }
+
+    // face_scan: the scanId the client holds IS the AiOutput id (see
+    // routes/facescan.ts), and the skin concept's content doesn't embed a
+    // separate scan id, so match on the row id directly rather than a
+    // `contains` string search. Same "flag, don't duplicate" behaviour.
+    if (source === 'face_scan' && scanId) {
+      const match = await prisma.aiOutput.findFirst({
+        where: {
+          id: scanId,
+          orgId: patient.orgId,
+          type: 'face_scan_skin_concept',
+          reviewStatus: 'pending',
+        },
+        include: { customVitaminConcepts: true },
+      });
+      if (match && match.customVitaminConcepts.some((cvc) => cvc.patientId === patientId)) {
+        const parsed = JSON.parse(match.content);
+        if (!parsed.patientRequestedAt) {
+          parsed.patientRequestedAt = new Date().toISOString();
+          await prisma.aiOutput.update({ where: { id: match.id }, data: { content: JSON.stringify(parsed) } });
+        }
+        res.json({ success: true, data: { flagged: true, aiOutputId: match.id } });
+        return;
+      }
+      // fall through to a standalone request
     }
 
     const headline = reason?.trim() || 'Patient requested a pharmacist review.';

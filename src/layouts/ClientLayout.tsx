@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Activity, Camera, LayoutDashboard, LogOut, Calendar, Stethoscope, Plug } from 'lucide-react';
+import { Activity, Camera, LayoutDashboard, LogOut, Calendar, Stethoscope, Plug, Sparkles } from 'lucide-react';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import './ClientLayout.css';
 
@@ -12,7 +12,7 @@ export default function ClientLayout() {
   const patientName = localStorage.getItem('hyg3_patient_name');
 
   // Hide nav on onboarding and scanner pages (full-screen)
-  const hideNav = location.pathname.includes('/onboard') || location.pathname.includes('/scan');
+  const hideNav = location.pathname.includes('/onboard') || location.pathname.includes('/scan') || location.pathname.includes('/face-scan');
 
   return (
     <div className="client-layout">
@@ -28,6 +28,10 @@ export default function ClientLayout() {
             <Link to="/client/dashboard" className={isActive('/client/dashboard')}>
               <LayoutDashboard size={18} />
               {t('clientLayout.myReport')}
+            </Link>
+            <Link to="/client/face-scan" className={isActive('/client/face-scan')}>
+              <Sparkles size={18} />
+              {t('clientLayout.scanFace', 'Face Scan')}
             </Link>
             <Link to="/client/scan" className={isActive('/client/scan')}>
               <Camera size={18} />
