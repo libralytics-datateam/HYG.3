@@ -172,7 +172,8 @@
     "availableAt": "Available: {{name}}",
     "notInCatalog": "Not in your pharmacy's catalog yet",
     "disclaimerGateTitle": "One thing to read first",
-    "disclaimerGateBody": "Before your supplement suggestions are shown, there's a short note about what this report is — and isn't."
+    "disclaimerGateBody": "Before your supplement suggestions are shown, there's a short note about what this report is — and isn't.",
+    "reportSummary": "This report covers {{signals}} things we could see and {{gaps}} nutrients that may be worth attention. Every section below is tagged with how sure we are — tap the \"?\" on any tag to see why."
   },
   "checkIn": {
     "title": "Weekly Check-in",
@@ -360,6 +361,30 @@
       "cloud": "Cloud sync",
       "direct": "Direct",
       "manual-import": "Manual import"
+    }
+  },
+  "insightLabel": {
+    "whyButton": "Why this label?",
+    "dataFrom": "Based on: {{source}}",
+    "fact": {
+      "tag": "Fact",
+      "title": "Fact — directly observed",
+      "body": "Something measured or seen in your data, not interpreted. Reported as-is."
+    },
+    "inference": {
+      "tag": "Inference",
+      "title": "Inference — our best reading",
+      "body": "A pattern we drew from the facts above. It is a likelihood, not a confirmed finding, and it can be wrong."
+    },
+    "recommendation": {
+      "tag": "Recommendation",
+      "title": "Recommendation — a suggestion to discuss",
+      "body": "A suggested next step based on the inference. It is not a prescription. A pharmacist reviews supplement suggestions before you act on them."
+    },
+    "uncertain": {
+      "tag": "Uncertain",
+      "title": "Uncertain — treat with caution",
+      "body": "Where the data is thin or mixed. Confirm anything here with a professional before changing what you do."
     }
   }
 }

@@ -8,6 +8,7 @@ import HealthTrendChart from '../../components/HealthTrendChart';
 import TelemedicineAlerts from '../../components/TelemedicineAlerts';
 import WellnessOverview from '../../components/WellnessOverview';
 import DisclaimerModal from '../../components/DisclaimerModal';
+import InsightLabel from '../../components/InsightLabel';
 import { timeAgo } from '../../lib/timeAgo';
 import './ClientDashboard.css';
 
@@ -160,6 +161,17 @@ export default function ClientDashboard() {
             </span>
           </div>
 
+          {/* Plain-language summary — assembled from the report's own counts,
+              nothing invented — so the patient gets the gist before the
+              labelled detail below (spec §2). */}
+          <p className="report-summary">
+            {t('clientDashboard.reportSummary', {
+              signals: rec.signals?.length || 0,
+              gaps: rec.deficiencies?.length || 0,
+              count: rec.deficiencies?.length || 0,
+            })}
+          </p>
+
           {/* What We Observed (Fact) — the API already returns this
               (recommendations.ts's detectedSignals -> signals), it just
               never had anywhere to render before now. Shown first, ahead of
@@ -171,6 +183,7 @@ export default function ClientDashboard() {
               <h2 className="report-card-title">
                 <Search size={18} className="text-teal" />
                 {t('clientDashboard.whatWeObserved')}
+                <InsightLabel kind="fact" source={sourceLabel(rec.source).text} />
               </h2>
               <div className="signals-list">
                 {rec.signals.map((s: any, i: number) => (
@@ -189,6 +202,7 @@ export default function ClientDashboard() {
               <h2 className="report-card-title">
                 <Activity size={18} className="text-gold" />
                 {t('clientDashboard.detectedGaps')}
+                <InsightLabel kind="inference" source={sourceLabel(rec.source).text} />
               </h2>
               <div className="deficiency-list">
                 {rec.deficiencies.map((d: any, i: number) => (
@@ -266,6 +280,7 @@ export default function ClientDashboard() {
               <h2 className="report-card-title">
                 <Pill size={18} className="text-teal" />
                 {t('clientDashboard.supplementProtocol')}
+                <InsightLabel kind="recommendation" />
               </h2>
               <div className="vitamin-list">
                 {rec.vitamins.map((v: any, i: number) => (
@@ -321,9 +336,14 @@ export default function ClientDashboard() {
             </section>
           )}
 
-          {/* Disclaimer */}
-          <div className="disclaimer flex items-center gap-2">
-            <Stethoscope size={16} style={{ flexShrink: 0 }} /> {rec.disclaimer}
+          {/* Disclaimer — carries the UNCERTAIN label so the caveat is on the
+              same four-way scale as everything above it, not a footnote. */}
+          <div className="disclaimer">
+            <div className="disclaimer-head flex items-center gap-2">
+              <Stethoscope size={16} style={{ flexShrink: 0 }} />
+              <InsightLabel kind="uncertain" />
+            </div>
+            <p className="disclaimer-text">{rec.disclaimer}</p>
           </div>
 
           {/* Scan again CTA */}

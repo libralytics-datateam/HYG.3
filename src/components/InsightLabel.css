@@ -1,0 +1,90 @@
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+.insight-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+}
+
+.insight-label-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.insight-label-fact .insight-label-tag {
+  color: var(--teal);
+  background: var(--teal-glow);
+  border-color: color-mix(in srgb, var(--teal) 30%, transparent);
+}
+.insight-label-inference .insight-label-tag {
+  color: #b45309;
+  background: #fbf1e3;
+  border-color: #e8c99a;
+}
+.insight-label-recommendation .insight-label-tag {
+  color: var(--gold);
+  background: rgba(4, 120, 87, 0.1);
+  border-color: color-mix(in srgb, var(--gold) 35%, transparent);
+}
+.insight-label-uncertain .insight-label-tag {
+  color: var(--muted);
+  background: var(--surface-hover);
+  border-color: var(--border);
+}
+
+.insight-label-why {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: var(--radius-full);
+}
+.insight-label-why:hover { color: var(--teal); background: var(--surface-hover); }
+.insight-label-why:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+
+.insight-label-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: min(280px, 78vw);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+.insight-label-panel strong { font-size: 12px; font-weight: 700; }
+.insight-label-source { color: var(--muted); font-size: 11.5px; }

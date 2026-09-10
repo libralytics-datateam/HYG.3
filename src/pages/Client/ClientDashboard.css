@@ -274,6 +274,19 @@
   line-height: 1.5;
 }
 
+/* Plain-language summary — sits above the labelled report cards */
+.report-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  padding: 4px 2px 8px;
+}
+
+/* report-card-title holds an InsightLabel after the heading text — let it
+   wrap on narrow screens instead of overflowing the card. */
+.report-card-title { flex-wrap: wrap; }
+
 /* Disclaimer */
 .disclaimer {
   background: rgba(100,100,100,0.08);
@@ -284,6 +297,8 @@
   font-size: 12px;
   line-height: 1.6;
 }
+.disclaimer-head { margin-bottom: 8px; }
+.disclaimer-text { margin: 0; }
 
 .scan-again { display: flex; justify-content: center; }
 
