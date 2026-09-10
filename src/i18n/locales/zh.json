@@ -390,5 +390,34 @@
       "title": "不确定 — 请谨慎对待",
       "body": "数据不足或存在分歧之处。在改变您的做法之前,请向专业人员确认。"
     }
+  },
+  "todayCard": {
+    "title": "今日计划",
+    "breakfast": "早餐",
+    "lunch": "午餐",
+    "dinner": "晚餐",
+    "snack": "加餐",
+    "supplements": "{{count}} 项补充剂",
+    "supplements_plural": "{{count}} 项补充剂",
+    "seeFullPlan": "查看完整计划"
+  },
+  "todaysPlan": {
+    "back": "返回仪表板",
+    "title": "今日计划",
+    "subtitle": "根据您最新的报告,按顺序编排的一天安排。此处内容均非处方。",
+    "noPlan": "暂无计划。完成一次手部扫描,待药剂师审核后,您的每日计划会显示在这里。",
+    "startScan": "开始手部扫描",
+    "morning": "早晨",
+    "evening": "傍晚",
+    "step": "第 {{n}} 步",
+    "breakfast": "早餐",
+    "lunch": "午餐",
+    "dinner": "晚餐",
+    "snack": "加餐",
+    "asDirected": "按标签说明",
+    "timingNote": "具体服用时间以及是否随餐服用,请遵循标签和药剂师的建议。",
+    "nothingThisSlot": "这一时段没有安排。",
+    "supplementReviewNote": "这些补充剂步骤已作为报告的一部分由药剂师审核。在开始、停止或更改任何一项之前请咨询药剂师。",
+    "talkToPharmacist": "咨询药剂师"
   }
 }

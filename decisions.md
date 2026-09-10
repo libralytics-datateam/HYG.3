@@ -388,4 +388,15 @@ What increment 4 adds on the supplement-protocol card in `ClientDashboard`: an *
 
 **Products browse tab deferred**, same reasoning as the Insights hub: `Product` has 0 rows in production and there is no patient-facing catalog endpoint, so a browse tab would be an empty page. The gate-(b) behaviour ships now on the surface where supplement commerce actually reaches the patient; the goal-chip browse tab follows a real catalog.
 
-**Evidence:** `decisions.md` (these entries), `MVP-LAUNCH-CHECKLIST.md` §19–§22, progress page (artifact).
+### Decision: Home "Today" card + "Today's Plan" detail without a paywall (for features 1–2, increment 5)
+
+The spec draws these screens with a free-tier paywall ("blurred until unlocked", "Unlock My Full Plan"). HYG.3 has no subscription tiers and introducing one is a product/monetisation decision, not a UX-porting one — the user chose (AskUserQuestion, 2026-09-10) to build them **without** the paywall: the full plan is visible.
+
+- `TodayPlanCard` on the dashboard: a compact preview (Morning: breakfast · N supplements · lunch / Evening: dinner · snack) linking to the detail. Renders nothing when there's no plan.
+- `TodaysPlan` at `/client/plan`: Morning / Evening tabs, a numbered step sequence. Every step is real data — meal-plan slots and the pharmacist-reviewed supplement list with their actual dosage strings. **No AM/PM split is invented per supplement**: they sit under Morning with an explicit "follow the label / your pharmacist for timing" caption. The supplement block carries the RECOMMENDATION `InsightLabel` and a Care Actions link, same gate-(b) framing as the report.
+
+### Decision: Progress → "Trends" (feature 7) — already satisfied, no code
+
+Feature 7 asks to keep the calendar/streak strip and replace any photo / before-after mechanic with metric trend charts (weight, sleep, recovery/HRV, energy, adherence). HYG.3 already has exactly this: `HealthTrendChart` (`id="health-trends"`) plots those metrics, `WellnessOverview` groups them by theme, `CheckInCard` shows a check-in sparkline/streak. There is **no photo or before-after mechanic anywhere** — the hand scan is diagnostic input, never a progress photo (the face-zone-photo pattern was on the explicit-exclusion list). So this item needs no build; it's marked done by verification, not change.
+
+**Evidence:** `decisions.md` (these entries), `MVP-LAUNCH-CHECKLIST.md` §19–§23, progress page (artifact).

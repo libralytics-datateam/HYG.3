@@ -390,5 +390,34 @@
       "title": "不確実 — 慎重に扱ってください",
       "body": "データが乏しい、または混在している箇所です。行動を変える前に専門家に確認してください。"
     }
+  },
+  "todayCard": {
+    "title": "今日のプラン",
+    "breakfast": "朝食",
+    "lunch": "昼食",
+    "dinner": "夕食",
+    "snack": "間食",
+    "supplements": "サプリメント{{count}}件",
+    "supplements_plural": "サプリメント{{count}}件",
+    "seeFullPlan": "詳細を見る"
+  },
+  "todaysPlan": {
+    "back": "ダッシュボードに戻る",
+    "title": "今日のプラン",
+    "subtitle": "最新のレポートから作成した、順を追った一日の流れです。ここにあるものは処方ではありません。",
+    "noPlan": "まだプランがありません。手のスキャンを行い、薬剤師の確認後にここに日々のプランが表示されます。",
+    "startScan": "手をスキャンする",
+    "morning": "朝",
+    "evening": "夜",
+    "step": "ステップ{{n}}",
+    "breakfast": "朝食",
+    "lunch": "昼食",
+    "dinner": "夕食",
+    "snack": "間食",
+    "asDirected": "ラベルの指示どおりに",
+    "timingNote": "正確なタイミングや食事と一緒に摂るかどうかは、ラベルと薬剤師の指示に従ってください。",
+    "nothingThisSlot": "この時間帯に予定はありません。",
+    "supplementReviewNote": "これらのサプリメントのステップは、レポートの一部として薬剤師が確認しました。開始・中止・変更する前に薬剤師に相談してください。",
+    "talkToPharmacist": "薬剤師に相談する"
   }
 }

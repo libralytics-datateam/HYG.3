@@ -1,0 +1,58 @@
+.today-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.today-card:hover {
+  border-color: var(--teal);
+  box-shadow: var(--shadow-md);
+}
+
+.today-card-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--teal-glow);
+  color: var(--teal);
+}
+
+.today-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.today-card-title {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.today-card-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.today-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--teal);
+}

@@ -390,5 +390,34 @@
       "title": "Uncertain — treat with caution",
       "body": "Where the data is thin or mixed. Confirm anything here with a professional before changing what you do."
     }
+  },
+  "todayCard": {
+    "title": "Today's plan",
+    "breakfast": "breakfast",
+    "lunch": "lunch",
+    "dinner": "dinner",
+    "snack": "snack",
+    "supplements": "{{count}} supplement",
+    "supplements_plural": "{{count}} supplements",
+    "seeFullPlan": "See full plan"
+  },
+  "todaysPlan": {
+    "back": "Back to dashboard",
+    "title": "Today's Plan",
+    "subtitle": "Your day, in order, built from your latest report. Nothing here is a prescription.",
+    "noPlan": "No plan yet. Do a hand scan and, once a pharmacist has reviewed it, your daily plan appears here.",
+    "startScan": "Start a hand scan",
+    "morning": "Morning",
+    "evening": "Evening",
+    "step": "Step {{n}}",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "snack": "Snack",
+    "asDirected": "As directed on the label",
+    "timingNote": "Follow the label and your pharmacist for exact timing and whether to take it with food.",
+    "nothingThisSlot": "Nothing scheduled for this part of the day.",
+    "supplementReviewNote": "These supplement steps were reviewed by a pharmacist as part of your report. Talk to a pharmacist before you start, stop, or change any of them.",
+    "talkToPharmacist": "Talk to a pharmacist"
   }
 }

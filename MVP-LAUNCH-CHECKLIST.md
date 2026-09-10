@@ -292,3 +292,14 @@ Spec feature 6 (the gate behaviour) + hard gate (b): supplement suggestions are 
 - [x] **Supplement-protocol card reframed** (`ClientDashboard`): "AI-suggested · pharmacist-reviewed" section tag; a not-a-prescription note; a per-item caption that the catalog link is a name-match convenience, not a clinical endorsement or fit score; a persistent "Talk to a pharmacist before starting" link → `/client/care?from=nutrition`. The purchase link stays (post-review) but is secondary.
 - [x] **Goal-chip Products browse tab deferred** (decisions.md): `Product` has 0 rows in prod and there's no patient catalog endpoint — a browse tab would be an empty page. Ships with a real catalogue.
 - [x] All 4 locales translated. Frontend build clean. No backend change → smoke tests unaffected (31/31). **All 4 hard gates now enforced in shipped code.**
+
+## 23. Consumer-app UX adaptation — increment 5: Home "Today" card + "Today's Plan" detail; Progress→Trends verified (2026-09-10)
+
+Spec features 1, 2, 7. No hard gates involved. Paywall omitted by the user's choice (AskUserQuestion) — HYG.3 has no subscription tiers.
+
+- [x] **`src/components/TodayPlanCard.tsx`** — compact preview on the dashboard (Morning: breakfast · N supplements · lunch / Evening: dinner · snack), links to the detail, renders nothing with no plan.
+- [x] **`src/pages/Client/TodaysPlan.tsx`** at `/client/plan` — Morning / Evening tabs, numbered step sequence. Every step from real data (meal-plan slots + pharmacist-reviewed supplements with their actual dosage strings). No AM/PM split invented per supplement — Morning, with a "follow the label / your pharmacist for timing" caption. Supplement block carries the RECOMMENDATION `InsightLabel` + a Care Actions link (same gate-b framing). All steps visible — no paywall.
+- [x] **Feature 7 (Progress → Trends) — already satisfied, no code.** `HealthTrendChart` already plots weight / sleep / recovery / HRV / energy / adherence; `WellnessOverview` groups them; `CheckInCard` shows a streak sparkline. No photo / before-after mechanic exists anywhere (hand scan is diagnostic input, never a progress photo — the face-zone-photo pattern was explicitly excluded). Marked done by verification.
+- [x] All 4 locales translated (`todayCard.*`, `todaysPlan.*`). Frontend build clean. No backend change → smoke tests unaffected (31/31).
+
+**Gauntlet run status: 8/8 spec items addressed (6 built, 2 deferred with rationale — Insights category-tile hub §21, goal-chip Products browse tab §22 — both waiting on real data to not be empty shells). All 4 hard gates enforced in shipped code.**

@@ -9,6 +9,7 @@ import TelemedicineAlerts from '../../components/TelemedicineAlerts';
 import WellnessOverview from '../../components/WellnessOverview';
 import DisclaimerModal from '../../components/DisclaimerModal';
 import InsightLabel from '../../components/InsightLabel';
+import TodayPlanCard from '../../components/TodayPlanCard';
 import { timeAgo } from '../../lib/timeAgo';
 import './ClientDashboard.css';
 
@@ -150,6 +151,10 @@ export default function ClientDashboard() {
             </>
           ) : (
         <div className="report-content">
+          {/* Home "Today" card (spec §1) — compact preview of today's plan,
+              "See full plan" opens the Morning/Evening detail. No paywall. */}
+          <TodayPlanCard rec={rec} />
+
           {/* Meta */}
           <div className="report-meta">
             <span className="source-badge flex items-center gap-1">
