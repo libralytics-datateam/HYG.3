@@ -7,6 +7,7 @@ import CheckInCard from '../../components/CheckInCard';
 import HealthTrendChart from '../../components/HealthTrendChart';
 import TelemedicineAlerts from '../../components/TelemedicineAlerts';
 import WellnessOverview from '../../components/WellnessOverview';
+import DisclaimerModal from '../../components/DisclaimerModal';
 import { timeAgo } from '../../lib/timeAgo';
 import './ClientDashboard.css';
 
@@ -22,6 +23,9 @@ export default function ClientDashboard() {
   const [pending, setPending] = useState<{ submittedAt: string; wasSentBackForChanges: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [alertsRefreshKey, setAlertsRefreshKey] = useState(0);
+  // First-view disclaimer gate (spec §3): null = not yet known, false = must
+  // acknowledge before the supplement report is shown, true = cleared.
+  const [disclaimerAck, setDisclaimerAck] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!patientId) {
@@ -29,6 +33,15 @@ export default function ClientDashboard() {
       return;
     }
     fetchLatest();
+    fetch(`${API_URL}/telemedicine/disclaimer-status?patientId=${patientId}&category=nutrition`)
+      .then((r) => r.json())
+      .then((json) => setDisclaimerAck(json.success ? !!json.data.acknowledged : true))
+      // On any failure, fall back to the local "seen" flag rather than
+      // trapping the patient behind a modal that can't be dismissed.
+      .catch(() => {
+        try { setDisclaimerAck(localStorage.getItem('hyg3_disclaimer_nutrition') === '1'); }
+        catch { setDisclaimerAck(true); }
+      });
   }, [patientId]);
 
   const fetchLatest = async () => {
@@ -119,6 +132,21 @@ export default function ClientDashboard() {
                 </Link>
               </div>
             )
+          ) : rec.vitamins?.length > 0 && disclaimerAck === false ? (
+            /* Tier B+ (supplement-specific) report — withheld until the
+               first-view disclaimer is acknowledged for this category (spec §3).
+               The modal itself can only be cleared via its two steps; step 2's
+               primary action routes to Care Actions, not a bare dismiss. */
+            <>
+              <div className="empty-state glass-panel animate-fade-in">
+                <div className="empty-icon flex justify-center"><Stethoscope size={40} className="text-teal" /></div>
+                <h2 className="text-xl font-bold text-text mt-4">{t('clientDashboard.disclaimerGateTitle')}</h2>
+                <p className="text-muted text-sm mt-2" style={{ maxWidth: 340, textAlign: 'center' }}>
+                  {t('clientDashboard.disclaimerGateBody')}
+                </p>
+              </div>
+              <DisclaimerModal patientId={patientId!} category="nutrition" onDone={() => setDisclaimerAck(true)} />
+            </>
           ) : (
         <div className="report-content">
           {/* Meta */}

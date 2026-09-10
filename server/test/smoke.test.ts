@@ -786,3 +786,117 @@ test('POST /v1/telemedicine/request-review (hand_scan) flags the existing pendin
   assert.equal(patientOutputs.length, 1, 'expected the existing insight to be flagged, not duplicated');
   assert.ok(patientOutputs[0].patientRequestedAt, 'expected patientRequestedAt to now be set');
 });
+
+// --- Consumer-app UX adaptation, increment 1: first-view disclaimer + Care Actions ---
+
+test('disclaimer-status -> disclaimer-ack -> disclaimer-status roundtrip is idempotent and auditable', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Disc', lastName: 'Laimer', email: `disclaimer+${Date.now()}@example.com`,
+      age: 33, gender: 'other', heightCm: 172, weightKg: 68, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  // Not acknowledged yet.
+  const before = await fetch(`${BASE_URL}/v1/telemedicine/disclaimer-status?patientId=${patient.patientId}&category=nutrition`).then((r) => r.json());
+  assert.equal(before.data.acknowledged, false);
+  assert.equal(before.data.version, 'v1');
+
+  // First ack creates the record.
+  const ack1 = await fetch(`${BASE_URL}/v1/telemedicine/disclaimer-ack`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, category: 'nutrition' }),
+  });
+  assert.equal(ack1.status, 201);
+  const ack1Json = await ack1.json();
+  assert.equal(ack1Json.data.acknowledged, true);
+  assert.equal(ack1Json.data.created, true);
+
+  // Second ack is idempotent — no duplicate, created:false, 200.
+  const ack2 = await fetch(`${BASE_URL}/v1/telemedicine/disclaimer-ack`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, category: 'nutrition' }),
+  });
+  assert.equal(ack2.status, 200);
+  assert.equal((await ack2.json()).data.created, false);
+
+  // Status now reflects the acknowledgement.
+  const afterStatus = await fetch(`${BASE_URL}/v1/telemedicine/disclaimer-status?patientId=${patient.patientId}&category=nutrition`).then((r) => r.json());
+  assert.equal(afterStatus.data.acknowledged, true);
+  assert.ok(afterStatus.data.at, 'expected an acknowledgement timestamp');
+
+  // A different category is tracked independently.
+  const sleepStatus = await fetch(`${BASE_URL}/v1/telemedicine/disclaimer-status?patientId=${patient.patientId}&category=sleep`).then((r) => r.json());
+  assert.equal(sleepStatus.data.acknowledged, false);
+});
+
+test('disclaimer_acknowledgement rows are kept out of the pharmacist review queue', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Queue', lastName: 'Hidden', email: `queuehidden+${Date.now()}@example.com`,
+      age: 40, gender: 'other', heightCm: 168, weightKg: 70, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  await fetch(`${BASE_URL}/v1/telemedicine/disclaimer-ack`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, category: 'nutrition' }),
+  });
+
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+
+  const outputs = await fetch(`${BASE_URL}/v1/ai/outputs`, { headers: { Authorization: `Bearer ${session.token}` } }).then((r) => r.json());
+  const leaked = outputs.data.filter((o: any) => o.type === 'disclaimer_acknowledgement');
+  assert.equal(leaked.length, 0, 'disclaimer_acknowledgement must not appear in the review queue');
+});
+
+test('POST /v1/telemedicine/request-review (care_actions) creates a pending telemedicine_request the queue surfaces', async () => {
+  const onboardRes = await fetch(`${BASE_URL}/v1/onboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      firstName: 'Care', lastName: 'Action', email: `careaction+${Date.now()}@example.com`,
+      age: 29, gender: 'other', heightCm: 175, weightKg: 72, pdpaConsent: true,
+    }),
+  });
+  const { data: patient } = await onboardRes.json();
+
+  const reqRes = await fetch(`${BASE_URL}/v1/telemedicine/request-review`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, source: 'care_actions', reason: 'Patient requested a pharmacist review from Care Actions (nutrition).' }),
+  });
+  assert.equal(reqRes.status, 200);
+  const reqJson = await reqRes.json();
+  assert.equal(reqJson.data.created, true);
+
+  // A bogus source is still rejected.
+  const badSource = await fetch(`${BASE_URL}/v1/telemedicine/request-review`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patientId: patient.patientId, source: 'not_a_source' }),
+  });
+  assert.equal(badSource.status, 400);
+
+  const loginRes = await fetch(`${BASE_URL}/v1/auth/login`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'sarah@libralytics.com', password: 'password123' }),
+  });
+  const { data: session } = await loginRes.json();
+
+  const outputs = await fetch(`${BASE_URL}/v1/ai/outputs`, { headers: { Authorization: `Bearer ${session.token}` } }).then((r) => r.json());
+  const found = outputs.data.find((o: any) => o.patientId === patient.patientId && o.type === 'telemedicine_request');
+  assert.ok(found, 'expected a telemedicine_request insight from the care_actions request');
+
+  // And it shows up as an active session alert for the patient.
+  const alerts = await fetch(`${BASE_URL}/v1/telemedicine/alerts?patientId=${patient.patientId}`).then((r) => r.json());
+  assert.ok(alerts.data.session, 'expected an active session alert after a care_actions request');
+});

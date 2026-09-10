@@ -330,3 +330,34 @@ The user didn't pick one — they redirected: find what's common across the conn
 Built as a new frontend-only component (`WellnessOverview.tsx`) reusing the two endpoints already built and tested for the wearables panel and the health chart — no new backend surface, no new data collection, just a different honest read of data that already exists. Includes one retention nudge, deliberately grounded in the *patient's own* actual connection gap (computed from real `/status` data) rather than a generic "connect more!" prompt — inviting them to connect whichever specific source they're missing to unlock a specific comparison they don't have yet.
 
 **Evidence:** `src/components/WellnessOverview.tsx`, `src/pages/Client/ClientDashboard.tsx`, `MVP-LAUNCH-CHECKLIST.md` §18.
+
+---
+
+## Consumer-app UX adaptation — increment 1 (2026-09-10)
+
+Running the gauntlet-loop prompt against Superpower (superpower.com) as the bar, executing the user's "HYG.3 Consumer App — UX Adaptation Spec": port a face-care app's skeleton (concern hub → daily plan → matched commerce → progress → locked content) onto HYG.3's pharmacist-gated health model, with four hard gates (no diagnosis/"medical grade" language; Tier B → pharmacist review before checkout; FACT/INFERENCE/RECOMMENDATION/UNCERTAIN labelling; consent per data source at connection time). Video/course library explicitly dropped. Eight screens, built and deployed incrementally; live progress page tracks status.
+
+### Decision: ProviderConnector interface (for feature 8, appended before building per instruction)
+
+WHOOP is currently a one-off integration (`whoopService.ts` + WHOOP-specific routes in `wearables.ts`). Fitbit was added as a parallel one-off (§11). Before adding a third provider (InBody, per the spec's InBody integration doc), the shape they all share — OAuth/API key → cloud sync or webhook → normalized ingestion — becomes one interface:
+
+```
+ProviderConnector
+ ├─ id / displayName / dataTypes
+ ├─ isConfigured()                         // env creds present
+ ├─ getAuthorizationUrl(patientId)         // or n/a for manual-import providers
+ ├─ exchangeCodeForTokens(code)
+ ├─ refreshTokens(refreshToken)
+ ├─ revokeAccess(accessToken)
+ ├─ syncMode: 'cloud' | 'direct' | 'manual-import'
+ ├─ consentScope: { dataTypes[], purpose, retention }
+ └─ fetchLatest(accessToken) → NormalizedReading[]   // { source, metricType, value, recordedAt }
+```
+
+WHOOP and Fitbit become the first two implementations of this interface rather than special cases; InBody (body composition, cloud-sync path first) becomes the third. The routes in `wearables.ts` collapse from per-provider handlers to one set parameterized by `:provider`, looking the connector up from a registry. This is the Data Engine abstraction the master doc already calls for, applied to data intake. Same no-schema-change constraint: `WearableConnection.provider` already stores a free-text string, so a third provider needs no migration. Consent stays per-connection (`consentScope` is declared by each connector, surfaced at connect time, revoked independently) — connecting one provider must never implicitly consent to another. **Not yet built — this decision is the prerequisite record; the interface + WHOOP/Fitbit migration + InBody is a later increment.**
+
+### Decision: disclaimer-acknowledgement storage (for feature 4)
+
+The spec requires the first-view disclaimer's dismissal to be logged "as an auditable event... alongside recommendation/version/reviewer data, not throwaway UI state" — per user per report category, re-surfaced if the underlying report version changes materially. The DB role can't add a table or column (recurring constraint). Options weighed: `HealthProfile.medicalNotes` is already written by onboarding (real free text) so it's out; pure `localStorage` fails the "not throwaway UI state" bar. Chosen: a `disclaimer_acknowledgement` `AiOutput` row (patient-linked via a `CustomVitaminConcept`, same pattern as the telemedicine_request feature §12), `content` holding `{ category, disclaimerVersion, acknowledgedAt }`. This lands the record in the same audit-visible store as reviewer/recommendation data — exactly what the spec asks — with zero schema change. To keep these non-actionable rows out of the pharmacist review queue, `GET /v1/ai/outputs` filters `type: { not: 'disclaimer_acknowledgement' }`; the rows remain directly queryable for audit. `reviewStatus` is set to `'logged'` (a deliberately distinct non-review value) since nothing reviews an acknowledgement.
+
+**Evidence:** `decisions.md` (this entry), `MVP-LAUNCH-CHECKLIST.md` §19, progress page (artifact).

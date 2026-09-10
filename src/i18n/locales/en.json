@@ -9,7 +9,7 @@
     "getStarted": "Get Started Free"
   },
   "footer": {
-    "tagline": "Pioneering medical-grade wearable intelligence to optimize your health outcomes and biometric recovery.",
+    "tagline": "Pioneering wearable intelligence to help you understand your health trends and biometric recovery.",
     "product": "Product",
     "features": "Features",
     "company": "Company",
@@ -170,7 +170,9 @@
     "pendingReviewBody": "Submitted {{time}}. A pharmacist is reviewing your scan; your gaps, food, and supplement suggestions will appear here once approved.",
     "pendingReviewBodyModified": "Your scan is back with the pharmacist for a closer look before it's finalized.",
     "availableAt": "Available: {{name}}",
-    "notInCatalog": "Not in your pharmacy's catalog yet"
+    "notInCatalog": "Not in your pharmacy's catalog yet",
+    "disclaimerGateTitle": "One thing to read first",
+    "disclaimerGateBody": "Before your supplement suggestions are shown, there's a short note about what this report is — and isn't."
   },
   "checkIn": {
     "title": "Weekly Check-in",
@@ -242,7 +244,8 @@
     "myReport": "My Report",
     "scanHand": "Scan Hand",
     "checkIn": "Check-in",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "care": "Care"
   },
   "common": {
     "loading": "Loading…",
@@ -292,5 +295,37 @@
     "themeActivity": "Activity & Exertion",
     "onlyFrom": "Only from {{source}}",
     "connectMore": "Connect {{source}} to see more of this comparison"
+  },
+  "disclaimerModal": {
+    "step1Title": "What this report is — and isn't",
+    "step1Body": "This is an AI-generated wellness summary based on your hand scan and connected data. It is not a diagnosis and not a substitute for advice from a doctor or pharmacist.",
+    "step1Warning": "Don't start, stop, or change any medication or treatment based on this report. Confirm anything here with a qualified professional first.",
+    "next": "Continue",
+    "step2Title": "Share this with a pharmacist",
+    "step2Body": "The supplement suggestions in this report are meant to be reviewed with a pharmacist before you act on them. You can start that now — it takes a minute and there is no obligation.",
+    "talkToPharmacist": "Talk to a Pharmacist",
+    "backToReports": "I'll review it myself for now"
+  },
+  "careActions": {
+    "back": "Back to dashboard",
+    "title": "Care Actions",
+    "subtitle": "Bring a real person into the loop — a pharmacist for supplement questions, or a licensed provider for a full consult.",
+    "statusScheduled": "Your consult is scheduled for {{date}}.",
+    "statusPending": "You have a request in review — sent {{time}}.",
+    "pharmacistTitle": "Talk to a Pharmacist",
+    "pharmacistTag": "Async · usually same day",
+    "pharmacistBody": "Send your report to a HYG.3 pharmacist. They'll review your supplement suggestions and reply with notes, or set up a short call if needed.",
+    "pharmacistCta": "Request pharmacist review",
+    "pharmacistReason": "Patient requested a pharmacist review from Care Actions ({{context}}).",
+    "telemedicineTitle": "Book a Telemedicine Consult",
+    "telemedicineTag": "External · licensed provider",
+    "telemedicineBody": "For anything beyond supplements, we'll hand you to an independent licensed provider for a video consult. The request is logged here first.",
+    "telemedicineCta": "Request a consult",
+    "telemedicineReason": "Patient requested a telemedicine consult (external provider handoff) from Care Actions ({{context}}).",
+    "contextGeneral": "general",
+    "requestSent": "Request sent",
+    "sending": "Sending…",
+    "requestFailed": "Couldn't send that request. Please try again.",
+    "auditNote": "Every request here is recorded — what was recommended, who reviewed it, what they decided, and the outcome."
   }
 }

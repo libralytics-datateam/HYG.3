@@ -30,7 +30,10 @@ const REVIEWER_ROLES = ['Lead Clinician', 'Pharmacist'];
 router.get('/', async (req, res) => {
   try {
     const insights = await prisma.aiOutput.findMany({
-      where: { orgId: req.user!.orgId },
+      // disclaimer_acknowledgement rows live in the AiOutput store for audit
+      // (see decisions.md) but aren't actionable — keep them out of the
+      // pharmacist review queue. They remain directly queryable.
+      where: { orgId: req.user!.orgId, type: { not: 'disclaimer_acknowledgement' } },
       include: {
         customVitaminConcepts: {
           include: {

@@ -1,0 +1,110 @@
+.disclaimer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(18, 58, 68, 0.55);
+  backdrop-filter: blur(3px);
+  animation: disclaimer-fade 200ms ease-out;
+}
+
+@keyframes disclaimer-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.disclaimer-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+
+.disclaimer-steps-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.disclaimer-steps-dots span {
+  width: 22px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--border);
+  transition: background var(--transition-fast);
+}
+
+.disclaimer-steps-dots span.is-active {
+  background: var(--teal);
+}
+
+.disclaimer-steps-dots span.is-done {
+  background: var(--gold);
+}
+
+.disclaimer-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--teal-glow);
+  color: var(--teal);
+}
+
+.disclaimer-title {
+  font-size: 18px;
+  line-height: 1.35;
+  margin-bottom: 10px;
+  text-wrap: balance;
+}
+
+.disclaimer-body {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 auto 12px;
+  max-width: 34ch;
+}
+
+.disclaimer-warn {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.55;
+  background: rgba(4, 120, 87, 0.08);
+  border: 1px solid rgba(4, 120, 87, 0.2);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin: 0 auto 4px;
+  max-width: 36ch;
+}
+
+.disclaimer-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.disclaimer-actions-col {
+  flex-direction: column;
+  gap: 10px;
+}
+
+.disclaimer-actions-col .btn {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disclaimer-overlay { animation: none; }
+}

@@ -30,8 +30,8 @@ router.post('/request-review', async (req, res) => {
       res.status(400).json({ error: 'patientId is required' });
       return;
     }
-    if (source !== 'hand_scan' && source !== 'wearable_trend') {
-      res.status(400).json({ error: "source must be 'hand_scan' or 'wearable_trend'" });
+    if (source !== 'hand_scan' && source !== 'wearable_trend' && source !== 'care_actions') {
+      res.status(400).json({ error: "source must be 'hand_scan', 'wearable_trend', or 'care_actions'" });
       return;
     }
 
@@ -185,6 +185,119 @@ router.get('/alerts', async (req, res) => {
   } catch (error) {
     console.error('Error building telemedicine alerts:', error);
     res.status(500).json({ error: 'Failed to build alerts' });
+  }
+});
+
+// Bump this string when the disclaimer copy or the underlying report's risk
+// tier / data sources change materially — an ack recorded against an older
+// version stops counting and the modal re-surfaces (spec §3).
+const DISCLAIMER_VERSION = 'v1';
+
+// GET /v1/telemedicine/disclaimer-status?patientId=xxx&category=nutrition
+// Has this patient acknowledged the first-view disclaimer for this report
+// category, at the current version? Drives whether the two-step modal
+// blocks the report (spec §3).
+router.get('/disclaimer-status', async (req, res) => {
+  try {
+    const patientId = req.query.patientId as string;
+    const category = (req.query.category as string) || 'nutrition';
+    if (!patientId) {
+      res.status(400).json({ error: 'patientId is required' });
+      return;
+    }
+
+    const concepts = await prisma.customVitaminConcept.findMany({
+      where: { patientId, aiOutput: { type: 'disclaimer_acknowledgement' } },
+      include: { aiOutput: true },
+      orderBy: { generatedAt: 'desc' },
+    });
+
+    const match = concepts.find((c) => {
+      if (!c.aiOutput) return false;
+      try {
+        const parsed = JSON.parse(c.aiOutput.content);
+        return parsed.category === category && parsed.disclaimerVersion === DISCLAIMER_VERSION;
+      } catch {
+        return false;
+      }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        acknowledged: !!match,
+        at: match?.aiOutput ? match.aiOutput.createdAt.toISOString() : null,
+        version: DISCLAIMER_VERSION,
+      },
+    });
+  } catch (error) {
+    console.error('Error checking disclaimer status:', error);
+    res.status(500).json({ error: 'Failed to check disclaimer status' });
+  }
+});
+
+// POST /v1/telemedicine/disclaimer-ack
+// Body: { patientId, category }
+// Records the first-view disclaimer dismissal as an auditable event — a
+// disclaimer_acknowledgement AiOutput + CustomVitaminConcept, stored in the
+// same audit-visible store as reviewer/recommendation data (see decisions.md
+// for why this shape). Idempotent per patient+category+version.
+router.post('/disclaimer-ack', async (req, res) => {
+  try {
+    const { patientId, category = 'nutrition' } = req.body as { patientId?: string; category?: string };
+    if (!patientId) {
+      res.status(400).json({ error: 'patientId is required' });
+      return;
+    }
+    const patient = await prisma.patient.findUnique({ where: { id: patientId } });
+    if (!patient) {
+      res.status(404).json({ error: 'Patient not found' });
+      return;
+    }
+
+    const existing = await prisma.customVitaminConcept.findMany({
+      where: { patientId, aiOutput: { type: 'disclaimer_acknowledgement' } },
+      include: { aiOutput: true },
+    });
+    const already = existing.find((c) => {
+      if (!c.aiOutput) return false;
+      try {
+        const p = JSON.parse(c.aiOutput.content);
+        return p.category === category && p.disclaimerVersion === DISCLAIMER_VERSION;
+      } catch {
+        return false;
+      }
+    });
+    if (already?.aiOutput) {
+      res.json({ success: true, data: { acknowledged: true, at: already.aiOutput.createdAt.toISOString(), created: false } });
+      return;
+    }
+
+    const acknowledgedAt = new Date().toISOString();
+    const aiOutput = await prisma.aiOutput.create({
+      data: {
+        orgId: patient.orgId,
+        type: 'disclaimer_acknowledgement',
+        content: JSON.stringify({ category, disclaimerVersion: DISCLAIMER_VERSION, acknowledgedAt }),
+        confidenceScore: 1,
+        modelVersion: 'n/a',
+        reviewStatus: 'logged', // deliberately not a review state — nothing reviews an acknowledgement
+      },
+    });
+    await prisma.customVitaminConcept.create({
+      data: {
+        patientId,
+        status: 'logged',
+        recommendedSkus: '[]',
+        rationaleSummary: `First-view disclaimer acknowledged for "${category}" reports (${DISCLAIMER_VERSION}).`,
+        aiOutputId: aiOutput.id,
+      },
+    });
+
+    res.status(201).json({ success: true, data: { acknowledged: true, at: acknowledgedAt, created: true } });
+  } catch (error) {
+    console.error('Error recording disclaimer acknowledgement:', error);
+    res.status(500).json({ error: 'Failed to record acknowledgement' });
   }
 });
 

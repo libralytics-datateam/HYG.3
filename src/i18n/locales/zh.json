@@ -9,7 +9,7 @@
     "getStarted": "免费开始使用"
   },
   "footer": {
-    "tagline": "开创医疗级可穿戴智能技术,优化您的健康成果与生物指标恢复能力。",
+    "tagline": "开创可穿戴智能技术,帮助您了解自己的健康趋势与生物指标恢复情况。",
     "product": "产品",
     "features": "功能特色",
     "company": "公司",
@@ -170,7 +170,9 @@
     "pendingReviewBody": "提交于 {{time}}。药剂师正在审核您的扫描结果，营养缺口、食物和补充剂建议将在审核通过后显示在此处。",
     "pendingReviewBodyModified": "您的扫描已退回给药剂师做进一步确认，尚未最终确定。",
     "availableAt": "有货：{{name}}",
-    "notInCatalog": "尚未收录在药房的产品目录中"
+    "notInCatalog": "尚未收录在药房的产品目录中",
+    "disclaimerGateTitle": "请先阅读一件事",
+    "disclaimerGateBody": "在显示您的补充剂建议之前,有一段简短说明,介绍这份报告是什么、不是什么。"
   },
   "checkIn": {
     "title": "每周签到",
@@ -242,7 +244,8 @@
     "myReport": "我的报告",
     "scanHand": "扫描手部",
     "checkIn": "签到",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+    "care": "关怀"
   },
   "common": {
     "loading": "加载中…",
@@ -292,5 +295,37 @@
     "themeActivity": "活动与压力值",
     "onlyFrom": "仅来自 {{source}}",
     "connectMore": "连接 {{source}} 以查看更多对比"
+  },
+  "disclaimerModal": {
+    "step1Title": "这份报告是什么,不是什么",
+    "step1Body": "这是根据您的手部扫描和已连接数据由 AI 生成的健康摘要。它不是诊断,也不能替代医生或药剂师的建议。",
+    "step1Warning": "请勿根据本报告开始、停止或更改任何药物或治疗。报告中的任何内容都应先向合格的专业人员确认。",
+    "next": "继续",
+    "step2Title": "与药剂师分享",
+    "step2Body": "本报告中的补充剂建议应在您采取行动前与药剂师一起审阅。您现在就可以开始 — 只需一分钟,没有任何义务。",
+    "talkToPharmacist": "咨询药剂师",
+    "backToReports": "我暂时自己查看"
+  },
+  "careActions": {
+    "back": "返回仪表板",
+    "title": "关怀行动",
+    "subtitle": "让真实的专业人员参与进来 — 补充剂问题找药剂师,完整问诊找有执照的医疗提供者。",
+    "statusScheduled": "您的问诊已安排在 {{date}}。",
+    "statusPending": "您有一个正在审核的请求 — 于 {{time}} 发送。",
+    "pharmacistTitle": "咨询药剂师",
+    "pharmacistTag": "异步 · 通常当天",
+    "pharmacistBody": "将您的报告发送给 HYG.3 药剂师。他们会审阅您的补充剂建议并附上备注回复,或在需要时安排一次简短通话。",
+    "pharmacistCta": "请求药剂师审核",
+    "pharmacistReason": "患者从关怀行动页面请求药剂师审核({{context}})。",
+    "telemedicineTitle": "预约远程问诊",
+    "telemedicineTag": "外部 · 有执照的提供者",
+    "telemedicineBody": "对于补充剂以外的任何问题,我们会将您转介给独立的有执照医疗提供者进行视频问诊。请求会先在此处记录。",
+    "telemedicineCta": "请求问诊",
+    "telemedicineReason": "患者从关怀行动页面请求远程问诊(转介外部提供者)({{context}})。",
+    "contextGeneral": "一般",
+    "requestSent": "请求已发送",
+    "sending": "发送中…",
+    "requestFailed": "无法发送该请求。请重试。",
+    "auditNote": "此处的每个请求都会被记录 — 推荐了什么、谁审核的、如何决定的以及结果如何。"
   }
 }
